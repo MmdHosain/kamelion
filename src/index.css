@@ -1,0 +1,11 @@
+@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100..900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  direction: rtl; /* Critical for Persian sites */
+  background-color: #f8f9fa;
+  color: #333;
+}
