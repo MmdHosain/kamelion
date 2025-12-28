@@ -156,35 +156,49 @@ const App = () => {
           </div>
         </section>
       </main>
-{/* ChatGPT Style Input Bar + Ticker */}
+{/* Premium ChatGPT Style Input */}
 <section className="py-16 px-4 bg-gray-50">
-  <div className="max-w-5xl mx-auto space-y-4">
+  <div className="max-w-5xl mx-auto">
 
-    {/* Chat Input */}
-    <div className="bg-[#1f1f1f] rounded-2xl px-6 py-4 shadow-xl border border-[#2a2a2a] flex items-center gap-3 hover:scale-[1.01] transition cursor-text">
+    <div className="bg-[#1f1f1f] rounded-2xl shadow-2xl border border-[#2a2a2a] overflow-hidden">
 
-      <span className="text-gray-400 text-xl leading-none">+</span>
+      {/* Input Row */}
+      <div className="flex items-center gap-3 px-5 py-4">
 
-      <input
-        type="text"
-        placeholder="هر سوالی داری اینجا بپرس..."
-        className="bg-transparent flex-1 text-gray-200 placeholder-gray-400 focus:outline-none text-sm"
-      />
+        {/* Plus Button */}
+        <button
+          className="w-9 h-9 flex items-center justify-center rounded-full 
+                     border border-gray-600 text-gray-400 
+                     hover:border-gold hover:text-gold transition"
+          title="افزودن"
+        >
+          +
+        </button>
 
-      <button className="text-gray-300 hover:text-gold transition">
-        🎤
-      </button>
+        {/* Input */}
+        <input
+          type="text"
+          placeholder="سوالت رو بپرس؛ مثلاً «هزینه لیزر چقدره؟»"
+          className="flex-1 bg-transparent text-gray-200 placeholder-gray-400 
+                     focus:outline-none text-sm"
+        />
 
-      <button className="bg-gold hover:bg-yellow-600 text-black rounded-full px-4 py-2 text-sm transition font-medium">
-        ارسال
-      </button>
-    </div>
-
-    {/* Ticker Bar */}
-    <div className="relative overflow-hidden bg-black rounded-xl border border-gray-800">
-      <div className="whitespace-nowrap animate-marquee text-sm py-2 px-4 text-gold font-medium">
-        ✨ مشاوره رایگان کلینیک مهرافروز • هر سوالی درباره لیزر، تزریق، جوانسازی داری از ما بپرس • پاسخ سریع کارشناسان
+        {/* Send */}
+        <button
+          className="bg-gold hover:bg-yellow-600 text-black 
+                     rounded-full px-5 py-2 text-sm font-medium transition"
+        >
+          ارسال
+        </button>
       </div>
+
+      {/* Soft Guidance Bar */}
+      <div className="bg-[#181818] border-t border-[#2a2a2a] px-5 py-2">
+        <p className="text-xs text-gray-400">
+          💬 مشاوره رایگان • پاسخ انسانی • بدون تماس تبلیغاتی
+        </p>
+      </div>
+
     </div>
 
   </div>
