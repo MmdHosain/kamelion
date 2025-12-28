@@ -156,6 +156,40 @@ const App = () => {
           </div>
         </section>
       </main>
+{/* ChatGPT Style Input Bar + Ticker */}
+<section className="py-16 px-4 bg-gray-50">
+  <div className="max-w-5xl mx-auto space-y-4">
+
+    {/* Chat Input */}
+    <div className="bg-[#1f1f1f] rounded-2xl px-6 py-4 shadow-xl border border-[#2a2a2a] flex items-center gap-3 hover:scale-[1.01] transition cursor-text">
+
+      <span className="text-gray-400 text-xl leading-none">+</span>
+
+      <input
+        type="text"
+        placeholder="هر سوالی داری اینجا بپرس..."
+        className="bg-transparent flex-1 text-gray-200 placeholder-gray-400 focus:outline-none text-sm"
+      />
+
+      <button className="text-gray-300 hover:text-gold transition">
+        🎤
+      </button>
+
+      <button className="bg-gold hover:bg-yellow-600 text-black rounded-full px-4 py-2 text-sm transition font-medium">
+        ارسال
+      </button>
+    </div>
+
+    {/* Ticker Bar */}
+    <div className="relative overflow-hidden bg-black rounded-xl border border-gray-800">
+      <div className="whitespace-nowrap animate-marquee text-sm py-2 px-4 text-gold font-medium">
+        ✨ مشاوره رایگان کلینیک مهرافروز • هر سوالی درباره لیزر، تزریق، جوانسازی داری از ما بپرس • پاسخ سریع کارشناسان
+      </div>
+    </div>
+
+  </div>
+</section>
+
 
       {/* Footer */}
       <footer className="bg-dark text-white py-12 px-4 mt-auto">
