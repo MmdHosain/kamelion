@@ -1,57 +1,70 @@
 import React from 'react';
-// مطمئن شو که این فایل‌ها وجود دارند (در ادامه کدشان هست)
-import TextMessage from './ui/TextMessage';
 import Slider from './ui/Slider/Slider';
-import DynamicForm from './ui/Form/DynamicForm';
 
-const COMPONENT_MAP = {
-  text: TextMessage,
-  slider: Slider,
-  form: DynamicForm,
-  images: Slider, // تصاویر را هم با اسلایدر نشان می‌دهیم
-};
-
-export default function MessageRenderer({ message }) {
+const MessageRenderer = ({ message }) => {
   if (!message) return null;
 
-  // اگر تایپ شناخته نشد، پیش‌فرض TextMessage باشد تا برنامه کرش نکند
-  const Component = COMPONENT_MAP[message.type] || TextMessage;
+  const { type, content, role, payload } = message;
+  const isUser = role === 'user';
 
-  const isUser = message.role === 'user';
-  // اسلایدر و فرم و تصاویر نباید داخل حباب باشند
-  const isPureContent = ['slider', 'form', 'images'].includes(message.type);
+  if (type === 'slider') {
+    const sliderItems = Array.isArray(payload)
+      ? payload
+      : payload?.items || [];
 
-  // Wrapper برای چیدمان راست/چپ
-  const Wrapper = ({ children }) => (
-    <div className={`flex w-full ${isUser ? 'justify-end' : 'justify-start'}`}>
-      <div className={`max-w-[85%] flex flex-col gap-1 ${isUser ? 'items-end' : 'items-start'}`}>
-        {children}
+    return (
+      <div className={`flex flex-col mb-4 ${isUser ? 'items-end' : 'items-start'}`}>
+        {content && (
+          <div className="bg-[#222] text-white px-4 py-3 rounded-2xl rounded-tl-none max-w-[85%] text-sm leading-6 mb-2">
+            {content}
+          </div>
+        )}
+
+        <div className="w-full max-w-full overflow-hidden">
+          <Slider items={sliderItems} />
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
 
-  // Bubble برای پیام‌های متنی
-  const Bubble = ({ children }) => (
-    <div className={`px-4 py-2 rounded-2xl text-sm leading-6 
-      ${isUser ? 'bg-yellow-500 text-black rounded-br-none' : 'bg-gray-800 text-white rounded-bl-none border border-gray-700'}`}>
-      {children}
-    </div>
-  );
+  if (type === 'text') {
+    return (
+      <div className={`flex w-full mb-4 ${isUser ? 'justify-end' : 'justify-start'}`}>
+        <div
+          className={`max-w-[85%] px-4 py-3 rounded-2xl text-sm leading-6 shadow-sm
+            ${isUser
+              ? 'bg-yellow-600 text-white rounded-br-none'
+              : 'bg-[#222] text-gray-100 rounded-tl-none border border-white/5'
+            }
+          `}
+        >
+          {content}
+        </div>
+      </div>
+    );
+  }
 
-  return (
-    <Wrapper>
-      {isPureContent ? (
-        // پاس دادن props صحیح به کامپوننت
-        <Component 
-            {...(message.payload || {})} 
-            items={message.payload?.items || message.images} // هندل کردن هر دو حالت دیتا
-            content={message.content} 
-        />
-      ) : (
-        <Bubble>
-          <Component content={message.content} />
-        </Bubble>
-      )}
-    </Wrapper>
-  );
-}
+  if (type === 'form') {
+    return (
+      <div className="flex w-full mb-4 justify-start">
+        <div className="bg-[#222] border border-white/10 p-4 rounded-2xl rounded-tl-none w-3/4">
+          <p className="text-white text-sm mb-3">لطفا اطلاعات زیر را وارد کنید:</p>
+          {payload?.fields?.map((f, i) => (
+            <input
+              key={i}
+              placeholder={f.name}
+              className="w-full mb-2 p-2 rounded bg-black/50 text-white text-sm border border-white/10 focus:border-yellow-500 outline-none"
+            />
+          ))}
+          <button className="w-full bg-yellow-600 hover:bg-yellow-500 text-white py-2 rounded-lg text-sm transition mt-1">
+            {payload?.submitLabel || 'ثبت'}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return null;
+};
+
+export default MessageRenderer;

@@ -1,19 +1,24 @@
+import React from 'react';
 import SliderCard from './SliderCard';
 
 export default function Slider({ items = [] }) {
+  // بررسی اینکه آرایه خالی نباشد
   if (!Array.isArray(items) || items.length === 0) {
-return (
-<div className="text-xs text-gray-400">
-آیتمی برای نمایش در اسلایدر وجود ندارد.
-</div>
-);
+    return null;
   }
 
   return (
-<div className="flex gap-4 overflow-x-auto py-3">
-{items.map((item, idx) => (
-<SliderCard key={idx} {...item} />
-))}
-</div>
+    <div className="w-full mt-2 mb-4">
+      <div 
+        className="flex gap-3 overflow-x-auto pb-6 pt-2 px-1 snap-x snap-mandatory no-scrollbar" 
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+      >
+        {items.map((item, idx) => (
+          <div key={idx} className="snap-center shrink-0 first:pl-2 last:pr-2">
+            <SliderCard {...item} />
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }

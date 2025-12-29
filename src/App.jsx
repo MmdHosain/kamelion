@@ -54,18 +54,57 @@ const App = () => {
     if (activeTabId === tabId) setActiveTabId(newTabs[newTabs.length - 1].id);
   };
 
-  const handleSendMessage = (text) => {
+   const handleSendMessage = (text) => {
     if (!text.trim()) return;
     const userMessage = { role: 'user', type: 'text', content: text };
     
-    // شبیه‌سازی پاسخ هوشمند
-    let aiMessage = {
-      role: 'ai', type: 'text',
-      content: 'درخواست شما دریافت شد. همکاران ما به زودی پاسخ می‌دهند.'
-    };
+    // شبیه‌سازی منطق پاسخ‌دهی برای نمایش اسلایدر
+    let aiMessage;
 
-    if (text.includes('form')) {
-      aiMessage = { role: 'ai', type: 'form', payload: { fields: [{type:'text', name:'نام'}, {type:'text', name:'شماره'}], submitLabel: 'ثبت' }};
+    // سناریو 1: اگر کاربر کلمه "خدمات" یا "نمونه" یا "service" را تایپ کرد
+    if (text.includes('خدمات') || text.includes('نمونه') || text.includes('service') || text.includes('slider')) {
+        aiMessage = { 
+            role: 'ai', 
+            type: 'slider', // <--- نوع پیام اسلایدر
+            content: 'این‌ها برخی از محبوب‌ترین خدمات تخصصی ما هستند که با جدیدترین متدهای روز دنیا ارائه می‌شوند:',
+            payload: [
+                {
+                    title: 'تزریق ژل لب روسی',
+                    desc: 'فرم‌دهی طبیعی و حجم‌دهی با بهترین برندهای اروپایی',
+                    img_path: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?q=80&w=2070&auto=format&fit=crop', // عکس با کیفیت لب/صورت
+                    price: 'تخفیف ویژه'
+                },
+                {
+                    title: 'هایفوتراپی صورت',
+                    desc: 'لیفتینگ و جوانسازی بدون جراحی در یک جلسه',
+                    img_path: 'https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?q=80&w=2070&auto=format&fit=crop',
+                    price: 'محبوب'
+                },
+                {
+                    title: 'لیزر موهای زائد',
+                    desc: 'دستگاه الکساندرایت کندلا 2024 بدون درد',
+                    img_path: 'https://images.unsplash.com/photo-1560750588-73207b1ef5b8?q=80&w=2070&auto=format&fit=crop',
+                    price: 'جشنواره'
+                },
+                {
+                    title: 'کاشت مو طبیعی',
+                    desc: 'تراکم بالا با خط رویش طبیعی و ضمانت نامه',
+                    img_path: 'https://images.unsplash.com/photo-1552693673-1bf958298935?q=80&w=2073&auto=format&fit=crop',
+                    price: 'مشاوره رایگان'
+                }
+            ]
+        };
+    } 
+    // سناریو 2: فرم
+    else if (text.includes('form') || text.includes('نوبت')) {
+      aiMessage = { role: 'ai', type: 'form', payload: { fields: [{type:'text', name:'نام و نام خانوادگی'}, {type:'text', name:'شماره تماس'}], submitLabel: 'درخواست مشاوره' }};
+    } 
+    // سناریو 3: متن عادی
+    else {
+      aiMessage = {
+        role: 'ai', type: 'text',
+        content: 'درخواست شما دریافت شد. برای مشاهده خدمات ما کلمه "خدمات" را تایپ کنید.'
+      };
     }
 
     setTabs(prev => prev.map(tab => 
