@@ -37,6 +37,8 @@ const DATA = {
 const App = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [appState, setAppState] = useState('closed');
+const [messages, setMessages] = useState([]);
+  
 const [tabs, setTabs] = useState([
   {
     id: Date.now(),
@@ -48,6 +50,98 @@ const [tabs, setTabs] = useState([
 
 const [activeTabId, setActiveTabId] = useState(tabs[0].id);
 const activeTab = tabs.find(t => t.id === activeTabId);
+
+const runLaserDarkSkinDemo = () => {
+  // پیام کاربر
+  setTabs(prev =>
+    prev.map(tab =>
+      tab.id === activeTabId
+        ? {
+            ...tab,
+            messages: [
+              {
+                role: 'user',
+                type: 'text',
+                content: 'آیا من با پوست تیره لیزر کنم مشکلی برام پیش میاد؟',
+              },
+            ],
+          }
+        : tab
+    )
+  );
+
+
+  // جواب AI
+  setTimeout(() => {
+    setTabs(prev =>
+      prev.map(tab =>
+        tab.id === activeTabId
+          ? {
+              ...tab,
+              messages: [
+                ...tab.messages,
+                {
+        role: 'ai',
+        type: 'text',
+        content: `۱. جواب رک و خلاصه
+
+اگر پوستت تیره است (تیپ ۴، ۵ یا ۶ فیتزپاتریک):
+
+می‌توانی لیزر انجام بدهی،
+ولی حتماً باید دستگاه و تنظیمات مخصوص پوست تیره استفاده شود
+و توسط اپراتور کاربلد انجام شود.
+
+اگر جای درستی مراجعه نکنی یا دستگاه / تنظیمات اشتباه باشد،
+احتمال این مشکلات هست:
+
+• سوختگی‌های سطحی  
+• تیره‌تر شدن پوست (هایپرپیگمنتاسیون)  
+• روشن شدن لکه‌ای پوست (هیپوپیگمنتاسیون)  
+• لک و جای طولانی‌مدت  
+
+جمع‌بندی:
+خطر وجود دارد،
+اما با مرکز درست و تنظیمات صحیح،
+لیزر روی پوست تیره کاملاً قابل انجام و نسبتاً امن است.
+
+دوست داری:
+– درباره تایپ‌بندی پوست بیشتر بدونی؟
+– یا با پزشک‌های مطب ما مشاوره بگیری؟`,
+      
+                },
+              ],
+            }
+          : tab
+      )
+    );
+  }, 1000);
+
+  // تصاویر
+  setTimeout(() => {
+    setTabs(prev =>
+      prev.map(tab =>
+        tab.id === activeTabId
+          ? {
+              ...tab,
+              messages: [
+                ...tab.messages,
+                {
+                  role: 'ai',
+                  type: 'images',
+                  images: [
+                    "C:/Users/Babak/Downloads/243b175b-fe8c-4c27-b864-79eefe8d101d.png",
+                    '243b175b-fe8c-4c27-b864-79eefe8d101d.png',
+                    '1f67fb29-d879-4bc3-af37-9364ddf6ece6.png',
+                  ],
+                },
+              ],
+            }
+          : tab
+      )
+    );
+  }, 1600);
+};
+
 
 
   return (
@@ -268,7 +362,38 @@ const activeTab = tabs.find(t => t.id === activeTabId);
       
       {appState === 'maximized' && (
   <div className="bg-gray-900 border-b border-gray-700 flex items-center px-3 h-16 gap-2 overflow-x-auto">
-    
+    <div className="flex flex-col gap-4">
+  {messages.map((message, idx) => (
+    <div
+      key={idx}
+      className={`max-w-[80%] text-sm leading-7 rounded-2xl px-4 py-3
+      ${message.role === 'user'
+        ? 'bg-gold text-black self-end'
+        : 'bg-gray-800 text-white self-start'}
+      `}
+    >
+      {message.type === 'text' && (
+        <pre className="whitespace-pre-wrap font-sans">
+          {message.content}
+        </pre>
+      )}
+
+      {message.type === 'images' && (
+        <div className="flex gap-3 overflow-x-auto mt-3">
+          {message.images.map((img, i) => (
+            <img
+              key={i}
+              src={`/images/${img}`}
+              className="h-40 rounded-xl object-cover flex-shrink-0"
+              alt=""
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  ))}
+</div>
+
     {/* Tabs */}
     {tabs.map((tab) => (
       <div
@@ -339,24 +464,45 @@ const activeTab = tabs.find(t => t.id === activeTabId);
 
     {/* Messages Area */}
     <div className="flex-1 overflow-y-auto p-6 space-y-4">
-      {activeTab.messages.length === 0 ? (
-        <p className="text-gray-500 text-sm text-center mt-10">
-          گفت‌وگو را شروع کنید…
-        </p>
-      ) : (
-        activeTab.messages.map((msg, i) => (
-          <div
-            key={i}
-            className={`max-w-md px-4 py-2 rounded-xl text-sm
-              ${msg.role === 'user'
-                ? 'bg-gold text-black mr-auto'
-                : 'bg-gray-800 text-white ml-auto'}`}
-          >
-            {msg.text}
+  {activeTab.messages.length === 0 ? (
+    <p className="text-gray-500 text-sm text-center mt-10">
+      گفت‌وگو را شروع کنید…
+    </p>
+    
+
+  ) : (
+    activeTab.messages.map((msg, i) => (
+      <div
+        key={i}
+        className={`max-w-[80%] px-4 py-3 rounded-2xl text-sm leading-7
+          ${msg.role === 'user'
+            ? 'bg-gold text-black mr-auto'
+            : 'bg-gray-800 text-white ml-auto'}
+        `}
+      >
+        {msg.type === 'text' && (
+          <pre className="whitespace-pre-wrap font-sans">
+            {msg.content}
+          </pre>
+        )}
+
+        {msg.type === 'images' && (
+          <div className="flex gap-3 overflow-x-auto mt-3 pb-2">
+            {msg.images.map((img, idx) => (
+              <img
+                key={idx}
+                src={`/images/${img}`}
+                className="h-40 rounded-xl object-cover flex-shrink-0"
+                alt=""
+              />
+            ))}
           </div>
-        ))
-      )}
-    </div>
+        )}
+      </div>
+    ))
+  )}
+</div>
+
 
     {/* Input Bar */}
     <div className="border-t border-gray-800 p-4 bg-[#111]">
@@ -391,7 +537,11 @@ const activeTab = tabs.find(t => t.id === activeTabId);
                       ...tab,
                       messages: [
                         ...tab.messages,
-                        { role: 'user', text: tab.input },
+                        {
+                          role: 'user',
+                          type: 'text',
+                          content: tab.input,
+                        },
                       ],
                       input: '',
                     }
@@ -405,6 +555,12 @@ const activeTab = tabs.find(t => t.id === activeTabId);
         >
           ارسال
         </button>
+<button
+  onClick={runLaserDarkSkinDemo}
+  className="text-xs bg-gold text-black px-3 py-1 rounded-full"
+>
+  اجرای دمو
+</button>
 
       </div>
     </div>
