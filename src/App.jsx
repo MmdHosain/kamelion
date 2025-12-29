@@ -1,6 +1,8 @@
   import React, { useState } from 'react';
 import { Phone, MapPin, Menu, X, ChevronDown, Instagram } from 'lucide-react';
 
+
+
 // Data parsed directly from your source content
 const DATA = {
   logo: "https://mehrafrouzclinic.com/wp-content/uploads/2023/10/Logo-mehrafrouz-new.webp",
@@ -34,6 +36,19 @@ const DATA = {
 
 const App = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [appState, setAppState] = useState('closed');
+const [tabs, setTabs] = useState([
+  {
+    id: Date.now(),
+    title: 'چت ۱',
+    messages: [],
+    input: '',
+  },
+]);
+
+const [activeTabId, setActiveTabId] = useState(tabs[0].id);
+const activeTab = tabs.find(t => t.id === activeTabId);
+
 
   return (
     <div className="min-h-screen flex flex-col font-sans">
@@ -157,20 +172,25 @@ const App = () => {
         </section>
       </main>
 {/* Premium ChatGPT Style Input */}
-<section className="py-16 px-4 bg-gray-50">
-  <div className="max-w-5xl mx-auto">
-
-    <div className="bg-[#1f1f1f] rounded-2xl shadow-2xl border border-[#2a2a2a] overflow-hidden">
+{/* Fixed AI Input */}
+<section
+  className="fixed bottom-4 left-0 right-0 z-[9999] px-4 pointer-events-none"
+>
+  <div className="max-w-5xl mx-auto pointer-events-auto">
+    <div
+      className="bg-[#1f1f1f] rounded-2xl border border-[#2a2a2a]
+                 shadow-[0_20px_60px_rgba(0,0,0,0.9)]
+                 overflow-hidden"
+    >
 
       {/* Input Row */}
       <div className="flex items-center gap-3 px-5 py-4">
 
-        {/* Plus Button */}
+        {/* Plus */}
         <button
           className="w-9 h-9 flex items-center justify-center rounded-full 
                      border border-gray-600 text-gray-400 
                      hover:border-gold hover:text-gold transition"
-          title="افزودن"
         >
           +
         </button>
@@ -179,20 +199,21 @@ const App = () => {
         <input
           type="text"
           placeholder="سوالت رو بپرس؛ مثلاً «هزینه لیزر چقدره؟»"
-          className="flex-1 bg-transparent text-gray-200 placeholder-gray-400 
-                     focus:outline-none text-sm"
+          className="flex-1 bg-transparent text-gray-200 
+                     placeholder-gray-400 focus:outline-none text-sm"
         />
 
         {/* Send */}
         <button
+          onClick={() => setAppState('maximized')} // <--- تغییر اینجا
           className="bg-gold hover:bg-yellow-600 text-black 
-                     rounded-full px-5 py-2 text-sm font-medium transition"
+                    rounded-full px-5 py-2 text-sm font-medium transition"
         >
           ارسال
         </button>
       </div>
 
-      {/* Soft Guidance Bar */}
+      {/* Guidance */}
       <div className="bg-[#181818] border-t border-[#2a2a2a] px-5 py-2">
         <p className="text-xs text-gray-400">
           💬 مشاوره رایگان • پاسخ انسانی • بدون تماس تبلیغاتی
@@ -200,9 +221,9 @@ const App = () => {
       </div>
 
     </div>
-
   </div>
 </section>
+
 
 
       {/* Footer */}
@@ -231,6 +252,196 @@ const App = () => {
           </div>
         </div>
       </footer>
+      {/* Telegram Style Full-Screen Webview/Mini App Overlay */}
+<div
+  // کانتینر اصلی: Fixed، تمام صفحه، با Transform حالت‌ها هندل می‌شن
+  className={`fixed top-0 left-0 w-full h-full bg-black z-[10000] 
+              transform transition-transform duration-300 ease-in-out
+              ${appState === 'closed' ? 'translate-y-full' : 
+               appState === 'minimized' ? 'translate-y-[calc(100vh-6rem)]' : // 6rem = 96px (ارتفاع نوار مینی‌مایز)
+               'translate-y-0'}
+            `}
+>
+  {/* فقط وقتی باز یا مینی‌مایز هست نمایش داده بشه */}
+  {appState !== 'closed' && (
+    <div className="w-full h-full relative overflow-hidden flex flex-col">
+      
+      {appState === 'maximized' && (
+  <div className="bg-gray-900 border-b border-gray-700 flex items-center px-3 h-16 gap-2 overflow-x-auto">
+    
+    {/* Tabs */}
+    {tabs.map((tab) => (
+      <div
+        key={tab.id}
+        onClick={() => setActiveTabId(tab.id)}
+        className={`group flex items-center gap-2 px-4 py-2 rounded-t-md cursor-pointer text-sm
+          ${activeTabId === tab.id
+            ? 'bg-black text-gold'
+            : 'bg-gray-800 text-gray-300 hover:bg-gray-700'}
+        `}
+      >
+        <span>{tab.title}</span>
+
+        {/* Close tab */}
+        {tabs.length > 1 && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setTabs((prev) => {
+                const filtered = prev.filter(t => t.id !== tab.id);
+                if (activeTabId === tab.id) {
+                  setActiveTabId(filtered[0].id);
+                }
+                return filtered;
+              });
+            }}
+            className="opacity-0 group-hover:opacity-100 transition text-gray-400 hover:text-white"
+          >
+            ✕
+          </button>
+        )}
+      </div>
+    ))}
+
+    {/* Add New Tab */}
+    <button
+      onClick={() => {
+        const newTab = {
+      id: Date.now(),
+      title: `چت ${tabs.length + 1}`,
+      messages: [],
+        input: '',
+      };
+        setTabs([...tabs, newTab]);
+        setActiveTabId(newTab.id);
+      }}
+      className="ml-2 w-8 h-8 flex items-center justify-center
+                 rounded-full bg-gray-800 text-gold hover:bg-gray-700"
+      title="چت جدید"
+    >
+      +
+    </button>
+
+    {/* Close Mini App */}
+    <button
+      onClick={() => setAppState('closed')}
+      className="ml-auto text-gray-400 hover:text-white"
+    >
+      <X size={22} />
+    </button>
+  </div>
+)}
+
+
+      {/* 2. Main Content Area (Tabs Chat) */}
+{appState === 'maximized' && activeTab && (
+  <div className="flex-1 bg-black text-white flex flex-col overflow-hidden">
+
+    {/* Messages Area */}
+    <div className="flex-1 overflow-y-auto p-6 space-y-4">
+      {activeTab.messages.length === 0 ? (
+        <p className="text-gray-500 text-sm text-center mt-10">
+          گفت‌وگو را شروع کنید…
+        </p>
+      ) : (
+        activeTab.messages.map((msg, i) => (
+          <div
+            key={i}
+            className={`max-w-md px-4 py-2 rounded-xl text-sm
+              ${msg.role === 'user'
+                ? 'bg-gold text-black mr-auto'
+                : 'bg-gray-800 text-white ml-auto'}`}
+          >
+            {msg.text}
+          </div>
+        ))
+      )}
+    </div>
+
+    {/* Input Bar */}
+    <div className="border-t border-gray-800 p-4 bg-[#111]">
+      <div className="flex items-center gap-3">
+
+        <input
+          value={activeTab.input}
+          onChange={(e) => {
+            setTabs(prev =>
+              prev.map(tab =>
+                tab.id === activeTabId
+                  ? { ...tab, input: e.target.value }
+                  : tab
+              )
+            );
+          }}
+          placeholder="پیامت رو بنویس…"
+          className="flex-1 bg-gray-900 text-white text-sm
+                     px-4 py-2 rounded-full
+                     border border-gray-700
+                     focus:outline-none focus:border-gold"
+        />
+
+        <button
+          onClick={() => {
+            if (!activeTab.input.trim()) return;
+
+            setTabs(prev =>
+              prev.map(tab =>
+                tab.id === activeTabId
+                  ? {
+                      ...tab,
+                      messages: [
+                        ...tab.messages,
+                        { role: 'user', text: tab.input },
+                      ],
+                      input: '',
+                    }
+                  : tab
+              )
+            );
+          }}
+          className="bg-gold text-black
+                     px-4 py-2 rounded-full text-sm
+                     hover:bg-yellow-600 transition"
+        >
+          ارسال
+        </button>
+
+      </div>
+    </div>
+
+  </div>
+)}
+
+      
+      {/* 3. Minimized Drawer (مثل نوار X Instagram) */}
+      {appState === 'minimized' && (
+        <div 
+            className="absolute bottom-0 left-0 right-0 h-24 bg-gray-900 border-t border-gray-700 
+                       flex items-center justify-between px-6 flex-shrink-0"
+        >
+          <div className="flex items-center gap-4 text-white font-medium">
+            <button 
+                onClick={() => setAppState('maximized')} 
+                className="p-1 rounded-full bg-gray-700 hover:bg-gray-600 text-gold"
+                title="باز کردن"
+            >
+              <ChevronUp size={20} />
+            </button>
+            <span className="text-lg">Mini App: رزرو وقت</span>
+          </div>
+          <button 
+              onClick={() => setAppState('closed')} 
+              className="text-gray-400 hover:text-white p-1 rounded-full"
+              title="بستن کامل"
+          >
+            <X size={20} />
+          </button>
+        </div>
+      )}
+    </div>
+  )}
+</div>
+
     </div>
   );
 };
