@@ -1,602 +1,342 @@
-  import React, { useState } from 'react';
-import { Phone, MapPin, Menu, X, ChevronDown, Instagram } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Phone, MapPin, Menu, X, Sparkles, ArrowLeft, ChevronDown, Plus, Minus, MessageSquare, Instagram } from 'lucide-react';
+import MessageRenderer from './components/MessageRenderer';
 
-
-
-// Data parsed directly from your source content
+// --- DATA (شبیه سازی محتوای سایت شما برای اسکرول) ---
 const DATA = {
   logo: "https://mehrafrouzclinic.com/wp-content/uploads/2023/10/Logo-mehrafrouz-new.webp",
   contact: {
     address: "تهران، نیاوران، روبروی جماران، جنب بانک سامان، پلاک 148، طبقه دوم",
     phones: ["۰۲۱۹۱۲۰۰۷۰۰", "۰۹۱۲۳۳۳۶۷۵۳"]
   },
-  nav: [
-    { title: "صفحه نخست", link: "#" },
-    {
-      title: "خدمات زیبایی",
-      items: [
-        { name: "رفع موهای زائد", link: "#" },
-        { name: "تزریقات زیبایی (بوتاکس، ژل)", link: "#" },
-        { name: "جوانسازی (هایفو، فیشیال)", link: "#" },
-        { name: "جراحی های زیبایی (ساکشن)", link: "#" },
-        { name: "کاشت (مو، ابرو، ریش)", link: "#" }
-      ]
-    },
-    {
-      title: "خدمات درمانی",
-      items: [
-        { name: "درمان لک صورت", link: "#" },
-        { name: "درمان پیسی", link: "#" },
-        { name: "درمان منافذ باز", link: "#" },
-        { name: "درمان جوش و آکنه", link: "#" }
-      ]
-    }
+  services: [
+    { title: "لیزر موهای زائد", icon: "✨", desc: "با پیشرفته‌ترین دستگاه‌های 2024" },
+    { title: "تزریق ژل و بوتاکس", icon: "💉", desc: "زاویه‌سازی و رفع چین و چروک" },
+    { title: "کاشت مو و ابرو", icon: "💇‍♂️", desc: "تراکم بالا و خط رویش طبیعی" },
+    { title: "جوانسازی پوست", icon: "🧖‍♀️", desc: "هایفوتراپی، مزوتراپی و فیشیال" },
+    { title: "جراحی‌های زیبایی", icon: "🏥", desc: "بلفاروپلاستی و ساکشن غبغب" },
+    { title: "درمان لک و آکنه", icon: "💊", desc: "پروتکل‌های درمانی اختصاصی" },
   ]
 };
 
 const App = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [appState, setAppState] = useState('closed');
-const [messages, setMessages] = useState([]);
+  const [appState, setAppState] = useState('closed'); // closed | minimized | maximized
+  const [heroInput, setHeroInput] = useState('');
   
-const [tabs, setTabs] = useState([
-  {
-    id: Date.now(),
-    title: 'چت ۱',
-    messages: [],
-    input: '',
-  },
-]);
+  // استیت برای تشخیص اسکرول جهت افکت‌های بصری (اختیاری)
+  const [scrolled, setScrolled] = useState(false);
 
-const [activeTabId, setActiveTabId] = useState(tabs[0].id);
-const activeTab = tabs.find(t => t.id === activeTabId);
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 50);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
-const runLaserDarkSkinDemo = () => {
-  // پیام کاربر
-  setTabs(prev =>
-    prev.map(tab =>
-      tab.id === activeTabId
-        ? {
-            ...tab,
-            messages: [
-              {
-                role: 'user',
-                type: 'text',
-                content: 'آیا من با پوست تیره لیزر کنم مشکلی برام پیش میاد؟',
-              },
-            ],
-          }
+  const [tabs, setTabs] = useState([
+    { id: Date.now(), title: 'چت ۱', messages: [], input: '' },
+  ]);
+  const [activeTabId, setActiveTabId] = useState(tabs[0].id);
+  const activeTab = tabs.find(t => t.id === activeTabId);
+
+  // --- Tab & Chat Functions ---
+  const addNewTab = () => {
+    const newId = Date.now();
+    setTabs([...tabs, { id: newId, title: `چت ${tabs.length + 1}`, messages: [], input: '' }]);
+    setActiveTabId(newId);
+  };
+
+  const closeTab = (e, tabId) => {
+    e.stopPropagation();
+    if (tabs.length === 1) return;
+    const newTabs = tabs.filter(t => t.id !== tabId);
+    setTabs(newTabs);
+    if (activeTabId === tabId) setActiveTabId(newTabs[newTabs.length - 1].id);
+  };
+
+  const handleSendMessage = (text) => {
+    if (!text.trim()) return;
+    const userMessage = { role: 'user', type: 'text', content: text };
+    
+    // شبیه‌سازی پاسخ هوشمند
+    let aiMessage = {
+      role: 'ai', type: 'text',
+      content: 'درخواست شما دریافت شد. همکاران ما به زودی پاسخ می‌دهند.'
+    };
+
+    if (text.includes('form')) {
+      aiMessage = { role: 'ai', type: 'form', payload: { fields: [{type:'text', name:'نام'}, {type:'text', name:'شماره'}], submitLabel: 'ثبت' }};
+    }
+
+    setTabs(prev => prev.map(tab => 
+      tab.id === activeTabId 
+        ? { ...tab, messages: [...tab.messages, userMessage, aiMessage], input: '' }
         : tab
-    )
-  );
+    ));
+  };
 
-
-  // جواب AI
-  setTimeout(() => {
-    setTabs(prev =>
-      prev.map(tab =>
-        tab.id === activeTabId
-          ? {
-              ...tab,
-              messages: [
-                ...tab.messages,
-                {
-        role: 'ai',
-        type: 'text',
-        content: `۱. جواب رک و خلاصه
-
-اگر پوستت تیره است (تیپ ۴، ۵ یا ۶ فیتزپاتریک):
-
-می‌توانی لیزر انجام بدهی،
-ولی حتماً باید دستگاه و تنظیمات مخصوص پوست تیره استفاده شود
-و توسط اپراتور کاربلد انجام شود.
-
-اگر جای درستی مراجعه نکنی یا دستگاه / تنظیمات اشتباه باشد،
-احتمال این مشکلات هست:
-
-• سوختگی‌های سطحی  
-• تیره‌تر شدن پوست (هایپرپیگمنتاسیون)  
-• روشن شدن لکه‌ای پوست (هیپوپیگمنتاسیون)  
-• لک و جای طولانی‌مدت  
-
-جمع‌بندی:
-خطر وجود دارد،
-اما با مرکز درست و تنظیمات صحیح،
-لیزر روی پوست تیره کاملاً قابل انجام و نسبتاً امن است.
-
-دوست داری:
-– درباره تایپ‌بندی پوست بیشتر بدونی؟
-– یا با پزشک‌های مطب ما مشاوره بگیری؟`,
-      
-                },
-              ],
-            }
-          : tab
-      )
-    );
-  }, 1000);
-
-  // تصاویر
-  setTimeout(() => {
-    setTabs(prev =>
-      prev.map(tab =>
-        tab.id === activeTabId
-          ? {
-              ...tab,
-              messages: [
-                ...tab.messages,
-                {
-                  role: 'ai',
-                  type: 'images',
-                  images: [
-                    "C:/Users/Babak/Downloads/243b175b-fe8c-4c27-b864-79eefe8d101d.png",
-                    '243b175b-fe8c-4c27-b864-79eefe8d101d.png',
-                    '1f67fb29-d879-4bc3-af37-9364ddf6ece6.png',
-                  ],
-                },
-              ],
-            }
-          : tab
-      )
-    );
-  }, 1600);
-};
-
-
+  const handleHeroSubmit = () => {
+    if (!heroInput.trim()) return;
+    handleSendMessage(heroInput);
+    setAppState('maximized');
+    setHeroInput('');
+  };
 
   return (
-    <div className="min-h-screen flex flex-col font-sans">
-      {/* Top Bar - Contact Info */}
-      <div className="bg-dark text-white text-xs py-2 px-4 hidden md:block">
-        <div className="container mx-auto flex justify-between items-center">
-          <div className="flex gap-4 items-center">
-            {DATA.contact.phones.map((phone, idx) => (
-              <a key={idx} href={`tel:${phone}`} className="flex items-center gap-1 hover:text-gold transition">
-                <Phone size={14} />
-                <span>{phone}</span>
-              </a>
-            ))}
-          </div>
-          <div className="flex items-center gap-1 opacity-80">
-            <MapPin size={14} />
-            <span>{DATA.contact.address}</span>
-          </div>
+    <div className="min-h-screen flex flex-col font-sans bg-gray-50 text-gray-800 dir-rtl">
+      
+      {/* 1. Header (Navigation) */}
+      <header className={`sticky top-0 z-40 transition-all duration-300 ${scrolled ? 'bg-white/90 backdrop-blur shadow-md py-2' : 'bg-white py-4'}`}>
+        <div className="container mx-auto px-4 flex justify-between items-center">
+             <div className="flex items-center gap-2">
+                <img src={DATA.logo} alt="Logo" className="h-10 w-auto" />
+                <div className="font-bold text-lg hidden md:block">کلینیک <span className="text-yellow-600">مهرافروز</span></div>
+             </div>
+             
+             <nav className="hidden md:flex gap-6 text-sm font-medium text-gray-600">
+                <a href="#" className="hover:text-yellow-600 transition">صفحه نخست</a>
+                <a href="#" className="hover:text-yellow-600 transition">خدمات زیبایی</a>
+                <a href="#" className="hover:text-yellow-600 transition">پزشکان</a>
+                <a href="#" className="hover:text-yellow-600 transition">تماس با ما</a>
+             </nav>
+
+             <div className="flex gap-2">
+               <button className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg text-sm transition">
+                 دریافت نوبت
+               </button>
+               <button className="md:hidden p-2" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+                 {mobileMenuOpen ? <X/> : <Menu/>}
+               </button>
+             </div>
         </div>
-      </div>
-
-      {/* Main Header */}
-      <header className="sticky top-0 z-50 bg-white shadow-md border-b border-gray-100">
-        <div className="container mx-auto px-4 py-3 flex justify-between items-center">
-          {/* Logo */}
-          <div className="w-32 md:w-40">
-            <img src={DATA.logo} alt="Mehr Afrouz Clinic" className="w-full h-auto object-contain" />
-          </div>
-
-          {/* Desktop Nav */}
-          <nav className="hidden md:flex gap-8 text-sm font-medium text-gray-700">
-            {DATA.nav.map((item, index) => (
-              <div key={index} className="group relative cursor-pointer">
-                <div className="flex items-center gap-1 hover:text-gold py-4">
-                  {item.title}
-                  {item.items && <ChevronDown size={14} />}
-                </div>
-                
-                {/* Dropdown */}
-                {item.items && (
-                  <div className="absolute top-full right-0 bg-white shadow-lg rounded-b-lg w-64 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 border-t-2 border-gold transform translate-y-2 group-hover:translate-y-0">
-                    <ul className="py-2">
-                      {item.items.map((subItem, subIndex) => (
-                        <li key={subIndex}>
-                          <a href={subItem.link} className="block px-4 py-2 hover:bg-gray-50 hover:text-gold text-right">
-                            {subItem.name}
-                          </a>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-            ))}
-          </nav>
-
-          {/* Mobile Menu Button */}
-          <button 
-            className="md:hidden text-gray-700"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            {mobileMenuOpen ? <X /> : <Menu />}
-          </button>
-        </div>
-
-        {/* Mobile Menu Overlay */}
-        {mobileMenuOpen && (
-          <div className="md:hidden bg-white border-t border-gray-100 px-4 py-4 space-y-4">
-            {DATA.nav.map((item, index) => (
-              <div key={index} className="border-b border-gray-100 pb-2">
-                <div className="font-bold text-gray-800 mb-2">{item.title}</div>
-                {item.items && (
-                  <ul className="pr-4 space-y-2 text-sm text-gray-600">
-                    {item.items.map((sub, idx) => (
-                      <li key={idx}>{sub.name}</li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            ))}
-            <div className="pt-4 text-sm text-center">
-              <p>{DATA.contact.address}</p>
-            </div>
-          </div>
-        )}
       </header>
 
-      {/* Hero Section (Mock) */}
-      <main className="flex-grow">
-        <section className="bg-gray-100 py-20 text-center px-4">
-          <h1 className="text-3xl md:text-5xl font-bold text-gray-800 mb-6">
-            کلینیک جوانه
-          </h1>
-          <p className="text-xl text-gray-600 mb-8">
-            بهترین کلینیک زیبایی در تهران
-          </p>
-          <div className="flex gap-4 justify-center">
-             <button className="bg-gold hover:bg-yellow-600 text-white px-8 py-3 rounded-md transition shadow-lg">
-                دریافت نوبت
-             </button>
-             <button className="bg-white border border-gray-300 text-gray-700 px-8 py-3 rounded-md hover:bg-gray-50 transition">
-                خدمات ما
-             </button>
+      {/* 2. Scrollable Content Sections */}
+      <main className="flex-grow flex flex-col items-center w-full pb-40"> {/* pb-40 creates space for fixed box */}
+        
+        {/* Hero Banner Section */}
+        <section className="w-full relative h-[500px] flex items-center justify-center bg-gray-900 overflow-hidden">
+          {/* Background Image Placeholder */}
+          <div className="absolute inset-0 opacity-40 bg-[url('https://mehrafrouzclinic.com/wp-content/uploads/2023/07/IMG_8778-scaled.jpg')] bg-cover bg-center"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-gray-50/10"></div>
+          
+          <div className="z-10 text-center px-4 max-w-2xl mt-[-100px]"> {/* Moved text up slightly */}
+            <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4 drop-shadow-lg">
+              زیبایی شما، تخصص ماست
+            </h1>
+            <p className="text-gray-200 text-lg mb-8 drop-shadow-md">
+              با بهره‌گیری از جدیدترین تکنولوژی‌های روز دنیا در محیطی آرام
+            </p>
           </div>
         </section>
 
-        {/* Services Grid Mock */}
-        <section className="py-16 container mx-auto px-4">
-          <h2 className="text-2xl font-bold text-center mb-10 text-gray-800">خدمات محبوب</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {['لیزر موهای زائد', 'تزریق ژل و بوتاکس', 'کاشت مو و ابرو'].map((svc, i) => (
-              <div key={i} className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition border border-gray-100 text-center">
-                <div className="w-16 h-16 bg-gray-100 rounded-full mx-auto mb-4 flex items-center justify-center text-gold">
-                   <div className="w-8 h-8 bg-gold rounded-full opacity-50"></div>
-                </div>
-                <h3 className="font-bold text-lg mb-2">{svc}</h3>
-                <p className="text-sm text-gray-500">ارائه جدیدترین متدهای روز دنیا در کلینیک مهرافروز</p>
+        {/* Services Section (To enable scrolling) */}
+        <section className="container mx-auto px-4 py-16">
+          <h2 className="text-3xl font-bold text-center mb-10 text-gray-800">خدمات کلینیک مهرافروز</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {DATA.services.map((item, idx) => (
+              <div key={idx} className="bg-white p-6 rounded-2xl shadow-sm hover:shadow-lg transition border border-gray-100 group">
+                <div className="text-4xl mb-4 bg-yellow-50 w-16 h-16 flex items-center justify-center rounded-full group-hover:scale-110 transition">{item.icon}</div>
+                <h3 className="font-bold text-xl mb-2">{item.title}</h3>
+                <p className="text-gray-500">{item.desc}</p>
+                <button className="mt-4 text-yellow-600 text-sm font-medium hover:underline">مشاهده جزئیات &larr;</button>
               </div>
             ))}
           </div>
         </section>
-      </main>
-{/* Premium ChatGPT Style Input */}
-{/* Fixed AI Input */}
-<section
-  className="fixed bottom-4 left-0 right-0 z-[9999] px-4 pointer-events-none"
->
-  <div className="max-w-5xl mx-auto pointer-events-auto">
-    <div
-      className="bg-[#1f1f1f] rounded-2xl border border-[#2a2a2a]
-                 shadow-[0_20px_60px_rgba(0,0,0,0.9)]
-                 overflow-hidden"
-    >
 
-      {/* Input Row */}
-      <div className="flex items-center gap-3 px-5 py-4">
-
-        {/* Plus */}
-        <button
-          className="w-9 h-9 flex items-center justify-center rounded-full 
-                     border border-gray-600 text-gray-400 
-                     hover:border-gold hover:text-gold transition"
-        >
-          +
-        </button>
-
-        {/* Input */}
-        <input
-          type="text"
-          placeholder="سوالت رو بپرس؛ مثلاً «هزینه لیزر چقدره؟»"
-          className="flex-1 bg-transparent text-gray-200 
-                     placeholder-gray-400 focus:outline-none text-sm"
-        />
-
-        {/* Send */}
-        <button
-          onClick={() => setAppState('maximized')} // <--- تغییر اینجا
-          className="bg-gold hover:bg-yellow-600 text-black 
-                    rounded-full px-5 py-2 text-sm font-medium transition"
-        >
-          ارسال
-        </button>
-      </div>
-
-      {/* Guidance */}
-      <div className="bg-[#181818] border-t border-[#2a2a2a] px-5 py-2">
-        <p className="text-xs text-gray-400">
-          💬 مشاوره رایگان • پاسخ انسانی • بدون تماس تبلیغاتی
-        </p>
-      </div>
-
-    </div>
-  </div>
-</section>
-
-
-
-      {/* Footer */}
-      <footer className="bg-dark text-white py-12 px-4 mt-auto">
-        <div className="container mx-auto grid md:grid-cols-3 gap-8">
-          <div>
-            <h4 className="text-gold font-bold text-lg mb-4">تماس با ما</h4>
-            <p className="opacity-80 leading-7">{DATA.contact.address}</p>
-            <div className="mt-4 flex flex-col gap-2">
-               {DATA.contact.phones.map(p => <span key={p} className="dir-ltr text-right">{p}</span>)}
+        {/* About / Text Section */}
+        <section className="w-full bg-white py-16 border-t border-gray-100">
+          <div className="container mx-auto px-4 grid md:grid-cols-2 gap-10 items-center">
+            <div>
+              <img src="https://mehrafrouzclinic.com/wp-content/uploads/2023/10/About-us-new.webp" alt="About" className="rounded-2xl shadow-xl w-full"/>
+            </div>
+            <div>
+              <h2 className="text-3xl font-bold mb-4">چرا مهرافروز؟</h2>
+              <p className="text-gray-600 leading-relaxed mb-6">
+                کلینیک تخصصی پوست، مو و لیزر مهرافروز با بهره‌گیری از جدیدترین و پیشرفته‌ترین دستگاه‌های روز دنیا و با همکاری تیم درخشانی از اساتید، پزشکان و متخصصین پوست و مو، فعالیت خود را آغاز نموده است.
+              </p>
+              <ul className="space-y-2">
+                {['کادر پزشکی مجرب', 'مشاوره رایگان قبل از درمان', 'محیط کاملاً بهداشتی'].map((item, i)=>(
+                  <li key={i} className="flex items-center gap-2 text-gray-700">
+                    <span className="w-2 h-2 bg-yellow-500 rounded-full"></span> {item}
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
-          <div>
-            <h4 className="text-gold font-bold text-lg mb-4">دسترسی سریع</h4>
-            <ul className="space-y-2 text-sm opacity-70">
-                <li><a href="#">درباره ما</a></li>
-                <li><a href="#">تماس با ما</a></li>
-                <li><a href="#">گالری تصاویر</a></li>
-            </ul>
+        </section>
+
+      </main>
+
+      {/* Footer */}
+      <footer className="bg-[#1a1a1a] text-white py-10 pb-40"> {/* pb-40 extra padding so content isn't hidden by fixed box */}
+        <div className="container mx-auto px-4 grid md:grid-cols-4 gap-8 text-sm">
+          <div className="space-y-4">
+             <div className="font-bold text-lg text-yellow-500">مهرافروز</div>
+             <p className="opacity-70">ارائه دهنده خدمات نوین زیبایی</p>
           </div>
           <div>
-             <img src={DATA.logo} alt="Logo" className="w-32 brightness-0 invert opacity-80 mb-4" />
-             <p className="text-xs opacity-50">
-               تمامی حقوق برای کلینیک مهرافروز محفوظ است.
-             </p>
+            <h4 className="font-bold mb-3">دسترسی سریع</h4>
+            <ul className="space-y-2 opacity-70">
+              <li>صفحه اصلی</li>
+              <li>درباره ما</li>
+              <li>تماس با ما</li>
+            </ul>
+          </div>
+          <div className="col-span-2">
+            <h4 className="font-bold mb-3">تماس</h4>
+            <p className="opacity-70 mb-2">{DATA.contact.address}</p>
+            <div className="flex gap-4">
+              {DATA.contact.phones.map(p => <span key={p}>{p}</span>)}
+            </div>
           </div>
         </div>
       </footer>
-      {/* Telegram Style Full-Screen Webview/Mini App Overlay */}
-<div
-  // کانتینر اصلی: Fixed، تمام صفحه، با Transform حالت‌ها هندل می‌شن
-  className={`fixed top-0 left-0 w-full h-full bg-black z-[10000] 
-              transform transition-transform duration-300 ease-in-out
-              ${appState === 'closed' ? 'translate-y-full' : 
-               appState === 'minimized' ? 'translate-y-[calc(100vh-6rem)]' : // 6rem = 96px (ارتفاع نوار مینی‌مایز)
-               'translate-y-0'}
-            `}
->
-  {/* فقط وقتی باز یا مینی‌مایز هست نمایش داده بشه */}
-  {appState !== 'closed' && (
-    <div className="w-full h-full relative overflow-hidden flex flex-col">
-      
-      {appState === 'maximized' && (
-  <div className="bg-gray-900 border-b border-gray-700 flex items-center px-3 h-16 gap-2 overflow-x-auto">
-    <div className="flex flex-col gap-4">
-  {messages.map((message, idx) => (
-    <div
-      key={idx}
-      className={`max-w-[80%] text-sm leading-7 rounded-2xl px-4 py-3
-      ${message.role === 'user'
-        ? 'bg-gold text-black self-end'
-        : 'bg-gray-800 text-white self-start'}
-      `}
-    >
-      {message.type === 'text' && (
-        <pre className="whitespace-pre-wrap font-sans">
-          {message.content}
-        </pre>
-      )}
 
-      {message.type === 'images' && (
-        <div className="flex gap-3 overflow-x-auto mt-3">
-          {message.images.map((img, i) => (
-            <img
-              key={i}
-              src={`/images/${img}`}
-              className="h-40 rounded-xl object-cover flex-shrink-0"
-              alt=""
+
+      {/* =========================================================================
+          FIXED AI INPUT BOX (The specific request)
+          This stays fixed at the bottom while scrolling.
+         ========================================================================= */}
+      <div className={`fixed z-30 left-0 right-0 px-4 transition-all duration-500 ease-out
+          ${appState === 'closed' ? 'bottom-8 opacity-100 translate-y-0' : 'bottom-[-100px] opacity-0 translate-y-10 pointer-events-none'}
+      `}>
+        <div className="max-w-xl mx-auto w-full relative group"> {/* max-w-xl makes it smaller/compact */}
+          
+          {/* Glowing Effect Behind */}
+          <div className="absolute -inset-1 bg-gradient-to-r from-yellow-400/50 to-orange-500/50 rounded-2xl blur-lg opacity-40 group-hover:opacity-70 transition duration-500"></div>
+          
+          {/* The Box Itself */}
+          <div className="relative bg-white/90 backdrop-blur-xl border border-white/50 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.1)] flex items-center p-2 pr-4 transition-transform duration-300 transform hover:-translate-y-1">
+            
+            <div className="text-yellow-600 animate-pulse">
+              <Sparkles size={20} />
+            </div>
+
+            <input 
+              type="text"
+              value={heroInput}
+              onChange={(e) => setHeroInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleHeroSubmit()}
+              placeholder="هر سوالی دارید از هوش مصنوعی بپرسید..."
+              className="flex-1 py-3 px-3 bg-transparent outline-none text-gray-800 placeholder-gray-500 text-base"
             />
-          ))}
-        </div>
-      )}
-    </div>
-  ))}
-</div>
 
-    {/* Tabs */}
-    {tabs.map((tab) => (
-      <div
-        key={tab.id}
-        onClick={() => setActiveTabId(tab.id)}
-        className={`group flex items-center gap-2 px-4 py-2 rounded-t-md cursor-pointer text-sm
-          ${activeTabId === tab.id
-            ? 'bg-black text-gold'
-            : 'bg-gray-800 text-gray-300 hover:bg-gray-700'}
-        `}
-      >
-        <span>{tab.title}</span>
-
-        {/* Close tab */}
-        {tabs.length > 1 && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setTabs((prev) => {
-                const filtered = prev.filter(t => t.id !== tab.id);
-                if (activeTabId === tab.id) {
-                  setActiveTabId(filtered[0].id);
-                }
-                return filtered;
-              });
-            }}
-            className="opacity-0 group-hover:opacity-100 transition text-gray-400 hover:text-white"
-          >
-            ✕
-          </button>
-        )}
-      </div>
-    ))}
-
-    {/* Add New Tab */}
-    <button
-      onClick={() => {
-        const newTab = {
-      id: Date.now(),
-      title: `چت ${tabs.length + 1}`,
-      messages: [],
-        input: '',
-      };
-        setTabs([...tabs, newTab]);
-        setActiveTabId(newTab.id);
-      }}
-      className="ml-2 w-8 h-8 flex items-center justify-center
-                 rounded-full bg-gray-800 text-gold hover:bg-gray-700"
-      title="چت جدید"
-    >
-      +
-    </button>
-
-    {/* Close Mini App */}
-    <button
-      onClick={() => setAppState('closed')}
-      className="ml-auto text-gray-400 hover:text-white"
-    >
-      <X size={22} />
-    </button>
-  </div>
-)}
-
-
-      {/* 2. Main Content Area (Tabs Chat) */}
-{appState === 'maximized' && activeTab && (
-  <div className="flex-1 bg-black text-white flex flex-col overflow-hidden">
-
-    {/* Messages Area */}
-    <div className="flex-1 overflow-y-auto p-6 space-y-4">
-  {activeTab.messages.length === 0 ? (
-    <p className="text-gray-500 text-sm text-center mt-10">
-      گفت‌وگو را شروع کنید…
-    </p>
-    
-
-  ) : (
-    activeTab.messages.map((msg, i) => (
-      <div
-        key={i}
-        className={`max-w-[80%] px-4 py-3 rounded-2xl text-sm leading-7
-          ${msg.role === 'user'
-            ? 'bg-gold text-black mr-auto'
-            : 'bg-gray-800 text-white ml-auto'}
-        `}
-      >
-        {msg.type === 'text' && (
-          <pre className="whitespace-pre-wrap font-sans">
-            {msg.content}
-          </pre>
-        )}
-
-        {msg.type === 'images' && (
-          <div className="flex gap-3 overflow-x-auto mt-3 pb-2">
-            {msg.images.map((img, idx) => (
-              <img
-                key={idx}
-                src={`/images/${img}`}
-                className="h-40 rounded-xl object-cover flex-shrink-0"
-                alt=""
-              />
-            ))}
-          </div>
-        )}
-      </div>
-    ))
-  )}
-</div>
-
-
-    {/* Input Bar */}
-    <div className="border-t border-gray-800 p-4 bg-[#111]">
-      <div className="flex items-center gap-3">
-
-        <input
-          value={activeTab.input}
-          onChange={(e) => {
-            setTabs(prev =>
-              prev.map(tab =>
-                tab.id === activeTabId
-                  ? { ...tab, input: e.target.value }
-                  : tab
-              )
-            );
-          }}
-          placeholder="پیامت رو بنویس…"
-          className="flex-1 bg-gray-900 text-white text-sm
-                     px-4 py-2 rounded-full
-                     border border-gray-700
-                     focus:outline-none focus:border-gold"
-        />
-
-        <button
-          onClick={() => {
-            if (!activeTab.input.trim()) return;
-
-            setTabs(prev =>
-              prev.map(tab =>
-                tab.id === activeTabId
-                  ? {
-                      ...tab,
-                      messages: [
-                        ...tab.messages,
-                        {
-                          role: 'user',
-                          type: 'text',
-                          content: tab.input,
-                        },
-                      ],
-                      input: '',
-                    }
-                  : tab
-              )
-            );
-          }}
-          className="bg-gold text-black
-                     px-4 py-2 rounded-full text-sm
-                     hover:bg-yellow-600 transition"
-        >
-          ارسال
-        </button>
-<button
-  onClick={runLaserDarkSkinDemo}
-  className="text-xs bg-gold text-black px-3 py-1 rounded-full"
->
-  اجرای دمو
-</button>
-
-      </div>
-    </div>
-
-  </div>
-)}
-
-      
-      {/* 3. Minimized Drawer (مثل نوار X Instagram) */}
-      {appState === 'minimized' && (
-        <div 
-            className="absolute bottom-0 left-0 right-0 h-24 bg-gray-900 border-t border-gray-700 
-                       flex items-center justify-between px-6 flex-shrink-0"
-        >
-          <div className="flex items-center gap-4 text-white font-medium">
             <button 
-                onClick={() => setAppState('maximized')} 
-                className="p-1 rounded-full bg-gray-700 hover:bg-gray-600 text-gold"
-                title="باز کردن"
+              onClick={handleHeroSubmit}
+              className={`p-2.5 rounded-xl transition-all duration-300 shadow-md flex items-center justify-center
+                ${heroInput ? 'bg-gradient-to-r from-yellow-500 to-yellow-600 text-white translate-x-0' : 'bg-gray-100 text-gray-400'}
+              `}
             >
-              <ChevronUp size={20} />
+              {heroInput ? <ArrowLeft size={18} /> : <MessageSquare size={18} />}
             </button>
-            <span className="text-lg">Mini App: رزرو وقت</span>
           </div>
-          <button 
-              onClick={() => setAppState('closed')} 
-              className="text-gray-400 hover:text-white p-1 rounded-full"
-              title="بستن کامل"
-          >
-            <X size={20} />
-          </button>
+
+          {/* Optional: Small Helper Text below box */}
+          <div className="absolute -bottom-6 left-0 right-0 text-center text-[10px] text-gray-500 font-medium">
+             پاسخگویی آنی • مشاوره رایگان • رزرو نوبت
+          </div>
+
         </div>
-      )}
-    </div>
-  )}
-</div>
+      </div>
+
+
+      {/* =========================================================================
+          CHAT OVERLAY (TAB SYSTEM) - Remains same logic
+         ========================================================================= */}
+      <div
+        className={`fixed inset-0 z-[9999] transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] 
+          ${appState === 'closed' ? 'pointer-events-none bg-black/0' : 'bg-black/40 backdrop-blur-sm'}
+        `}
+      >
+        <div className={`fixed bottom-0 left-0 right-0 bg-[#0f0f0f] shadow-2xl transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] flex flex-col
+            ${appState === 'maximized' ? 'h-[85vh] translate-y-0 rounded-t-3xl' : 
+              appState === 'minimized' ? 'h-16 translate-y-0 rounded-t-xl' : 
+              'translate-y-full'}
+        `}>
+          
+          {/* Minimized Header */}
+          {appState === 'minimized' && (
+             <div onClick={() => setAppState('maximized')} className="flex-1 flex items-center justify-between px-6 cursor-pointer hover:bg-[#1a1a1a] rounded-t-xl border-t border-white/10">
+                <div className="flex items-center gap-3 text-white text-sm">
+                  <span className="relative flex h-3 w-3">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                  </span>
+                  ادامه گفتگو با دستیار هوشمند...
+                </div>
+                <button onClick={(e)=>{e.stopPropagation(); setAppState('closed')}}><X className="text-gray-400 hover:text-white"/></button>
+             </div>
+          )}
+
+          {/* Maximized Content */}
+          {appState === 'maximized' && (
+            <>
+              {/* Header */}
+              <div className="bg-[#1a1a1a] px-4 py-3 border-b border-white/5 rounded-t-3xl flex flex-col gap-3">
+                 <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-2 text-white font-medium text-sm">
+                      <Sparkles size={16} className="text-yellow-500"/>
+                      دستیار هوشمند کلینیک
+                    </div>
+                    <div className="flex gap-3 text-gray-400">
+                      <button onClick={() => setAppState('minimized')} className="hover:text-white"><Minus size={18}/></button>
+                      <button onClick={() => setAppState('closed')} className="hover:text-red-400"><X size={18}/></button>
+                    </div>
+                 </div>
+                 {/* Tabs */}
+                 <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+                    {tabs.map(tab => (
+                      <div key={tab.id} onClick={() => setActiveTabId(tab.id)}
+                        className={`px-3 py-1.5 rounded-lg text-xs cursor-pointer flex items-center gap-2 transition border
+                          ${activeTabId === tab.id ? 'bg-yellow-500/10 border-yellow-500/50 text-yellow-500' : 'bg-white/5 border-transparent text-gray-400 hover:bg-white/10'}
+                        `}
+                      >
+                        {tab.title}
+                        {tabs.length > 1 && <X size={12} onClick={(e)=>closeTab(e, tab.id)} className="hover:text-red-400"/>}
+                      </div>
+                    ))}
+                    <button onClick={addNewTab} className="p-1.5 bg-white/5 rounded-lg text-gray-400 hover:text-white"><Plus size={14}/></button>
+                 </div>
+              </div>
+
+              {/* Chat Body */}
+              <div className="flex-1 bg-black overflow-hidden relative flex flex-col">
+                 {activeTab && (
+                   <>
+                     <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                       {activeTab.messages.length === 0 ? (
+                         <div className="h-full flex flex-col items-center justify-center text-gray-600 text-sm">
+                           <MessageSquare size={40} className="mb-3 opacity-20"/>
+                           <p>هنوز پیامی ارسال نشده است.</p>
+                         </div>
+                       ) : (
+                         activeTab.messages.map((msg, i) => <MessageRenderer key={i} message={msg} />)
+                       )}
+                     </div>
+                     <div className="p-4 bg-[#111] border-t border-white/10">
+                        <div className="relative flex items-center gap-2">
+                           <input 
+                             value={activeTab.input}
+                             onChange={(e) => setTabs(prev => prev.map(t => t.id === activeTabId ? {...t, input: e.target.value} : t))}
+                             onKeyDown={(e) => e.key === 'Enter' && handleSendMessage(activeTab.input)}
+                             placeholder="اینجا بنویسید..."
+                             className="flex-1 bg-[#222] text-white text-sm rounded-xl px-4 py-3 focus:outline-none focus:ring-1 focus:ring-yellow-500/50"
+                           />
+                           <button onClick={() => handleSendMessage(activeTab.input)} className="bg-yellow-600 text-white p-3 rounded-xl hover:bg-yellow-500 transition">
+                             <ArrowLeft size={18}/>
+                           </button>
+                        </div>
+                     </div>
+                   </>
+                 )}
+              </div>
+            </>
+          )}
+
+        </div>
+      </div>
 
     </div>
   );
