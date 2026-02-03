@@ -5,7 +5,7 @@ import DayPicker from "./DayPicker";
 import TimeSlots from "./TimeSlots";
 
 const mockSlots = {
-  "1404-11-14": [
+  "2026-02-03": [
     { time: "18:15", status: "available" },
     { time: "18:30", status: "available" },
     { time: "19:00", status: "pending" },

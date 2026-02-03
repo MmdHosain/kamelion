@@ -3,26 +3,26 @@ import { Phone, MapPin, Menu, X, Sparkles, ArrowLeft, ChevronDown, Plus, Minus, 
 import MessageRenderer from './components/MessageRenderer';
 import AppointmentModal from './components/AppointmentModal';
 
-// --- DATA (شبیه سازی محتوای سایت شما برای اسکرول) ---
+// --- DATA
 const DATA = {
-  logo: "/images/logo.png", // ترجیحاً لوگوی خود پزشک
+  logo: "/images/logo.png", 
   contact: {
-    address: "تهران، ... (آدرس مطب دکتر نگار معشوری)",
+    address: "تهران - خیابان ولیعصر - بالاتر از توانیر - روبروی بیمارستان دی-کوچه دوم-پلاک ۱-طبقه اول ",
     phones: ["۰۲۱xxxxxxx", "۰۹۱۲xxxxxxx"]
   },
   services: [
     {
-      title: "مشاوره تخصصی جراحی سینه",
+      title: "مشاوره تخصصی جراحی پستان",
       icon: "🩺",
       desc: "بررسی علمی شرایط بیمار، توضیح گزینه‌های درمانی و تصمیم‌گیری آگاهانه"
     },
     {
-      title: "جراحی زیبایی سینه",
+      title: "جراحی زیبایی پستان",
       icon: "⚕️",
       desc: "شامل پروتز، لیفت و اصلاح فرم با اولویت ایمنی و تناسب فردی"
     },
     {
-      title: "جراحی ترمیمی سینه",
+      title: "جراحی ترمیمی پستان",
       icon: "🔬",
       desc: "اصلاح جراحی‌های قبلی یا ناهنجاری‌های مادرزادی با رویکرد تخصصی"
     },
