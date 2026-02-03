@@ -1,21 +1,28 @@
 // components/AppointmentModal.jsx
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { getNext14Days } from "../utils/dateUtils";
 import DayPicker from "./DayPicker";
 import TimeSlots from "./TimeSlots";
 
+const mockSlots = {
+  "1404-11-14": [
+    { time: "18:15", status: "available" },
+    { time: "18:30", status: "available" },
+    { time: "19:00", status: "pending" },
+    { time: "19:30", status: "available" },
+    { time: "20:00", status: "reserved" },
+  ],
+};
+
 export default function AppointmentModal({ open, onClose }) {
   const days = getNext14Days();
-  const [activeDay, setActiveDay] = useState(days[0].key);
-  const [slots, setSlots] = useState([]);
 
-  useEffect(() => {
-    fetch(`/data?day=${activeDay}`)
-      .then(r => r.json())
-      .then(data => setSlots(data.slots));
-  }, [activeDay]);
+  const [activeDay, setActiveDay] = useState(days[0].key);
+  const [selectedTime, setSelectedTime] = useState(null);
 
   if (!open) return null;
+
+  const slots = mockSlots[activeDay] || [];
 
   return (
     <div className="fixed inset-0 z-[9999] bg-black/40 backdrop-blur-sm flex items-center justify-center">
@@ -35,19 +42,29 @@ export default function AppointmentModal({ open, onClose }) {
         <DayPicker
           days={days}
           activeDay={activeDay}
-          onSelect={setActiveDay}
+          onSelect={(dayKey) => {
+            setActiveDay(dayKey);
+            setSelectedTime(null); // ریست ساعت
+          }}
         />
 
         <TimeSlots
           slots={slots}
-          onReserve={(time) => {
-            fetch("/reserve", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ day: activeDay, time })
-            }).then(() => alert("در انتظار تأیید"));
-          }}
+          selectedTime={selectedTime}
+          onSelectTime={setSelectedTime}
         />
+
+        <button
+          disabled={!selectedTime}
+          className={`mt-6 w-full py-3 rounded-xl text-white transition ${
+            selectedTime
+              ? "bg-[#2F5D50]"
+              : "bg-gray-300 cursor-not-allowed"
+          }`}
+        >
+          ثبت نوبت
+        </button>
+
       </div>
     </div>
   );
