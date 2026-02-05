@@ -34,7 +34,7 @@ export default function VideoPage({ onBack }) {
           </p>
         </div>
         
-        {/* Video 3 */}
+        {/* Video 2 */}
         <div className="bg-white rounded-2xl shadow-sm p-4">
           <div className="aspect-video rounded-xl overflow-hidden mb-3">
             <video
@@ -48,7 +48,7 @@ export default function VideoPage({ onBack }) {
           </p>
         </div>
 
-        {/* Video 2 */}
+        {/* Video 3 */}
         <div className="bg-white rounded-2xl shadow-sm p-4">
           <div className="aspect-video rounded-xl overflow-hidden mb-3">
             <video

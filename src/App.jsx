@@ -154,48 +154,97 @@ return (
   <div className="min-h-screen flex flex-col font-sans bg-[#FAFAF8] text-[#6B6E6C] dir-rtl">
     
     {/* 1. Header (Navigation) - Brand-Aligned */}
-    <header className={`sticky top-0 z-40 transition-all duration-300 ${scrolled ? 'bg-[#FAFAF8]/90 backdrop-blur shadow-md py-2' : 'bg-[#FAFAF8] py-4'}`}>
-      <div className="container mx-auto px-4 flex justify-between items-center">
-        <div className="flex items-center gap-2">
-          <img src={DATA.logo} alt="Logo" className="h-10 w-auto" />
-          <div className="font-bold text-lg hidden md:block text-[#2F5D50]">دکتر <span className="font-normal">نگار معشوری</span></div>
+          <header
+        className={`sticky top-0 z-40 transition-all duration-500 
+          ${scrolled 
+            ? 'backdrop-blur-lg bg-white/70 shadow-[0_4px_16px_-4px_rgba(0,0,0,0.15)] py-2'
+            : 'bg-transparent py-4'
+          }
+        `}
+      >
+        <div className="container mx-auto px-4 flex justify-between items-center">
+
+          {/* LOGO */}
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <img
+                src={DATA.logo}
+                alt="Logo"
+                className={`transition-all duration-500 ${
+                  scrolled ? 'h-8 opacity-90' : 'h-10 opacity-100'
+                }`}
+              />
+            </div>
+            <div
+              className={`font-bold text-lg transition-all duration-300 ${
+                scrolled ? 'text-[#2F5D50]' : 'text-[#2F5D50]'
+              } hidden md:block`}
+            >
+              دکتر <span className="font-normal">نگار معشوری</span>
+            </div>
+          </div>
+
+          {/* NAVIGATION */}
+          <nav className="hidden md:flex gap-8 text-sm font-medium items-center">
+
+            {[
+              { label: "صفحه نخست", onClick: () => setPage("home") },
+              { label: "ویدیو", onClick: () => setPage("video") },
+              { label: "درباره", onClick: () => {} },
+              { label: "تماس", onClick: () => {} },
+            ].map((item, i) => (
+              <button
+                key={i}
+                onClick={item.onClick}
+                className="
+                  relative px-1 py-1 transition-all duration-300 
+                  hover:text-[#2F5D50]
+                "
+              >
+                {item.label}
+
+                {/* underline hover effect */}
+                <span
+                  className="
+                    absolute left-0 right-0 -bottom-1 mx-auto w-0 
+                    h-[2px] rounded-full bg-[#2F5D50] 
+                    transition-all duration-300 
+                    group-hover:w-full
+                  "
+                ></span>
+              </button>
+            ))}
+          </nav>
+
+          {/* CTA BUTTON + MOBILE MENU */}
+          <div className="flex gap-3 items-center">
+
+            <button
+              className="
+                bg-[#2F5D50] hover:bg-[#264C42] 
+                text-white px-4 py-2 rounded-xl text-sm 
+                transition shadow-md hover:shadow-lg
+              "
+              onClick={() => setOpen(true)}
+            >
+              دریافت نوبت
+            </button>
+
+            {/* Mobile Menu Icon */}
+            <button
+              className="md:hidden p-2 transition hover:bg-black/5 rounded-lg"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              {mobileMenuOpen ? (
+                <X className="text-[#2F5D50]" />
+              ) : (
+                <Menu className="text-[#2F5D50]" />
+              )}
+            </button>
+          </div>
         </div>
-        
-        <nav className="hidden md:flex gap-6 text-sm font-medium">
-        <button
-          onClick={() => setPage("home")}
-          className="hover:text-[#2F5D50] transition bg-transparent"
-        >
-          صفحه نخست
-        </button>
+      </header>
 
-        <button
-          onClick={() => setPage("video")}
-          className="hover:text-[#2F5D50] transition bg-transparent"
-        >
-          ویدیو
-        </button>
-
-          <button className="hover:text-[#2F5D50] transition bg-transparent">
-            درباره
-          </button>
-
-        <button className="hover:text-[#2F5D50] transition bg-transparent">
-          تماس
-        </button>
-        </nav>
-
-
-        <div className="flex gap-2">
-          <button className="bg-[#2F5D50] hover:bg-[#264C42] text-white px-4 py-2 rounded-lg text-sm transition shadow-sm hover:shadow" onClick={() => setOpen(true)}>
-            دریافت نوبت
-          </button>
-          <button className="md:hidden p-2" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-            {mobileMenuOpen ? <X className="text-[#2F5D50]" /> : <Menu className="text-[#2F5D50]" />}
-          </button>
-        </div>
-      </div>
-    </header>
 
     {/* 2. Scrollable Content Sections */}
     {page === "home" && (
