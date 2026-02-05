@@ -154,96 +154,108 @@ return (
   <div className="min-h-screen flex flex-col font-sans bg-[#FAFAF8] text-[#6B6E6C] dir-rtl">
     
     {/* 1. Header (Navigation) - Brand-Aligned */}
-          <header
-        className={`sticky top-0 z-40 transition-all duration-500 
-          ${scrolled 
-            ? 'backdrop-blur-lg bg-white/70 shadow-[0_4px_16px_-4px_rgba(0,0,0,0.15)] py-2'
-            : 'bg-transparent py-4'
-          }
-        `}
-      >
-        <div className="container mx-auto px-4 flex justify-between items-center">
+    <header
+      className={`sticky top-0 z-50 backdrop-blur-xl transition-all duration-700 ease-in-out ${
+        scrolled
+          ? 'bg-white/70 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.2)] py-2'
+          : 'bg-transparent py-4'
+      }`}
+    >
+      <div className="container mx-auto px-6 flex justify-between items-center">
 
-          {/* LOGO */}
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <img
-                src={DATA.logo}
-                alt="Logo"
-                className={`transition-all duration-500 ${
-                  scrolled ? 'h-8 opacity-90' : 'h-10 opacity-100'
-                }`}
-              />
-            </div>
-            <div
-              className={`font-bold text-lg transition-all duration-300 ${
-                scrolled ? 'text-[#2F5D50]' : 'text-[#2F5D50]'
-              } hidden md:block`}
-            >
-              دکتر <span className="font-normal">نگار معشوری</span>
-            </div>
-          </div>
-
-          {/* NAVIGATION */}
-          <nav className="hidden md:flex gap-8 text-sm font-medium items-center">
-
-            {[
-              { label: "صفحه نخست", onClick: () => setPage("home") },
-              { label: "ویدیو", onClick: () => setPage("video") },
-              { label: "درباره", onClick: () => {} },
-              { label: "تماس", onClick: () => {} },
-            ].map((item, i) => (
-              <button
-                key={i}
-                onClick={item.onClick}
-                className="
-                  relative px-1 py-1 transition-all duration-300 
-                  hover:text-[#2F5D50]
-                "
-              >
-                {item.label}
-
-                {/* underline hover effect */}
-                <span
-                  className="
-                    absolute left-0 right-0 -bottom-1 mx-auto w-0 
-                    h-[2px] rounded-full bg-[#2F5D50] 
-                    transition-all duration-300 
-                    group-hover:w-full
-                  "
-                ></span>
-              </button>
-            ))}
-          </nav>
-
-          {/* CTA BUTTON + MOBILE MENU */}
-          <div className="flex gap-3 items-center">
-
-            <button
-              className="
-                bg-[#2F5D50] hover:bg-[#264C42] 
-                text-white px-4 py-2 rounded-xl text-sm 
-                transition shadow-md hover:shadow-lg
-              "
-              onClick={() => setOpen(true)}
-            >
-              دریافت نوبت
-            </button>
-
-            {/* Mobile Menu Icon */}
-            <button
-              className="md:hidden p-2 transition hover:bg-black/5 rounded-lg"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            >
-              {mobileMenuOpen ? (
-                <X className="text-[#2F5D50]" />
-              ) : (
-                <Menu className="text-[#2F5D50]" />
-              )}
-            </button>
-          </div>
+        {/* LOGO + Title */}
+        <div className="flex items-center gap-3 cursor-pointer select-none">
+          <img
+            src={DATA.logo}
+            alt="Logo"
+            className={`transition-all duration-500 ${scrolled ? 'h-9' : 'h-10'}`}
+          />
+          <h1 className="hidden md:flex text-[#2F5D50] text-lg font-bold tracking-tight">
+            دکتر <span className="font-normal ml-1">نگار معشوری</span>
+          </h1>
         </div>
-      </header>
+
+        {/* DESKTOP NAV */}
+        <nav className="hidden md:flex gap-8 items-center text-sm font-semibold text-[#3B3D3B] relative">
+          {[
+            { label: 'صفحه نخست', onClick: () => setPage('home') },
+            { label: 'ویدیو', onClick: () => setPage('video') },
+            { label: 'درباره', onClick: () => {} },
+            { label: 'تماس', onClick: () => {} },
+          ].map((item, i) => (
+            <button
+              key={i}
+              onClick={item.onClick}
+              className="relative transition-all duration-300 hover:text-[#2F5D50] group"
+            >
+              {item.label}
+              <span
+                className="absolute left-0 right-0 mx-auto -bottom-1 w-0 group-hover:w-full h-[2px] rounded-full bg-[#2F5D50] transition-all duration-300 ease-in-out"
+              />
+            </button>
+          ))}
+        </nav>
+
+        {/* CTA + Mobile Trigger */}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setOpen(true)}
+            className="bg-gradient-to-r from-[#2F5D50] to-[#264C42] hover:opacity-90 text-white px-4 py-2 rounded-lg text-sm shadow-md hover:shadow-lg transition-all"
+          >
+            دریافت نوبت
+          </button>
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden p-2 rounded-md hover:bg-[#2F5D50]/10 transition-all duration-300"
+          >
+            {mobileMenuOpen ? (
+              <X className="text-[#2F5D50]" size={24} />
+            ) : (
+              <Menu className="text-[#2F5D50]" size={24} />
+            )}
+          </button>
+        </div>
+      </div>
+
+      {/* ===== MOBILE MENU OVERLAY ===== */}
+      <div
+        className={`fixed inset-0 z-40 bg-[#FAFAF8]/95 backdrop-blur-md transition-all duration-500 ease-out ${
+          mobileMenuOpen
+            ? 'opacity-100 translate-y-0'
+            : 'opacity-0 -translate-y-full pointer-events-none'
+        }`}
+      >
+        <div className="flex flex-col items-center justify-center h-full space-y-8 text-lg font-medium text-[#2F5D50]">
+          {[
+            { label: 'صفحه نخست', action: () => setPage('home') },
+            { label: 'ویدیو', action: () => setPage('video') },
+            { label: 'درباره', action: () => {} },
+            { label: 'تماس', action: () => {} },
+          ].map((m, i) => (
+            <button
+              key={i}
+              onClick={() => {
+                m.action();
+                setMobileMenuOpen(false);
+              }}
+              className="w-48 py-3 rounded-xl bg-[#E6C5CC]/20 hover:bg-[#E6C5CC]/40 transition-colors duration-300 shadow-sm hover:shadow-md"
+            >
+              {m.label}
+            </button>
+          ))}
+
+          <button
+            onClick={() => {
+              setOpen(true);
+              setMobileMenuOpen(false);
+            }}
+            className="mt-6 bg-gradient-to-r from-[#2F5D50] to-[#264C42] text-white py-3 px-8 rounded-xl shadow-lg hover:shadow-xl transition-all"
+          >
+            دریافت نوبت
+          </button>
+        </div>
+      </div>
+    </header>
 
 
     {/* 2. Scrollable Content Sections */}
