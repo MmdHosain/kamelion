@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Phone, MapPin, Menu, X, Sparkles, ArrowLeft, ChevronDown, Plus, Minus, MessageSquare, Instagram } from 'lucide-react';
 import MessageRenderer from './components/MessageRenderer';
 import AppointmentModal from './components/AppointmentModal';
+import VideoPage from "./pages/VideoPage";
 
 // --- DATA
 const DATA = {
@@ -50,6 +51,7 @@ const App = () => {
   const [appState, setAppState] = useState('closed'); // closed | minimized | maximized
   const [heroInput, setHeroInput] = useState('');
   const [open, setOpen] = useState(false);
+  const [page, setPage] = useState("home"); 
 
 
   const [scrolled, setScrolled] = useState(false);
@@ -160,11 +162,29 @@ return (
         </div>
         
         <nav className="hidden md:flex gap-6 text-sm font-medium">
-          <a href="#" className="hover:text-[#2F5D50] transition">صفحه نخست</a>
-          <a href="#" className="hover:text-[#2F5D50] transition">ویدیو</a>
-          <a href="#" className="hover:text-[#2F5D50] transition">درباره</a>
-          <a href="#" className="hover:text-[#2F5D50] transition">تماس</a>
+        <button
+          onClick={() => setPage("home")}
+          className="hover:text-[#2F5D50] transition bg-transparent"
+        >
+          صفحه نخست
+        </button>
+
+        <button
+          onClick={() => setPage("video")}
+          className="hover:text-[#2F5D50] transition bg-transparent"
+        >
+          ویدیو
+        </button>
+
+          <button className="hover:text-[#2F5D50] transition bg-transparent">
+            درباره
+          </button>
+
+        <button className="hover:text-[#2F5D50] transition bg-transparent">
+          تماس
+        </button>
         </nav>
+
 
         <div className="flex gap-2">
           <button className="bg-[#2F5D50] hover:bg-[#264C42] text-white px-4 py-2 rounded-lg text-sm transition shadow-sm hover:shadow" onClick={() => setOpen(true)}>
@@ -178,13 +198,14 @@ return (
     </header>
 
     {/* 2. Scrollable Content Sections */}
+    {page === "home" && (
     <main className="flex-grow flex flex-col items-center w-full pb-40">
-      
+    
       {/* Hero Section - Medical Elegance */}
       <section className="relative w-full h-[420px] md:h-[456px] overflow-hidden">
         <div
           className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: "url('/images/IMG_2923.jpeg')" }}
+          style={{ backgroundImage: "url('/images/fac624df-a6d0-4eea-a6ac-26782fd1ba69.png')" }}
         />
         <div className="absolute inset-0 bg-[#2F5D50]/60"></div>
 
@@ -220,7 +241,7 @@ return (
       {/* Services Section - Professional & Calm */}
       <section className="container mx-auto px-4 py-20">
         <h2 className="text-3xl font-bold text-center mb-4 text-[#2F5D50]">
-          خدمات تخصصی جراحی سینه
+          خدمات تخصصی جراحی پستان
         </h2>
         <p className="text-center max-w-2xl mx-auto mb-12">
           تمامی خدمات بر پایه تصمیم‌گیری علمی، ایمنی بیمار و مشاوره آگاهانه ارائه می‌شوند.
@@ -253,7 +274,7 @@ return (
         <div className="container mx-auto px-4 grid md:grid-cols-2 gap-12 items-center">
           <div>
             <img
-              src="/images/doctor-about.jpg"
+              src="/images/IMG_2923.jpeg"
               alt="دکتر نگار معشوری"
               className="rounded-2xl shadow-xl w-full object-cover border-2 border-[#E6C5CC]/20"
             />
@@ -289,6 +310,11 @@ return (
         </div>
       </section>
     </main>
+    )}
+
+    {page === "video" && (
+      <VideoPage onBack={() => setPage("home")} />
+      )}
 
     {/* Footer - Professional Medical Branding */}
     <footer className="bg-[#2F5D50] text-[#FAFAF8] py-10 pb-40">
