@@ -100,7 +100,7 @@ const App = () => {
                 {
                     title: 'تزریق ژل لب روسی',
                     desc: 'فرم‌دهی طبیعی و حجم‌دهی با بهترین برندهای اروپایی',
-                    img_path: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?q=80&w=2070&auto=format&fit=crop', // عکس با کیفیت لب/صورت
+                    img_path: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?q=80&w=2070&auto=format&fit=crop',
                     price: 'تخفیف ویژه'
                 },
                 {
@@ -155,7 +155,7 @@ return (
     
     {/* 1. Header (Navigation) - Brand-Aligned */}
     <header
-      className={`sticky top-0 z-50 backdrop-blur-xl transition-all duration-700 ease-in-out ${
+      className={`sticky top-0 z-50 flex items-center backdrop-blur-xl transition-all duration-700 ease-in-out ${
         scrolled
           ? 'bg-white/70 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.2)] py-2'
           : 'bg-transparent py-4'
@@ -205,58 +205,68 @@ return (
             دریافت نوبت
           </button>
           <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            onClick={() => setMobileMenuOpen(true)}
             className="md:hidden p-2 rounded-md hover:bg-[#2F5D50]/10 transition-all duration-300"
           >
-            {mobileMenuOpen ? (
-              <X className="text-[#2F5D50]" size={24} />
-            ) : (
-              <Menu className="text-[#2F5D50]" size={24} />
-            )}
+            <Menu className="text-[#2F5D50]" size={24} />
           </button>
+
         </div>
       </div>
 
-      {/* ===== MOBILE MENU OVERLAY ===== */}
-      <div
-        className={`fixed inset-0 z-40 bg-[#FAFAF8]/95 backdrop-blur-md transition-all duration-500 ease-out ${
-          mobileMenuOpen
-            ? 'opacity-100 translate-y-0'
-            : 'opacity-0 -translate-y-full pointer-events-none'
-        }`}
-      >
-        <div className="flex flex-col items-center justify-center h-full space-y-8 text-lg font-medium text-[#2F5D50]">
-          {[
-            { label: 'صفحه نخست', action: () => setPage('home') },
-            { label: 'ویدیو', action: () => setPage('video') },
-            { label: 'درباره', action: () => {} },
-            { label: 'تماس', action: () => {} },
-          ].map((m, i) => (
+      {/* ===== MOBILE MENU OVERLAY (FIXED) ===== */}
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 z-50">
+          
+          {/* BACKDROP */}
+          <div
+            className="absolute inset-0 bg-[#FAFAF8]/90 backdrop-blur-md"
+            onClick={() => setMobileMenuOpen(false)}
+          />
+
+          {/* MENU CONTENT */}
+          <div className="relative w-full h-screen flex flex-col items-center justify-center gap-8 text-lg font-medium text-[#2F5D50]">
+
+            {/* CLOSE BUTTON */}
             <button
-              key={i}
+              onClick={() => setMobileMenuOpen(false)}
+              className="absolute top-6 left-6 w-10 h-10 flex items-center justify-center rounded-full bg-[#2F5D50]/10 hover:bg-[#2F5D50]/20 transition"
+            >
+              <X size={20} />
+            </button>
+
+            {[
+              { label: 'صفحه نخست', action: () => setPage('home') },
+              { label: 'ویدیو', action: () => setPage('video') },
+              { label: 'درباره', action: () => {} },
+              { label: 'تماس', action: () => {} },
+            ].map((m, i) => (
+              <button
+                key={i}
+                onClick={() => {
+                  m.action();
+                  setMobileMenuOpen(false);
+                }}
+                className="w-48 py-3 rounded-xl bg-[#E6C5CC]/20 hover:bg-[#E6C5CC]/40 transition shadow-sm hover:shadow-md"
+              >
+                {m.label}
+              </button>
+            ))}
+
+            <button
               onClick={() => {
-                m.action();
+                setOpen(true);
                 setMobileMenuOpen(false);
               }}
-              className="w-48 py-3 rounded-xl bg-[#E6C5CC]/20 hover:bg-[#E6C5CC]/40 transition-colors duration-300 shadow-sm hover:shadow-md"
+              className="bg-gradient-to-r from-[#2F5D50] to-[#264C42] text-white py-3 px-8 rounded-xl shadow-lg hover:shadow-xl transition"
             >
-              {m.label}
+              دریافت نوبت
             </button>
-          ))}
 
-          <button
-            onClick={() => {
-              setOpen(true);
-              setMobileMenuOpen(false);
-            }}
-            className="mt-6 bg-gradient-to-r from-[#2F5D50] to-[#264C42] text-white py-3 px-8 rounded-xl shadow-lg hover:shadow-xl transition-all"
-          >
-            دریافت نوبت
-          </button>
+          </div>
         </div>
-      </div>
+      )}
     </header>
-
 
     {/* 2. Scrollable Content Sections */}
     {page === "home" && (
