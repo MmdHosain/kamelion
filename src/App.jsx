@@ -532,7 +532,7 @@ return (
             <div className="flex-1 bg-[#0a110f] overflow-hidden relative flex flex-col">
               {activeTab && (
                 <>
-                  <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                  <div className="flex-1 overflow-y-auto p-4 space-y-4 chat-scroll">
                     {activeTab.messages.length === 0 ? (
                       <div className="h-full flex flex-col items-center justify-center text-[#6B6E6C] text-sm">
                         <div className="bg-[#2F5D50]/10 p-4 rounded-2xl mb-3">
