@@ -1,7 +1,7 @@
 import React from 'react';
 import Slider from './ui/Slider/Slider';
 
-    const MessageRenderer = ({ message }) => {
+    const MessageRenderer = ({ message, onCtaAction }) => {
       if (!message) return null;
 
       const { type, content, role, payload } = message;
@@ -131,6 +131,28 @@ import Slider from './ui/Slider/Slider';
           </div>
         );
       }
+      /* ===============================
+        CTA Message (Button)
+      =============================== */
+      if (type === 'cta') {
+        return (
+          <div className="flex w-full mb-4 justify-start">
+            <div className="bg-[#1a2522] border border-[#2F5D50]/20 p-4 rounded-2xl rounded-tl-md max-w-[85%]">
+              <p className="text-[#FAFAF8] text-sm mb-3 leading-6">
+                {content}
+              </p>
+
+              <button
+                onClick={() => onCtaAction?.(payload?.action)}
+                className="bg-[#2F5D50] hover:bg-[#264C42] text-white text-sm px-4 py-2 rounded-lg transition"
+              >
+                {payload?.buttonLabel || 'ادامه'}
+              </button>
+            </div>
+          </div>
+        );
+      }
+
 
       return null;
     };

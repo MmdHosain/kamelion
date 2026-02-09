@@ -3,6 +3,7 @@ import { Phone, MapPin, Menu, X, Sparkles, ArrowLeft, ChevronDown, Plus, Minus, 
 import MessageRenderer from './components/MessageRenderer';
 import AppointmentModal from './components/AppointmentModal';
 import VideoPage from "./pages/VideoPage";
+import SignupModal from './components/SignupModal';
 
 // --- DATA
 const DATA = {
@@ -52,6 +53,13 @@ const App = () => {
   const [heroInput, setHeroInput] = useState('');
   const [open, setOpen] = useState(false);
   const [page, setPage] = useState("home"); 
+  const [signupOpen, setSignupOpen] = useState(false);
+  const handleCtaAction = (action) => {
+  if (action === 'open_signup') {
+    setSignupOpen(true);
+    }
+  };
+
 
 
   const [scrolled, setScrolled] = useState(false);
@@ -127,7 +135,19 @@ const App = () => {
     // سناریو 2: فرم
     else if (text.includes('form') || text.includes('نوبت')) {
       aiMessage = { role: 'ai', type: 'form', payload: { fields: [{type:'text', name:'نام و نام خانوادگی'}, {type:'text', name:'شماره تماس'}], submitLabel: 'درخواست مشاوره' }};
-    } 
+    }
+    // سناریو 4: CTA ثبت نام
+        else if (text.toLowerCase().includes('button')) {
+      aiMessage = {
+        role: 'ai',
+        type: 'cta',
+        content: 'اگه میخوای بهتر کمک کنم و به مکالمه ادامه بدیم لطفا ثبت نام کن',
+        payload: {
+          action: 'open_signup',
+          buttonLabel: 'ثبت نام'
+        }
+      };
+    }
     // سناریو 3: متن عادی
     else {
       aiMessage = {
@@ -542,7 +562,13 @@ return (
                         <p className="text-xs mt-1 opacity-70">سوالات تخصصی خود را درباره جراحی پستان بپرسید</p>
                       </div>
                     ) : (
-                      activeTab.messages.map((msg, i) => <MessageRenderer key={i} message={msg} />)
+                      activeTab.messages.map((msg, i) => (
+                        <MessageRenderer
+                          key={i}
+                          message={msg}
+                          onCtaAction={handleCtaAction}
+                        />
+                      ))
                     )}
                   </div>
                   <div className="p-4 bg-[#111c18] border-t border-[#2F5D50]/30">
@@ -570,6 +596,14 @@ return (
       </div>
     </div>
     <AppointmentModal open={open} onClose={() => setOpen(false)} />
+      <SignupModal
+          open={signupOpen}
+          onClose={() => setSignupOpen(false)}
+          onSubmit={(data) => {
+            console.log('Signup Data:', data);
+            setSignupOpen(false);
+          }}
+        />  
   </div>
 );
 };
