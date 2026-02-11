@@ -28,7 +28,7 @@ const CommentsPage = ({ onBack }) => {
       {/* Floating Back Button (Video Style) */}
       <button
         onClick={onBack}
-        className="fixed top-5 right-5 z-40 w-11 h-11 rounded-full
+        className="fixed top-50 right-5 z-40 w-11 h-11 rounded-full
                    bg-white/80 backdrop-blur shadow-lg
                    flex items-center justify-center
                    hover:scale-105 transition"
