@@ -4,8 +4,15 @@ import MessageRenderer from './components/MessageRenderer';
 import AppointmentModal from './components/AppointmentModal';
 import VideoPage from "./pages/VideoPage";
 import SignupModal from './components/SignupModal';
+import CommentsPage from "./pages/CommentsPage";
+import axios from "axios";
 
 // --- DATA
+const CHAT_SUGGESTIONS = [
+  'راه های درمان کیست سینه کدامند؟',
+  'شناخت کیست سینه و علائم کیست سینه',
+  'دلیل ایجاد توده در پستان چیست؟'
+];
 const DATA = {
   logo: "/images/logo.png", 
   contact: {
@@ -59,6 +66,7 @@ const App = () => {
     setSignupOpen(true);
     }
   };
+  // const [chatOpenedAt, setChatOpenedAt] = useState(null);
 
 
 
@@ -75,6 +83,24 @@ const App = () => {
   ]);
   const [activeTabId, setActiveTabId] = useState(tabs[0].id);
   const activeTab = tabs.find(t => t.id === activeTabId);
+  const [showSuggestions, setShowSuggestions] = useState(true);
+  useEffect(() => {
+    if (appState === 'maximized') {
+      setShowSuggestions(false);
+
+      const timer = setTimeout(() => {
+         console.log('✅ SHOWING SUGGESTIONS');
+        const active = tabs.find(t => t.id === activeTabId);
+        if (active && active.messages.length === 0) {
+          setShowSuggestions(true);
+        }
+      }, 10000);
+
+      return () => clearTimeout(timer);
+    } else {
+      setShowSuggestions(false);
+    }
+  }, [appState, activeTabId, tabs]);
 
   // --- Tab & Chat Functions ---
   const addNewTab = () => {
@@ -202,6 +228,7 @@ return (
             { label: 'ویدیو', onClick: () => setPage('video') },
             { label: 'درباره', onClick: () => {} },
             { label: 'تماس', onClick: () => {} },
+            { label: 'نظرات', onClick: () => setPage('comments') },
           ].map((item, i) => (
             <button
               key={i}
@@ -260,6 +287,7 @@ return (
               { label: 'ویدیو', action: () => setPage('video') },
               { label: 'درباره', action: () => {} },
               { label: 'تماس', action: () => {} },
+              { label: 'نظرات', action: () => setPage('comments') },
             ].map((m, i) => (
               <button
                 key={i}
@@ -406,6 +434,9 @@ return (
     {page === "video" && (
       <VideoPage onBack={() => setPage("home")} />
       )}
+    {page === "comments" && (
+      <CommentsPage onBack={() => setPage("home")} />
+    )} 
 
     {/* Footer - Professional Medical Branding */}
     <footer className="bg-[#2F5D50] text-[#FAFAF8] py-10 pb-40">
@@ -550,9 +581,68 @@ return (
             </div>
 
             <div className="flex-1 bg-[#0a110f] overflow-hidden relative flex flex-col">
+              {/* <div className="text-red-500 text-sm">
+  showSuggestions: {String(showSuggestions)}
+</div> */}
+
+              {showSuggestions && (
+                <div className="px-4 pt-4">
+                  <div className="bg-[#1a2522] border border-[#2F5D50]/30 rounded-2xl p-3 flex flex-col gap-2">
+                    <div className="text-xs text-[#E6C5CC] mb-1">
+                      سوالات پیشنهادی:
+                    </div>
+
+                    {CHAT_SUGGESTIONS.map((text, index) => (
+                      <button
+                        key={index}
+                        onClick={() => {
+                          // متن فقط داخل input قرار می‌گیرد
+                          setTabs(prev =>
+                            prev.map(t =>
+                              t.id === activeTabId ? { ...t, input: text } : t
+                            )
+                          );
+                          setShowSuggestions(false);
+                        }}
+                        className="text-right text-sm text-white bg-[#0f1715] hover:bg-[#2F5D50]/20 border border-[#2F5D50]/20 rounded-xl px-3 py-2 transition"
+                      >
+                        {text}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
               {activeTab && (
                 <>
                   <div className="flex-1 overflow-y-auto p-4 space-y-4 chat-scroll">
+                    {showSuggestions && activeTab.messages.length === 0 && (
+  <div className="mb-4">
+    <div className="bg-[#1a2522] border border-[#2F5D50]/30 rounded-2xl p-3 flex flex-col gap-2">
+      <div className="text-xs text-[#E6C5CC] mb-1">
+        سوالات پیشنهادی:
+      </div>
+
+      {CHAT_SUGGESTIONS.map((text, index) => (
+        <button
+          key={index}
+          onClick={() => {
+            setTabs(prev =>
+              prev.map(t =>
+                t.id === activeTabId ? { ...t, input: text } : t
+              )
+            );
+            setShowSuggestions(false);
+          }}
+          className="text-right text-sm text-white bg-[#0f1715]
+                     hover:bg-[#2F5D50]/20 border border-[#2F5D50]/20
+                     rounded-xl px-3 py-2 transition"
+        >
+          {text}
+        </button>
+      ))}
+    </div>
+  </div>
+)}
                     {activeTab.messages.length === 0 ? (
                       <div className="h-full flex flex-col items-center justify-center text-[#6B6E6C] text-sm">
                         <div className="bg-[#2F5D50]/10 p-4 rounded-2xl mb-3">
