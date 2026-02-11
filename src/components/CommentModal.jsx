@@ -18,50 +18,66 @@ const CommentModal = ({ open, onClose, onSubmitSuccess }) => {
       mobile
     };
 
-    onSubmitSuccess(newComment); // ارسال کامنت به صفحه اصلی
+    onSubmitSuccess(newComment);
   };
 
   return (
-    <div className="fixed inset-0 bg-black/40 z-[999] flex items-center justify-center px-4">
-      <div className="bg-white w-full max-w-lg rounded-3xl p-6 relative">
+    <div className="fixed inset-0 bg-black/40 z-[999] flex items-end sm:items-center justify-center px-4">
+      <div className="bg-white w-full max-w-lg rounded-t-3xl sm:rounded-3xl p-6 relative animate-slideUp">
 
-        <button onClick={onClose} className="absolute top-4 left-4 text-xl">×</button>
+        <div className="w-12 h-1 bg-[#E6C5CC] rounded-full mx-auto mb-4 sm:hidden" />
 
-        <h2 className="text-lg font-bold text-[#2F5D50] mb-4">
-          ثبت تجربه و نظر شما
+        <button
+          onClick={onClose}
+          className="absolute top-4 left-4 text-xl text-[#6B6E6C]"
+        >
+          ×
+        </button>
+
+        <h2 className="text-lg font-bold text-[#2F5D50] mb-2">
+          ثبت تجربه شما
         </h2>
+        <p className="text-xs text-[#6B6E6C] mb-4">
+          نظر شما به بهبود کیفیت خدمات کمک می‌کند
+        </p>
 
-        <div className="flex justify-between my-3">
+        <div className="flex justify-between my-4">
           {[1,2,3,4,5].map(v => (
             <button
               key={v}
               onClick={() => setRate(v)}
-              className={`text-3xl transition ${rate === v ? "scale-110" : "opacity-40"}`}
+              className={`text-3xl transition
+                ${rate === v ? "scale-110" : "opacity-30"}`}
             >
-              {["😔","😑","😊","😃","🤩"][v-1]}
+              {["😔","😑","😊","😃","🤩"][v - 1]}
             </button>
           ))}
         </div>
 
         <textarea
-          className="w-full border rounded-xl p-3 mt-4"
-          placeholder="نظر خود را بنویسید..."
+          className="w-full border border-[#E6C5CC]/40 rounded-2xl p-3 mt-2
+                     focus:outline-none focus:ring-1 focus:ring-[#2F5D50]/40"
+          placeholder="تجربه خود را صادقانه بنویسید..."
           value={text}
           onChange={e => setText(e.target.value)}
         />
 
         <input
-          className="w-full border rounded-xl p-3 mt-3"
-          placeholder="شماره موبایل"
+          className="w-full border border-[#E6C5CC]/40 rounded-2xl p-3 mt-3
+                     focus:outline-none focus:ring-1 focus:ring-[#2F5D50]/40"
+          placeholder="شماره موبایل (اختیاری)"
           value={mobile}
           onChange={e => setMobile(e.target.value)}
         />
 
         <button
           onClick={submit}
-          className="w-full bg-[#2F5D50] hover:bg-[#264C42] text-white py-3 rounded-xl mt-5"
+          className="w-full mt-5 py-3 rounded-2xl
+                     bg-gradient-to-r from-[#2F5D50] to-[#264C42]
+                     text-white font-medium
+                     hover:scale-[1.02] transition"
         >
-          ثبت نظر
+          ثبت نظر ✨
         </button>
       </div>
     </div>
