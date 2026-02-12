@@ -57,10 +57,12 @@ const DATA = {
 const App = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [appState, setAppState] = useState('closed'); // closed | minimized | maximized
+  const [chatPhase, setChatPhase] = useState('idle');// idle | prompting | active
   const [heroInput, setHeroInput] = useState('');
   const [open, setOpen] = useState(false);
   const [page, setPage] = useState("home"); 
   const [signupOpen, setSignupOpen] = useState(false);
+
   const handleCtaAction = (action) => {
   if (action === 'open_signup') {
     setSignupOpen(true);
@@ -68,6 +70,11 @@ const App = () => {
   };
   // const [chatOpenedAt, setChatOpenedAt] = useState(null);
 
+  const startChat = (text) => {
+    setChatPhase('active');
+    setAppState('maximized');
+    handleSendMessage(text);
+  };
 
 
   const [scrolled, setScrolled] = useState(false);
@@ -85,22 +92,26 @@ const App = () => {
   const activeTab = tabs.find(t => t.id === activeTabId);
   const [showSuggestions, setShowSuggestions] = useState(true);
   useEffect(() => {
-    if (appState === 'maximized') {
-      setShowSuggestions(false);
+    if (appState !== 'minimized') return;
 
-      const timer = setTimeout(() => {
-         console.log('✅ SHOWING SUGGESTIONS');
-        const active = tabs.find(t => t.id === activeTabId);
-        if (active && active.messages.length === 0) {
-          setShowSuggestions(true);
-        }
-      }, 10000);
+    const timer = setTimeout(() => {
+      if (activeTab?.messages.length === 0) {
+        setShowSuggestions(true);
+      }
+    }, 3000);
 
-      return () => clearTimeout(timer);
-    } else {
-      setShowSuggestions(false);
-    }
-  }, [appState, activeTabId, tabs]);
+    return () => clearTimeout(timer);
+  }, [appState, activeTabId]);
+  useEffect(() => {
+    if (chatPhase !== 'idle') return;
+
+    const timer = setTimeout(() => {
+      setChatPhase('prompting');
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [chatPhase]);
+
 
   // --- Tab & Chat Functions ---
   const addNewTab = () => {
@@ -191,6 +202,7 @@ const App = () => {
 
   const handleHeroSubmit = () => {
     if (!heroInput.trim()) return;
+    setChatPhase('active');
     handleSendMessage(heroInput);
     setAppState('maximized');
     setHeroInput('');
@@ -483,6 +495,29 @@ return (
         © {new Date().getFullYear()} کلیه حقوق محفوظ است. طراحی و توسعه با رعایت اصول پزشکی و اخلاق حرفه‌ای
       </div>
     </footer>
+{chatPhase === 'prompting' && (
+  <div className="fixed bottom-28 left-0 right-0 z-20 pointer-events-none">
+    <div className="mx-auto max-w-xl pointer-events-auto">
+      <div
+        className="bg-[#0f1715] border border-[#2F5D50]/30
+                   rounded-2xl max-h-60 overflow-y-auto shadow-xl"
+      >
+        {CHAT_SUGGESTIONS.map((text, i) => (
+          <button
+            key={i}
+            onClick={() => startChat(text)}
+            className="block w-full text-right px-4 py-3
+                       text-sm text-white hover:bg-[#2F5D50]/20
+                       transition"
+            style={{ opacity: 1 - i * 0.15 }} // fade up ✅
+          >
+            {text}
+          </button>
+        ))}
+      </div>
+    </div>
+  </div>
+)}
 
     {/* FIXED AI INPUT BOX - Medical Assistant Vibe */}
     <div className={`fixed z-30 left-0 right-0 px-4 transition-all duration-500 ease-out
@@ -585,33 +620,7 @@ return (
   showSuggestions: {String(showSuggestions)}
 </div> */}
 
-              {showSuggestions && (
-                <div className="px-4 pt-4">
-                  <div className="bg-[#1a2522] border border-[#2F5D50]/30 rounded-2xl p-3 flex flex-col gap-2">
-                    <div className="text-xs text-[#E6C5CC] mb-1">
-                      سوالات پیشنهادی:
-                    </div>
-
-                    {CHAT_SUGGESTIONS.map((text, index) => (
-                      <button
-                        key={index}
-                        onClick={() => {
-                          // متن فقط داخل input قرار می‌گیرد
-                          setTabs(prev =>
-                            prev.map(t =>
-                              t.id === activeTabId ? { ...t, input: text } : t
-                            )
-                          );
-                          setShowSuggestions(false);
-                        }}
-                        className="text-right text-sm text-white bg-[#0f1715] hover:bg-[#2F5D50]/20 border border-[#2F5D50]/20 rounded-xl px-3 py-2 transition"
-                      >
-                        {text}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
+              
               {activeTab && (
                 <>
                   <div className="flex-1 overflow-y-auto p-4 space-y-4 chat-scroll">
