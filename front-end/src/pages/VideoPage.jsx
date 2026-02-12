@@ -1,0 +1,96 @@
+export default function VideoPage({ onBack }) {
+  const videos = [
+    {
+      type: "iframe",
+      src: "https://www.youtube.com/embed/VIDEO_ID",
+      title: "ویدیو معرفی خدمات",
+    },
+    {
+      type: "video",
+      src: "/videos/-3071497865228685730.mp4",
+      title: "خطرات ماموگرافی چیست؟",
+    },
+    {
+      type: "video",
+      src: "/videos/7537779331744502783.mp4",
+      title: "آیا افراد با سابقه سرطان پستان می‌توانند باردار شوند؟",
+    },
+    {
+      type: "video",
+      src: "/videos/-9054488578247146232.mp4",
+      title: "پروتز",
+    },
+  ];
+
+  return (
+    <div className="min-h-screen bg-[#FAFAF8] text-[#2F5D50] px-6 py-12 dir-rtl">
+
+      {/* top header */}
+      <div className="max-w-6xl mx-auto flex justify-between items-center mb-10">
+        <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
+          گالری ویدیوها
+        </h1>
+
+        <button
+          onClick={onBack}
+          className="flex items-center gap-1 text-[#2F5D50] hover:text-[#21463E] transition-all duration-300 font-medium hover:gap-2"
+        >
+          بازگشت
+
+          {/* SVG Arrow */}
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="18"
+            height="18"
+            fill="none"
+            stroke="#2F5D50"
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+            className="transition-transform group-hover:-translate-x-1"
+          >
+            <path d="M10 6l6 6-6 6" />
+          </svg>
+        </button>
+      </div>
+
+      {/* videos grid */}
+      <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+
+        {videos.map((video, index) => (
+          <div
+            key={index}
+            className="
+              bg-white rounded-2xl shadow-md p-4 border border-[#E6C5CC]/30 
+              transition-all duration-500
+            "
+          >
+            <div className="relative aspect-video bg-black rounded-xl overflow-hidden">
+
+              {/* video / iframe */}
+              {video.type === "iframe" ? (
+                <iframe
+                  className="w-full h-full object-cover"
+                  src={video.src}
+                  title={video.title}
+                  allowFullScreen
+                />
+              ) : (
+                <video
+                  controls
+                  preload="metadata"
+                  className="w-full h-full object-cover"
+                  src={video.src}
+                />
+              )}
+            </div>
+
+            <p className="text-sm text-[#2F5D50] font-medium mt-3 text-center">
+              {video.title}
+            </p>
+          </div>
+        ))}
+
+      </div>
+    </div>
+  );
+}
