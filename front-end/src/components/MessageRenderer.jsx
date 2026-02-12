@@ -141,7 +141,7 @@ const MessageRenderer = ({ message, onCtaAction }) => {
             {content}
           </p>
           <button
-            onClick={() => onCtaAction?.(payload?.action)}
+            onClick={() => onCtaAction?.(payload)}
             className="bg-[#2F5D50] hover:bg-[#264C42] text-white text-sm px-4 py-2 rounded-lg transition"
           >
             {payload?.buttonLabel || 'ادامه'}

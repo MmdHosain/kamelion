@@ -4,11 +4,6 @@ import ChatSuggestions from './ChatSuggestions';
 import MessageRenderer from '../MessageRenderer';
 
 const ChatMessages = ({ messages, onCtaAction, onOpenSignup, onSendMessage }) => {
-  const handleCtaAction = (message) => {
-    if (message.type === 'cta' && message.payload?.action === 'open_signup') {
-      onOpenSignup();
-    }
-  };
 
   if (messages.length === 0) {
     return (
@@ -30,11 +25,12 @@ const ChatMessages = ({ messages, onCtaAction, onOpenSignup, onSendMessage }) =>
   return (
     <div className="space-y-4">
       {messages.map((msg, i) => (
-        <MessageRenderer
-          key={i}
-          message={msg}
-          onCtaAction={handleCtaAction}
-        />
+<MessageRenderer
+  key={i}
+  message={msg}
+  onCtaAction={onCtaAction}
+/>
+
       ))}
     </div>
   );

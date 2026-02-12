@@ -13,6 +13,9 @@ import ResumeButton from './components/chat/ResumeButton';
 import FixedChatInput from './components/ui/FixedChatInput';
 import AppointmentModal from './components/ui/AppointmentModal'; // Ensure path is correct
 import SignupModal from './components/ui/SignupModal'; // Ensure path is correct
+import { useAuth } from './hooks/useAuth';
+import LoginModal from './components/ui/LoginModal';
+import OtpModal from './components/ui/OtpModal';
 
 const App = () => {
   const {
@@ -25,7 +28,9 @@ const App = () => {
     setChatState,
     handleSendMessage,
     handleHeroSubmit, // This function expects an object
-    handleCtaAction
+    handleCtaAction,
+    playScenario, // ✅ جدید
+    isPlayingScenario
   } = useChat();
   // NEW FUNCTION: Handles the submission from the fixed input box
 const handleFixedInputSubmit = (textValue) => {
@@ -34,7 +39,43 @@ const handleFixedInputSubmit = (textValue) => {
   setChatState('maximized');
   setHeroInput(''); // Clear heroInput if used for initial submit
 };
+  const {
+    user,
+    accessToken,
+    phoneNumber,
+    otpOpen,
+    loading,
+    error,
+    handleAuthSubmit,
+    handleVerifyOtp,
+    setOtpOpen,
+    logout,
+  } = useAuth();
+  const handlePlayScenario = (scenarioMessages) => {
+    playScenario(scenarioMessages);
+    setChatState('maximized');
+  };
+  // Update existing state
+  const [loginOpen, setLoginOpen] = useState(false); // ✅ NEW
 
+  // Update CTA handler
+const handleCtaActionWrapper = (payload) => {
+  console.log('CTA payload:', payload);
+  
+  if (payload.action === 'open_signup') {
+    setSignupOpen(true);
+  }
+  
+  if (payload.action === 'open_login') {
+    setLoginOpen(true);
+  }
+  
+  if (payload.action === 'open_appointment') {
+    setOpen(true); // مودال نوبت‌دهی رو باز کن
+  }
+  
+  handleCtaAction(payload, () => setSignupOpen(true));
+};
   const { scrolled } = useScrollState();
   const { page, setPage } = usePageRouter();
 
@@ -43,10 +84,6 @@ const handleFixedInputSubmit = (textValue) => {
 
   const handleOpenSignup = () => {
     setSignupOpen(true);
-  };
-
-  const handleCtaActionWrapper = (payload) => {
-    handleCtaAction(payload, handleOpenSignup);
   };
 
   const handleMinimizeChat = () => {
@@ -87,8 +124,9 @@ const handleFixedInputSubmit = (textValue) => {
         isVisible={shouldShowFixedInput}
         value={heroInput}
         onChange={setHeroInput}
-        onSubmit={handleHeroSubmit} // Pass the function expecting the object
+        onSubmit={handleHeroSubmit}
         onSubmitInput={handleFixedInputSubmit}
+        onPlayScenario={handlePlayScenario} // ✅ پاس دادن تابع
       />
 
       {shouldShowResumeButton && (
@@ -110,14 +148,25 @@ const handleFixedInputSubmit = (textValue) => {
         open={open}
         onClose={() => setOpen(false)}
       />
-
+      <LoginModal
+        open={loginOpen}
+        onClose={() => setLoginOpen(false)}
+        onAuthSubmit={handleAuthSubmit}
+      />
+      
       <SignupModal
         open={signupOpen}
         onClose={() => setSignupOpen(false)}
-        onSubmit={(data) => {
-          console.log('Signup Data:', data);
-          setSignupOpen(false);
-        }}
+        onAuthSubmit={handleAuthSubmit}
+      />
+      
+      <OtpModal
+        open={otpOpen}
+        phoneNumber={phoneNumber}
+        onVerify={handleVerifyOtp}
+        onClose={() => setOtpOpen(false)}
+        loading={loading}
+        error={error}
       />
     </div>
   );

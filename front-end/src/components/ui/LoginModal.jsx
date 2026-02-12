@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
 
-const SignupModal = ({ open, onClose, onAuthSubmit }) => {
+const LoginModal = ({ open, onClose, onAuthSubmit }) => {
   const [phone, setPhone] = useState('');
-  const [name, setName] = useState('');
 
   const handleSubmit = () => {
-    if (!phone.trim()&&!name.trim()) return;
-    onAuthSubmit(phone, name, 'signup');
+    if (!phone.trim()) return;
+    onAuthSubmit(phone, 'login');
   };
 
   if (!open) return null;
@@ -19,15 +18,9 @@ const SignupModal = ({ open, onClose, onAuthSubmit }) => {
           <X size={20} />
         </button>
 
-        <h3 className="text-white text-lg font-medium mb-4">ثبت نام با شماره موبایل</h3>
+        <h3 className="text-white text-lg font-medium mb-4">ورود با شماره موبایل</h3>
 
         <div className="space-y-3">
-          <input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="نام شما"
-            className="w-full px-4 py-3 rounded-xl bg-[#1a2522] text-white text-sm outline-none border border-[#2F5D50]/20 focus:border-[#2F5D50]"
-          />
           <input
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
@@ -47,4 +40,4 @@ const SignupModal = ({ open, onClose, onAuthSubmit }) => {
   );
 };
 
-export default SignupModal;
+export default LoginModal;
