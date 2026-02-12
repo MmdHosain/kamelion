@@ -28,7 +28,9 @@ const App = () => {
     setChatState,
     handleSendMessage,
     handleHeroSubmit, // This function expects an object
-    handleCtaAction
+    handleCtaAction,
+    playScenario, // ✅ جدید
+    isPlayingScenario
   } = useChat();
   // NEW FUNCTION: Handles the submission from the fixed input box
 const handleFixedInputSubmit = (textValue) => {
@@ -49,23 +51,31 @@ const handleFixedInputSubmit = (textValue) => {
     setOtpOpen,
     logout,
   } = useAuth();
-
+  const handlePlayScenario = (scenarioMessages) => {
+    playScenario(scenarioMessages);
+    setChatState('maximized');
+  };
   // Update existing state
   const [loginOpen, setLoginOpen] = useState(false); // ✅ NEW
 
   // Update CTA handler
-  const handleCtaActionWrapper = (payload) => {
-    console.log('CTA payload:', payload);
-    
-    if (payload.action === 'open_signup') {
-      setSignupOpen(true);
-    }
-    if (payload.action === 'open_login') {
-      setLoginOpen(true);
-    }
-    
-    handleCtaAction(payload, () => setSignupOpen(true));
-  };
+const handleCtaActionWrapper = (payload) => {
+  console.log('CTA payload:', payload);
+  
+  if (payload.action === 'open_signup') {
+    setSignupOpen(true);
+  }
+  
+  if (payload.action === 'open_login') {
+    setLoginOpen(true);
+  }
+  
+  if (payload.action === 'open_appointment') {
+    setOpen(true); // مودال نوبت‌دهی رو باز کن
+  }
+  
+  handleCtaAction(payload, () => setSignupOpen(true));
+};
   const { scrolled } = useScrollState();
   const { page, setPage } = usePageRouter();
 
@@ -114,8 +124,9 @@ const handleFixedInputSubmit = (textValue) => {
         isVisible={shouldShowFixedInput}
         value={heroInput}
         onChange={setHeroInput}
-        onSubmit={handleHeroSubmit} // Pass the function expecting the object
+        onSubmit={handleHeroSubmit}
         onSubmitInput={handleFixedInputSubmit}
+        onPlayScenario={handlePlayScenario} // ✅ پاس دادن تابع
       />
 
       {shouldShowResumeButton && (
