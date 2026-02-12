@@ -1,8 +1,8 @@
 // components/AppointmentModal.jsx
 import { useState } from "react";
-import { getNext14Days } from "../utils/dateUtils";
-import DayPicker from "./DayPicker";
-import TimeSlots from "./TimeSlots";
+import { getNext14Days } from "../../utils/dateUtils";
+import DayPicker from "../DayPicker";
+import TimeSlots from "../TimeSlots";
 
 const mockSlots = {
   "2026-02-08": [

@@ -1,591 +1,135 @@
-import React, { useState, useEffect } from 'react';
-import { Phone, MapPin, Menu, X, Sparkles, ArrowLeft, ChevronDown, MessageSquare, Instagram, Minus } from 'lucide-react';
-import MessageRenderer from './components/MessageRenderer';
-import AppointmentModal from './components/AppointmentModal';
-import VideoPage from "./pages/VideoPage";
-import SignupModal from './components/SignupModal';
-import CommentsPage from "./pages/CommentsPage";
-import axios from "axios";
-
-// --- DATA
-const CHAT_SUGGESTIONS = [
-  'راه های درمان کیست سینه کدامند؟',
-  'شناخت کیست سینه و علائم کیست سینه',
-  'دلیل ایجاد توده در پستان چیست؟'
-];
-const DATA = {
-  logo: "/images/logo.png", 
-  contact: {
-    address: "تهران - خیابان ولیعصر - بالاتر از توانیر - روبروی بیمارستان دی-کوچه دوم-پلاک ۱-طبقه اول ",
-    phones: ["۰۲۱xxxxxxx", "۰۹۱۲xxxxxxx"]
-  },
-  services: [
-    {
-      title: "مشاوره تخصصی جراحی پستان",
-      icon: "🩺",
-      desc: "بررسی علمی شرایط بیمار، توضیح گزینه‌های درمانی و تصمیم‌گیری آگاهانه"
-    },
-    {
-      title: "جراحی زیبایی پستان",
-      icon: "⚕️",
-      desc: "شامل پروتز، لیفت و اصلاح فرم با اولویت ایمنی و تناسب فردی"
-    },
-    {
-      title: "جراحی ترمیمی پستان",
-      icon: "🔬",
-      desc: "اصلاح جراحی‌های قبلی یا ناهنجاری‌های مادرزادی با رویکرد تخصصی"
-    },
-    {
-      title: "جراحی سینه پس از بارداری یا کاهش وزن",
-      icon: "🧠",
-      desc: "بازگرداندن فرم طبیعی سینه با در نظر گرفتن سلامت بافت"
-    },
-    {
-      title: "پیگیری و مراقبت پس از جراحی",
-      icon: "🧾",
-      desc: "برنامه‌ریزی دقیق و همراهی مرحله‌به‌مرحله تا بهبودی کامل"
-    },
-    {
-      title: "ارزیابی و تصمیم‌گیری درمانی",
-      icon: "📋",
-      desc: "بررسی اینکه آیا جراحی بهترین انتخاب برای شما هست یا خیر"
-    }
-  ]
-};
+// src/App.jsx
+import React, { useState } from 'react';
+import { useChat } from './hooks/useChat';
+import { useScrollState } from './hooks/useScrollState';
+import { usePageRouter } from './hooks/usePageRouter';
+import Header from './components/layout/Header'; // Should now work correctly
+import Footer from './components/layout/Footer';
+import HomePage from './pages/HomePage'; // HomePage should render HeroSection internally
+import VideoPage from './pages/VideoPage';
+import CommentsPage from './pages/CommentsPage';
+import ChatContainer from './components/chat/ChatContainer';
+import ResumeButton from './components/chat/ResumeButton';
+import FixedChatInput from './components/ui/FixedChatInput';
+import AppointmentModal from './components/ui/AppointmentModal'; // Ensure path is correct
+import SignupModal from './components/ui/SignupModal'; // Ensure path is correct
 
 const App = () => {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [chatState, setChatState] = useState('minimized'); // 'minimized' | 'maximized'
-  const [messages, setMessages] = useState([]);
-  const [inputValue, setInputValue] = useState('');
-  const [heroInput, setHeroInput] = useState('');
-  const [open, setOpen] = useState(false);
-  const [page, setPage] = useState("home"); 
-  const [signupOpen, setSignupOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
+  const {
+    messages,
+    inputValue,
+    setInputValue,
+    heroInput,
+    setHeroInput,
+    chatState,
+    setChatState,
+    handleSendMessage,
+    handleHeroSubmit, // This function expects an object
+    handleCtaAction
+  } = useChat();
+  // NEW FUNCTION: Handles the submission from the fixed input box
+  const handleFixedInputSubmit = (textValue) => {
+    if (!textValue.trim()) return; // Check if input is not empty
 
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 50);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+    // Clear previous conversation if any (though shouldn't be any if this button is visible)
+    // setMessages([]); // Not strictly necessary here as it should only show if messages are empty
 
-  const handleCtaAction = (action) => {
-    if (action === 'open_signup') {
-      setSignupOpen(true);
-    }
-  };
+    // Send the first message
+    handleSendMessage(textValue); // Use existing handleSendMessage which manages the conversation state
 
-  const handleSendMessage = (text) => {
-    if (!text.trim()) return;
-    const userMessage = { role: 'user', type: 'text', content: text };
-    
-    // AI Response Logic
-    let aiMessage;
-    if (text.includes('خدمات') || text.includes('نمونه') || text.includes('service') || text.includes('slider')) {
-      aiMessage = { 
-        role: 'ai', 
-        type: 'slider',
-        content: 'این‌ها برخی از محبوب‌ترین خدمات تخصصی ما هستند که با جدیدترین متدهای روز دنیا ارائه می‌شوند:',
-        payload: [
-          {
-            title: 'تزریق ژل لب روسی',
-            desc: 'فرم‌دهی طبیعی و حجم‌دهی با بهترین برندهای اروپایی',
-            img_path: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?q=80&w=2070&auto=format&fit=crop',
-            price: 'تخفیف ویژه'
-          },
-          {
-            title: 'هایفوتراپی صورت',
-            desc: 'لیفتینگ و جوانسازی بدون جراحی در یک جلسه',
-            img_path: 'https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?q=80&w=2070&auto=format&fit=crop',
-            price: 'محبوب'
-          },
-          {
-            title: 'لیزر موهای زائد',
-            desc: 'دستگاه الکساندرایت کندلا 2024 بدون درد',
-            img_path: 'https://images.unsplash.com/photo-1560750588-73207b1ef5b8?q=80&w=2070&auto=format&fit=crop',
-            price: 'جشنواره'
-          },
-          {
-            title: 'کاشت مو طبیعی',
-            desc: 'تراکم بالا با خط رویش طبیعی و ضمانت نامه',
-            img_path: 'https://images.unsplash.com/photo-1552693673-1bf958298935?q=80&w=2073&auto=format&fit=crop',
-            price: 'مشاوره رایگان'
-          }
-        ]
-      };
-    } else if (text.includes('form') || text.includes('نوبت')) {
-      aiMessage = { 
-        role: 'ai', 
-        type: 'form', 
-        payload: { 
-          fields: [
-            {type:'text', name:'نام و نام خانوادگی'}, 
-            {type:'text', name:'شماره تماس'}
-          ], 
-          submitLabel: 'درخواست مشاوره' 
-        }
-      };
-    } else if (text.toLowerCase().includes('button')) {
-      aiMessage = {
-        role: 'ai',
-        type: 'cta',
-        content: 'اگه میخوای بهتر کمک کنم و به مکالمه ادامه بدیم لطفا ثبت نام کن',
-        payload: {
-          action: 'open_signup',
-          buttonLabel: 'ثبت نام'
-        }
-      };
-    } else {
-      aiMessage = {
-        role: 'ai', 
-        type: 'text',
-        content: 'درخواست شما دریافت شد. برای مشاهده خدمات ما کلمه "خدمات" را تایپ کنید.'
-      };
-    }
-
-    setMessages(prev => [...prev, userMessage, aiMessage]);
-    setInputValue('');
-  };
-
-  const handleHeroSubmit = () => {
-    if (!heroInput.trim()) return;
-    setMessages([]); // Clear previous conversation
-    handleSendMessage(heroInput);
+    // CRITICAL: Maximize the chat window after sending the first message
     setChatState('maximized');
-    setHeroInput('');
+
+    // Optionally clear the heroInput field after submission if it was used
+    // In this case, the FixedChatInput uses 'value' and 'onChange', so if the value was heroInput,
+    // it would be cleared by updating heroInput state. However, since FixedChatInput calls this function,
+    // it might not have direct access to setHeroInput. We can clear it here if needed.
+    // But typically, the heroInput is cleared *after* the submission happens inside the hook.
+    // Let's see... FixedChatInput passes its *own* value, not necessarily heroInput.
+    // So, if the FixedChatInput's internal state is managed by heroInput in App.jsx, then clearing heroInput here makes sense.
+    // However, FixedChatInput receives 'value' and 'onChange' props. If 'value' is heroInput and 'onChange' updates heroInput,
+    // then the state should be managed correctly by the parent (App.jsx) via props.
+    // The handleSendMessage function clears inputValue, not heroInput.
+    // Let's clear the corresponding input state if needed. Since the FixedChatInput uses heroInput's value,
+    // we should clear heroInput after submission.
+    setHeroInput(''); // Clear the heroInput after submitting the first message via the fixed input
+  };
+  const { scrolled } = useScrollState();
+  const { page, setPage } = usePageRouter();
+
+  const [open, setOpen] = useState(false);
+  const [signupOpen, setSignupOpen] = useState(false);
+
+  const handleOpenSignup = () => {
+    setSignupOpen(true);
+  };
+
+  const handleCtaActionWrapper = (payload) => {
+    handleCtaAction(payload, handleOpenSignup);
+  };
+
+  const handleMinimizeChat = () => {
+    setChatState('minimized');
+  };
+
+  const handleMaximizeChat = () => {
+    setChatState('maximized');
+  };
+
+  const shouldShowFixedInput = chatState === 'minimized' && messages.length === 0;
+  const shouldShowResumeButton = chatState === 'minimized' && messages.length > 0;
+
+  const renderCurrentPage = () => {
+    switch (page) {
+      case 'video':
+        return <VideoPage onBack={() => setPage("home")} />;
+      case 'comments':
+        return <CommentsPage onBack={() => setPage("home")} />;
+      default:
+        return <HomePage />; // HomePage now renders HeroSection, ServicesSection, AboutSection
+    }
   };
 
   return (
     <div className="min-h-screen flex flex-col font-sans bg-[#FAFAF8] text-[#6B6E6C] dir-rtl">
-      
-      {/* 1. Header (Navigation) - Brand-Aligned */}
-      <header
-        className={`sticky top-0 z-50 flex items-center backdrop-blur-xl transition-all duration-700 ease-in-out ${
-          scrolled
-            ? 'bg-white/70 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.2)] py-2'
-            : 'bg-transparent py-4'
-        }`}
-      >
-        <div className="container mx-auto px-6 flex justify-between items-center">
+      <Header
+        scrolled={scrolled}
+        onNavigate={setPage}
+        onOpenAppointment={() => setOpen(true)}
+      />
 
-          {/* LOGO + Title */}
-          <div className="flex items-center gap-3 cursor-pointer select-none">
-            <img
-              src={DATA.logo}
-              alt="Logo"
-              className={`transition-all duration-500 ${scrolled ? 'h-9' : 'h-10'}`}
-            />
-            <h1 className="hidden md:flex text-[#2F5D50] text-lg font-bold tracking-tight">
-              دکتر <span className="font-normal ml-1">نگار معشوری</span>
-            </h1>
-          </div>
+      {renderCurrentPage()}
 
-          {/* DESKTOP NAV */}
-          <nav className="hidden md:flex gap-8 items-center text-sm font-semibold text-[#3B3D3B] relative">
-            {[
-              { label: 'صفحه نخست', onClick: () => setPage('home') },
-              { label: 'ویدیو', onClick: () => setPage('video') },
-              { label: 'درباره', onClick: () => {} },
-              { label: 'تماس', onClick: () => {} },
-              { label: 'نظرات', onClick: () => setPage('comments') },
-            ].map((item, i) => (
-              <button
-                key={i}
-                onClick={item.onClick}
-                className="relative transition-all duration-300 hover:text-[#2F5D50] group"
-              >
-                {item.label}
-                <span
-                  className="absolute left-0 right-0 mx-auto -bottom-1 w-0 group-hover:w-full h-[2px] rounded-full bg-[#2F5D50] transition-all duration-300 ease-in-out"
-                />
-              </button>
-            ))}
-          </nav>
+      <Footer />
 
-          {/* CTA + Mobile Trigger */}
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setOpen(true)}
-              className="bg-gradient-to-r from-[#2F5D50] to-[#264C42] hover:opacity-90 text-white px-4 py-2 rounded-lg text-sm shadow-md hover:shadow-lg transition-all"
-            >
-              دریافت نوبت
-            </button>
-            <button
-              onClick={() => setMobileMenuOpen(true)}
-              className="md:hidden p-2 rounded-md hover:bg-[#2F5D50]/10 transition-all duration-300"
-            >
-              <Menu className="text-[#2F5D50]" size={24} />
-            </button>
+      <FixedChatInput
+        isVisible={shouldShowFixedInput}
+        value={heroInput}
+        onChange={setHeroInput}
+        onSubmit={handleHeroSubmit} // Pass the function expecting the object
+        onSubmitInput={handleFixedInputSubmit}
+      />
 
-          </div>
-        </div>
-
-        {/* ===== MOBILE MENU OVERLAY (FIXED) ===== */}
-        {mobileMenuOpen && (
-          <div className="fixed inset-0 z-50">
-            
-            {/* BACKDROP */}
-            <div
-              className="absolute inset-0 bg-[#FAFAF8]/90 backdrop-blur-md"
-              onClick={() => setMobileMenuOpen(false)}
-            />
-
-            {/* MENU CONTENT */}
-            <div className="relative w-full h-screen flex flex-col items-center justify-center gap-8 text-lg font-medium text-[#2F5D50]">
-
-              {/* CLOSE BUTTON */}
-              <button
-                onClick={() => setMobileMenuOpen(false)}
-                className="absolute top-6 left-6 w-10 h-10 flex items-center justify-center rounded-full bg-[#2F5D50]/10 hover:bg-[#2F5D50]/20 transition"
-              >
-                <X size={20} />
-              </button>
-
-              {[
-                { label: 'صفحه نخست', action: () => setPage('home') },
-                { label: 'ویدیو', action: () => setPage('video') },
-                { label: 'درباره', action: () => {} },
-                { label: 'تماس', action: () => {} },
-                { label: 'نظرات', action: () => setPage('comments') },
-              ].map((m, i) => (
-                <button
-                  key={i}
-                  onClick={() => {
-                    m.action();
-                    setMobileMenuOpen(false);
-                  }}
-                  className="w-48 py-3 rounded-xl bg-[#E6C5CC]/20 hover:bg-[#E6C5CC]/40 transition shadow-sm hover:shadow-md"
-                >
-                  {m.label}
-                </button>
-              ))}
-
-              <button
-                onClick={() => {
-                  setOpen(true);
-                  setMobileMenuOpen(false);
-                }}
-                className="bg-gradient-to-r from-[#2F5D50] to-[#264C42] text-white py-3 px-8 rounded-xl shadow-lg hover:shadow-xl transition"
-              >
-                دریافت نوبت
-              </button>
-
-            </div>
-          </div>
-        )}
-      </header>
-
-      {/* 2. Scrollable Content Sections */}
-      {page === "home" && (
-      <main className="flex-grow flex flex-col items-center w-full pb-40">
-      
-        {/* Hero Section - Medical Elegance */}
-        <section className="relative w-full h-[420px] md:h-[456px] overflow-hidden">
-          <div
-            className="absolute inset-0 bg-cover bg-center"
-            style={{ backgroundImage: "url('/images/fac624df-a6d0-4eea-a6ac-26782fd1ba69.png')" }}
-          />
-          <div className="absolute inset-0 bg-[#2F5D50]/60"></div>
-
-          <div className="relative z-10 h-full max-w-6xl mx-auto px-4">
-            <div className="h-full flex flex-col justify-center items-center md:items-start text-center md:text-right gap-3">
-              <h1 className="text-white font-bold text-[28px] sm:text-[32px] md:text-[46px] drop-shadow-lg">
-                دکتر نگار معشوری
-              </h1>
-              <p className="text-white font-light text-[18px] sm:text-[20px] md:text-[26px] drop-shadow-md">
-                فلوشیپ جراحی پستان
-              </p>
-              <p className="text-white/90 font-light text-[16px] sm:text-[18px] md:text-[22px]">
-                تخصص، دقت، آرامش در درمان
-              </p>
-              <div className="flex gap-4 mt-6 flex-wrap justify-center md:justify-start">
-                <a
-                  href="https://drhamidahmadi.ir/contact/"
-                  className="bg-[#2F5D50] hover:bg-[#264C42] text-white font-medium text-[15px] md:text-[16px] px-6 md:px-8 py-3 rounded-md shadow-lg hover:shadow-xl transition-all"
-                >
-                  ویزیت حضوری
-                </a>
-                <a
-                  href="https://web.whatsapp.com/send?phone=989212129902"
-                  className="bg-[#E6C5CC] hover:bg-[#d9b2bb] text-[#2F5D50] font-medium text-[15px] md:text-[16px] px-6 md:px-8 py-3 rounded-md shadow-lg hover:shadow-xl transition-all border border-[#2F5D50]/10"
-                >
-                  ویزیت آنلاین
-                </a>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Services Section - Professional & Calm */}
-        <section className="container mx-auto px-4 py-20">
-          <h2 className="text-3xl font-bold text-center mb-4 text-[#2F5D50]">
-            خدمات تخصصی جراحی پستان
-          </h2>
-          <p className="text-center max-w-2xl mx-auto mb-12">
-            تمامی خدمات بر پایه تصمیم‌گیری علمی، ایمنی بیمار و مشاوره آگاهانه ارائه می‌شوند.
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {DATA.services.map((item, idx) => (
-              <div
-                key={idx}
-                className="bg-white p-8 rounded-2xl border border-[#E6C5CC]/30 hover:shadow-md transition group"
-              >
-                <div className="text-3xl mb-5 w-14 h-14 flex items-center justify-center rounded-full bg-[#E6C5CC]/20 text-[#2F5D50]">
-                  {item.icon}
-                </div>
-                <h3 className="font-semibold text-xl mb-3 text-[#2F5D50]">
-                  {item.title}
-                </h3>
-                <p className="leading-relaxed text-sm mb-4">
-                  {item.desc}
-                </p>
-                <button className="mt-4 text-sm font-medium text-[#2F5D50] hover:text-[#264C42] flex items-center gap-1 transition">
-                  اطلاعات بیشتر <span>→</span>
-                </button>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* About Section - Trust & Professionalism */}
-        <section className="w-full bg-white py-20 border-t border-[#E6C5CC]/30">
-          <div className="container mx-auto px-4 grid md:grid-cols-2 gap-12 items-center">
-            <div>
-              <img
-                src="/images/IMG_2923.jpeg"
-                alt="دکتر نگار معشوری"
-                className="rounded-2xl shadow-xl w-full object-cover border-2 border-[#E6C5CC]/20"
-              />
-            </div>
-            <div>
-              <h2 className="text-3xl font-bold mb-5 text-[#2F5D50]">
-                رویکرد درمانی دکتر نگار معشوری
-              </h2>
-              <p className="leading-relaxed mb-6">
-                در جراحی سینه، تصمیم درست مهم‌تر از انجام جراحی است.
-                رویکرد درمانی دکتر نگار معشوری بر پایه ارزیابی علمی،
-                درک شرایط فردی هر بیمار و انتخاب آگاهانه مسیر درمان شکل گرفته است.
-              </p>
-              <p className="leading-relaxed mb-8">
-                هدف، دستیابی به نتیجه‌ای ایمن، متناسب با بدن بیمار و
-                همراه با آرامش خاطر در تمام مراحل درمان است؛
-                نه صرفاً تغییر ظاهری سریع.
-              </p>
-              <ul className="space-y-3">
-                {[
-                  "تصمیم‌گیری درمانی بر اساس شواهد علمی",
-                  "اولویت ایمنی و سلامت بیمار",
-                  "مشاوره شفاف و صادقانه پیش از هر اقدام",
-                  "پیگیری دقیق پس از جراحی"
-                ].map((item, i) => (
-                  <li key={i} className="flex items-start gap-3">
-                    <span className="mt-2 w-2 h-2 bg-[#2F5D50] rounded-full flex-shrink-0"></span>
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </section>
-      </main>
+      {shouldShowResumeButton && (
+        <ResumeButton onClick={handleMaximizeChat} />
       )}
 
-      {page === "video" && (
-        <VideoPage onBack={() => setPage("home")} />
-        )}
-      {page === "comments" && (
-        <CommentsPage onBack={() => setPage("home")} />
-      )} 
+      <ChatContainer
+        chatState={chatState}
+        messages={messages}
+        inputValue={inputValue}
+        setInputValue={setInputValue}
+        handleSendMessage={handleSendMessage}
+        handleCtaAction={handleCtaActionWrapper}
+        onOpenSignup={handleOpenSignup}
+        onMinimize={handleMinimizeChat}
+      />
 
-      {/* Footer - Professional Medical Branding */}
-      <footer className="bg-[#2F5D50] text-[#FAFAF8] py-10 pb-40">
-        <div className="container mx-auto px-4 grid md:grid-cols-4 gap-8 text-sm">
-          <div className="space-y-4">
-            <div className="font-bold text-xl text-[#E6C5CC]">دکتر نگار معشوری</div>
-            <p className="opacity-90">متخصص جراحی پستان و زیبایی سینه</p>
-            <div className="flex gap-3 pt-2">
-              {[...Array(5)].map((_, i) => (
-                <span key={i} className="text-[#E6C5CC]">★</span>
-              ))}
-            </div>
-          </div>
-          <div>
-            <h4 className="font-bold mb-3 text-[#E6C5CC]">دسترسی سریع</h4>
-            <ul className="space-y-2 opacity-90">
-              <li>صفحه اصلی</li>
-              <li>خدمات تخصصی</li>
-              <li>سوابق پزشکی</li>
-              <li>مقالات تخصصی</li>
-            </ul>
-          </div>
-          <div className="col-span-2">
-            <h4 className="font-bold mb-3 text-[#E6C5CC]">تماس</h4>
-            <p className="opacity-90 mb-3">{DATA.contact.address}</p>
-            <div className="flex flex-col gap-1.5">
-              {DATA.contact.phones.map((p, i) => (
-                <div key={i} className="flex items-center gap-2 opacity-90">
-                  <span>📱</span>
-                  <span>{p}</span>
-                </div>
-              ))}
-            </div>
-            <div className="mt-4 pt-4 border-t border-[#E6C5CC]/30 flex gap-4">
-              {[{icon: '📱', link: '#'}, {icon: '📧', link: '#'}, {icon: '📍', link: '#'}].map((item, i) => (
-                <a key={i} href={item.link} className="hover:text-[#E6C5CC] transition">
-                  {item.icon}
-                </a>
-              ))}
-            </div>
-          </div>
-        </div>
-        <div className="container mx-auto px-4 mt-8 pt-8 border-t border-[#E6C5CC]/30 text-center text-xs opacity-80">
-          © {new Date().getFullYear()} کلیه حقوق محفوظ است. طراحی و توسعه با رعایت اصول پزشکی و اخلاق حرفه‌ای
-        </div>
-      </footer>
+      <AppointmentModal
+        open={open}
+        onClose={() => setOpen(false)}
+      />
 
-      {/* FIXED AI INPUT BOX - Medical Assistant Vibe */}
-      <div className={`fixed z-30 left-0 right-0 px-4 transition-all duration-500 ease-out
-        ${chatState === 'minimized' && messages.length === 0 ? 'bottom-8 opacity-100 translate-y-0' : 'bottom-[-100px] opacity-0 translate-y-10 pointer-events-none'}
-      `}>
-        <div className="max-w-xl mx-auto w-full relative group">
-          {/* Subtle Medical Glow */}
-          <div className="absolute -inset-1 bg-gradient-to-r from-[#2F5D50]/30 to-[#E6C5CC]/30 rounded-2xl blur opacity-30 group-hover:opacity-50 transition duration-500"></div>
-          
-          <div className="relative bg-white/95 backdrop-blur-sm border border-[#E6C5CC]/20 rounded-2xl shadow-lg flex items-center p-2 pr-4 transition-all hover:shadow-xl">
-            <div className="text-[#2F5D50] animate-pulse mr-2">
-              <Sparkles size={20} />
-            </div>
-            <input 
-              type="text"
-              value={heroInput}
-              onChange={(e) => setHeroInput(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleHeroSubmit()}
-              placeholder="سوال خود را از دستیار پزشکی بپرسید..."
-              className="flex-1 py-3 px-3 bg-transparent outline-none text-[#2F5D50] placeholder-[#6B6E6C]/60 text-base font-medium"
-            />
-            <button 
-              onClick={handleHeroSubmit}
-              className={`p-2.5 rounded-xl transition-all duration-300 flex items-center justify-center shadow-sm
-                ${heroInput 
-                  ? 'bg-[#2F5D50] hover:bg-[#264C42] text-white scale-105' 
-                  : 'bg-[#E6C5CC]/30 text-[#2F5D50]/70 hover:bg-[#E6C5CC]/40'
-                }`}
-            >
-              {heroInput ? <ArrowLeft size={18} /> : <MessageSquare size={18} />}
-            </button>
-          </div>
-          <div className="absolute -bottom-6 left-0 right-0 text-center text-[11px] text-[#6B6E6C] font-medium">
-            پاسخگویی تخصصی • مشاوره رایگان • رزرو نوبت آنلاین
-          </div>
-        </div>
-      </div>
-
-      {/* RESUME CHAT BUTTON - Visible when minimized */}
-      {chatState === 'minimized' && messages.length > 0 && (
-        <div 
-          onClick={() => setChatState('maximized')} 
-          className="fixed bottom-24 left-1/2 opacity-80 transform -translate-x-1/2 z-40 bg-[#2F5D50] text-white px-8 py-5 rounded-full shadow-lg cursor-pointer hover:bg-[#264C42] hover:opacity-100 transition-all flex items-center gap-2"
-        >
-          <Sparkles size={16} />
-          <span className="text-md font-medium">ادامه گفتگو</span>
-        </div>
-      )}
-
-      {/* CHAT OVERLAY - Simplified Medical Professional Theme */}
-      <div
-        className={`fixed inset-0 z-[9999] transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] 
-          ${chatState === 'minimized' ? 'pointer-events-none bg-black/0' : 'bg-black/30 backdrop-blur-sm'}
-        `}
-      >
-        <div className={`fixed bottom-0 left-0 right-0 bg-[#0f1715] border-t border-[#2F5D50]/30 shadow-2xl transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] flex flex-col
-          ${chatState === 'maximized' ? 'h-[85vh] translate-y-0 rounded-t-3xl' : 'translate-y-full'}
-        `}>
-          
-          {/* Chat Header */}
-          <div className="bg-[#1a2522] px-4 py-3 border-b border-[#2F5D50]/40 rounded-t-3xl flex items-center justify-between">
-            <div className="flex items-center gap-2 text-white font-medium text-sm">
-              <Sparkles size={16} className="text-[#E6C5CC]"/>
-              دستیار پزشکی دکتر معشوری
-            </div>
-            <div className="flex gap-3 text-[#6B6E6C]">
-              <button 
-                onClick={() => setChatState('minimized')} 
-                className="hover:text-[#E6C5CC]"
-              >
-                <Minus size={18}/>
-              </button>
-            </div>
-          </div>
-
-          {/* Chat Content */}
-          <div className="flex-1 bg-[#0a110f] overflow-hidden relative flex flex-col">
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 chat-scroll">
-              {messages.length === 0 ? (
-                <div className="h-full flex flex-col items-center justify-center text-[#6B6E6C] text-sm">
-                  <div className="bg-[#2F5D50]/10 p-4 rounded-2xl mb-3">
-                    <MessageSquare size={36} className="text-[#2F5D50] opacity-80"/>
-                  </div>
-                  <p>با دستیار پزشکی خود گفتگو کنید</p>
-                  <p className="text-xs mt-1 opacity-70">سوالات تخصصی خود را درباره جراحی پستان بپرسید</p>
-                  
-                  {/* Initial Suggestions */}
-                  <div className="mt-6 w-full max-w-md">
-                    <div className="text-xs text-[#E6C5CC] mb-2 text-center">
-                      سوالات پیشنهادی:
-                    </div>
-                    <div className="grid grid-cols-1 gap-2">
-                      {CHAT_SUGGESTIONS.map((text, index) => (
-                        <button
-                          key={index}
-                          onClick={() => {
-                            setInputValue(text);
-                            handleSendMessage(text);
-                          }}
-                          className="text-right text-sm text-white bg-[#1a2522]
-                                     hover:bg-[#2F5D50]/20 border border-[#2F5D50]/30
-                                     rounded-xl px-4 py-2 transition"
-                        >
-                          {text}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                messages.map((msg, i) => (
-                  <MessageRenderer
-                    key={i}
-                    message={msg}
-                    onCtaAction={handleCtaAction}
-                  />
-                ))
-              )}
-            </div>
-            
-            {/* Input Area */}
-            <div className="p-4 bg-[#111c18] border-t border-[#2F5D50]/30">
-              <div className="relative flex items-center gap-2">
-                <input 
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleSendMessage(inputValue)}
-                  placeholder="سوال خود را بنویسید..."
-                  className="flex-1 bg-[#1a2522] text-white text-sm rounded-xl px-4 py-3 focus:outline-none focus:ring-1 focus:ring-[#2F5D50]/50 border border-[#2F5D50]/20"
-                />
-                <button 
-                  onClick={() => handleSendMessage(inputValue)} 
-                  className="bg-[#2F5D50] hover:bg-[#264C42] text-white p-3 rounded-xl hover:scale-105 transition-transform shadow-lg"
-                >
-                  <ArrowLeft size={18}/>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <AppointmentModal open={open} onClose={() => setOpen(false)} />
       <SignupModal
         open={signupOpen}
         onClose={() => setSignupOpen(false)}
@@ -593,7 +137,7 @@ const App = () => {
           console.log('Signup Data:', data);
           setSignupOpen(false);
         }}
-      />  
+      />
     </div>
   );
 };
