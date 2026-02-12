@@ -28,32 +28,13 @@ const App = () => {
     handleCtaAction
   } = useChat();
   // NEW FUNCTION: Handles the submission from the fixed input box
-  const handleFixedInputSubmit = (textValue) => {
-    if (!textValue.trim()) return; // Check if input is not empty
+const handleFixedInputSubmit = (textValue) => {
+  if (!textValue.trim()) return;
+  handleSendMessage(textValue);
+  setChatState('maximized');
+  setHeroInput(''); // Clear heroInput if used for initial submit
+};
 
-    // Clear previous conversation if any (though shouldn't be any if this button is visible)
-    // setMessages([]); // Not strictly necessary here as it should only show if messages are empty
-
-    // Send the first message
-    handleSendMessage(textValue); // Use existing handleSendMessage which manages the conversation state
-
-    // CRITICAL: Maximize the chat window after sending the first message
-    setChatState('maximized');
-
-    // Optionally clear the heroInput field after submission if it was used
-    // In this case, the FixedChatInput uses 'value' and 'onChange', so if the value was heroInput,
-    // it would be cleared by updating heroInput state. However, since FixedChatInput calls this function,
-    // it might not have direct access to setHeroInput. We can clear it here if needed.
-    // But typically, the heroInput is cleared *after* the submission happens inside the hook.
-    // Let's see... FixedChatInput passes its *own* value, not necessarily heroInput.
-    // So, if the FixedChatInput's internal state is managed by heroInput in App.jsx, then clearing heroInput here makes sense.
-    // However, FixedChatInput receives 'value' and 'onChange' props. If 'value' is heroInput and 'onChange' updates heroInput,
-    // then the state should be managed correctly by the parent (App.jsx) via props.
-    // The handleSendMessage function clears inputValue, not heroInput.
-    // Let's clear the corresponding input state if needed. Since the FixedChatInput uses heroInput's value,
-    // we should clear heroInput after submission.
-    setHeroInput(''); // Clear the heroInput after submitting the first message via the fixed input
-  };
   const { scrolled } = useScrollState();
   const { page, setPage } = usePageRouter();
 
@@ -113,17 +94,17 @@ const App = () => {
       {shouldShowResumeButton && (
         <ResumeButton onClick={handleMaximizeChat} />
       )}
-
-      <ChatContainer
-        chatState={chatState}
-        messages={messages}
-        inputValue={inputValue}
-        setInputValue={setInputValue}
-        handleSendMessage={handleSendMessage}
-        handleCtaAction={handleCtaActionWrapper}
-        onOpenSignup={handleOpenSignup}
-        onMinimize={handleMinimizeChat}
-      />
+<ChatContainer
+  chatState={chatState}
+  messages={messages}
+  inputValue={inputValue}
+  setInputValue={setInputValue}
+  handleSendMessage={handleSendMessage}
+  handleCtaAction={handleCtaActionWrapper}
+  onOpenSignup={handleOpenSignup}
+  onMinimize={handleMinimizeChat}
+  handleFixedInputSubmit={handleFixedInputSubmit} // Pass the function
+/>
 
       <AppointmentModal
         open={open}

@@ -1,8 +1,9 @@
+// src/components/chat/ChatMessages.jsx
 import React from 'react';
 import ChatSuggestions from './ChatSuggestions';
 import MessageRenderer from '../MessageRenderer';
 
-const ChatMessages = ({ messages, onCtaAction, onOpenSignup }) => {
+const ChatMessages = ({ messages, onCtaAction, onOpenSignup, onSendMessage }) => {
   const handleCtaAction = (message) => {
     if (message.type === 'cta' && message.payload?.action === 'open_signup') {
       onOpenSignup();
@@ -22,9 +23,6 @@ const ChatMessages = ({ messages, onCtaAction, onOpenSignup }) => {
         </div>
         <p>با دستیار پزشکی خود گفتگو کنید</p>
         <p className="text-xs mt-1 opacity-70">سوالات تخصصی خود را درباره جراحی پستان بپرسید</p>
-        <ChatSuggestions onSendMessage={(text) => {
-          // This would be handled by parent
-        }} />
       </div>
     );
   }

@@ -87,3 +87,10 @@ body {
 .chat-message {
   animation: messageIn 0.2s ease-out;
 }
+.hide-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
