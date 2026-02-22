@@ -1,6 +1,6 @@
 // src/App.jsx
 import React, { useState } from 'react';
-import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 
 /* Hooks */
 import { useChat } from './hooks/useChat';
@@ -29,8 +29,11 @@ import LoginModal from './components/ui/LoginModal';
 import OtpModal from './components/ui/OtpModal';
 
 const App = () => {
-  /* Router */
   const navigate = useNavigate();
+  const location = useLocation();
+
+  /* Detect Admin route */
+  const isAdminRoute = location.pathname.startsWith('/admin');
 
   /* Chat */
   const {
@@ -68,7 +71,6 @@ const App = () => {
   const [signupOpen, setSignupOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
 
-  /* Chat helpers */
   const handleFixedInputSubmit = (textValue) => {
     if (!textValue.trim()) return;
     handleSendMessage(textValue);
@@ -82,22 +84,13 @@ const App = () => {
   };
 
   const handleCtaActionWrapper = (payload) => {
-    if (payload?.action === 'open_signup') {
-      setSignupOpen(true);
-    }
-
-    if (payload?.action === 'open_login') {
-      setLoginOpen(true);
-    }
-
-    if (payload?.action === 'open_appointment') {
-      setOpenAppointment(true);
-    }
+    if (payload?.action === 'open_signup') setSignupOpen(true);
+    if (payload?.action === 'open_login') setLoginOpen(true);
+    if (payload?.action === 'open_appointment') setOpenAppointment(true);
 
     handleCtaAction(payload, () => setSignupOpen(true));
   };
 
-  /* Chat visibility */
   const shouldShowFixedInput =
     chatState === 'minimized' && messages.length === 0;
 
@@ -106,83 +99,87 @@ const App = () => {
 
   return (
     <div className="min-h-screen flex flex-col font-sans bg-[#FAFAF8] text-[#6B6E6C] dir-rtl">
-      {/* Header */}
-      <Header
-        scrolled={scrolled}
-        onNavigate={navigate}
-        onOpenAppointment={() => setOpenAppointment(true)}
-      />
 
-      {/* Routes */}
+      {/* PUBLIC LAYOUT (HIDDEN ON ADMIN ROUTES) */}
+      {!isAdminRoute && (
+        <Header
+          scrolled={scrolled}
+          onNavigate={navigate}
+          onOpenAppointment={() => setOpenAppointment(true)}
+        />
+      )}
+
       <Routes>
+        {/* Public */}
         <Route path="/" element={<HomePage />} />
         <Route path="/video" element={<VideoPage />} />
         <Route path="/comments" element={<CommentsPage />} />
 
-        {/* Admin */}
+        {/* Admin (full isolated) */}
         <Route path="/admin/*" element={<AdminPage />} />
 
-        {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
 
-      {/* Footer */}
-      <Footer />
+      {/* PUBLIC LAYOUT FOOTER */}
+      {!isAdminRoute && <Footer />}
 
-      {/* Fixed Chat Input */}
-      <FixedChatInput
-        isVisible={shouldShowFixedInput}
-        value={heroInput}
-        onChange={setHeroInput}
-        onSubmit={handleHeroSubmit}
-        onSubmitInput={handleFixedInputSubmit}
-        onPlayScenario={handlePlayScenario}
-      />
+      {/* PUBLIC CHAT UI */}
+      {!isAdminRoute && (
+        <>
+          <FixedChatInput
+            isVisible={shouldShowFixedInput}
+            value={heroInput}
+            onChange={setHeroInput}
+            onSubmit={handleHeroSubmit}
+            onSubmitInput={handleFixedInputSubmit}
+            onPlayScenario={handlePlayScenario}
+          />
 
-      {/* Resume Button */}
-      {shouldShowResumeButton && (
-        <ResumeButton onClick={() => setChatState('maximized')} />
+          {shouldShowResumeButton && (
+            <ResumeButton onClick={() => setChatState('maximized')} />
+          )}
+
+          <ChatContainer
+            chatState={chatState}
+            messages={messages}
+            inputValue={inputValue}
+            setInputValue={setInputValue}
+            handleSendMessage={handleSendMessage}
+            handleCtaAction={handleCtaActionWrapper}
+            onOpenSignup={() => setSignupOpen(true)}
+            onMinimize={() => setChatState('minimized')}
+            handleFixedInputSubmit={handleFixedInputSubmit}
+          />
+
+          <AppointmentModal
+            open={openAppointment}
+            onClose={() => setOpenAppointment(false)}
+          />
+
+          <LoginModal
+            open={loginOpen}
+            onClose={() => setLoginOpen(false)}
+            onAuthSubmit={handleAuthSubmit}
+          />
+
+          <SignupModal
+            open={signupOpen}
+            onClose={() => setSignupOpen(false)}
+            onAuthSubmit={handleAuthSubmit}
+          />
+
+          <OtpModal
+            open={otpOpen}
+            phoneNumber={phoneNumber}
+            onVerify={handleVerifyOtp}
+            onClose={() => setOtpOpen(false)}
+            loading={loading}
+            error={error}
+          />
+        </>
       )}
 
-      {/* Chat Container */}
-      <ChatContainer
-        chatState={chatState}
-        messages={messages}
-        inputValue={inputValue}
-        setInputValue={setInputValue}
-        handleSendMessage={handleSendMessage}
-        handleCtaAction={handleCtaActionWrapper}
-        onOpenSignup={() => setSignupOpen(true)}
-        onMinimize={() => setChatState('minimized')}
-        handleFixedInputSubmit={handleFixedInputSubmit}
-      />
-
-      {/* Modals */}
-      <AppointmentModal
-        open={openAppointment}
-        onClose={() => setOpenAppointment(false)}
-      />
-
-      <LoginModal
-        open={loginOpen}
-        onClose={() => setLoginOpen(false)}
-        onAuthSubmit={handleAuthSubmit}
-      />
-
-      <SignupModal
-        open={signupOpen}
-        onClose={() => setSignupOpen(false)}
-        onAuthSubmit={handleAuthSubmit}
-      />
-
-      <OtpModal
-        open={otpOpen}
-        phoneNumber={phoneNumber}
-        onVerify={handleVerifyOtp}
-        onClose={() => setOtpOpen(false)}
-        loading={loading}
-        error={error}
-      />
     </div>
   );
 };
