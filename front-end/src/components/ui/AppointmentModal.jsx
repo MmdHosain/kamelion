@@ -5,7 +5,7 @@ import DayPicker from "../DayPicker";
 import TimeSlots from "../TimeSlots";
 
 const mockSlots = {
-  "2026-02-17": [
+  "2026-02-23": [
     { time: "18:15", status: "available" },
     { time: "18:30", status: "available" },
     { time: "19:00", status: "pending" },
@@ -28,7 +28,7 @@ export default function AppointmentModal({ open, onClose }) {
     <div className="fixed inset-0 z-[9999] bg-black/40 backdrop-blur-sm flex items-center justify-center">
       <div className="bg-[#FAFAF8] w-full max-w-3xl rounded-3xl p-6 relative">
 
-        <button
+        <button 
           onClick={onClose}
           className="absolute top-4 left-4 text-gray-400 hover:text-black"
         >
