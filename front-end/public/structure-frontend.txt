@@ -1,4 +1,5 @@
 ├── api
+│   ├── admin.js
 │   └── auth.js
 ├── App.css
 ├── App.jsx
@@ -12,6 +13,7 @@
 │   │   ├── AdminHeader.jsx
 │   │   ├── AdminLayout.jsx
 │   │   ├── AdminNavConfig.js
+│   │   ├── AdminProtectedRoute.jsx
 │   │   └── AdminSidebar.jsx
 │   ├── chat
 │   │   ├── ChatContainer.jsx
@@ -50,6 +52,8 @@
 │       │   ├── Slider.jsx
 │       │   └── slider.types.js
 │       └── TextMessage.jsx
+├── context
+│   └── AuthContext.jsx
 ├── data
 │   ├── chatScenarios.js
 │   ├── chatSuggestions.js
@@ -67,6 +71,7 @@
 ├── pages
 │   ├── admin
 │   │   ├── AdminDashboard.jsx
+│   │   ├── AdminLogin.jsx
 │   │   ├── AdminPage.jsx
 │   │   ├── ChatProfiles.jsx
 │   │   └── ReservedTimes.jsx
