@@ -1,0 +1,78 @@
+├── api
+│   └── auth.js
+├── App.css
+├── App.jsx
+├── assets
+│   └── react.svg
+├── chat
+│   ├── demoMessages.js
+│   └── message.types.ts
+├── components
+│   ├── admin
+│   │   ├── AdminHeader.jsx
+│   │   ├── AdminLayout.jsx
+│   │   ├── AdminNavConfig.js
+│   │   └── AdminSidebar.jsx
+│   ├── chat
+│   │   ├── ChatContainer.jsx
+│   │   ├── ChatHeader.jsx
+│   │   ├── ChatInput.jsx
+│   │   ├── ChatMessages.jsx
+│   │   ├── ChatSuggestions.jsx
+│   │   └── ResumeButton.jsx
+│   ├── CommentModal.jsx
+│   ├── DayPicker.jsx
+│   ├── layout
+│   │   ├── Footer.jsx
+│   │   └── Header.jsx
+│   ├── MessageRenderer.jsx
+│   ├── navigation
+│   │   ├── DesktopNav.jsx
+│   │   └── MobileMenu.jsx
+│   ├── sections
+│   │   ├── AboutSection.jsx
+│   │   ├── CommentsSlider.jsx
+│   │   ├── HeroSection.jsx
+│   │   ├── ServicesSection.jsx
+│   │   └── StatsSection.jsx
+│   ├── SlotButton.jsx
+│   ├── TimeSlots.jsx
+│   └── ui
+│       ├── AppointmentModal.jsx
+│       ├── FixedChatInput.jsx
+│       ├── form
+│       │   └── DynamicForm.jsx
+│       ├── LoginModal.jsx
+│       ├── OtpModal.jsx
+│       ├── SignupModal.jsx
+│       ├── Slider
+│       │   ├── SliderCard.jsx
+│       │   ├── Slider.jsx
+│       │   └── slider.types.js
+│       └── TextMessage.jsx
+├── data
+│   ├── chatScenarios.js
+│   ├── chatSuggestions.js
+│   ├── commentsSlider.js
+│   ├── contact.js
+│   └── services.js
+├── hooks
+│   ├── useAuth.js
+│   ├── useAutoScroll.js
+│   ├── useChat.js
+│   ├── usePageRouter.js
+│   └── useScrollState.js
+├── index.css
+├── main.jsx
+├── pages
+│   ├── admin
+│   │   ├── AdminDashboard.jsx
+│   │   ├── AdminPage.jsx
+│   │   ├── ChatProfiles.jsx
+│   │   └── ReservedTimes.jsx
+│   ├── CommentsPage.jsx
+│   ├── HomePage.jsx
+│   └── VideoPage.jsx
+├── tailwind.css
+└── utils
+    └── dateUtils.js

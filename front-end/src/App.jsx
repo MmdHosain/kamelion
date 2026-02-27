@@ -16,6 +16,10 @@ import HomePage from './pages/HomePage';
 import VideoPage from './pages/VideoPage';
 import CommentsPage from './pages/CommentsPage';
 import AdminPage from './pages/admin/AdminPage';
+import AdminLogin from './pages/admin/AdminLogin'; // ✅ Added
+
+/* Admin Protection */
+import AdminProtectedRoute from './components/admin/AdminProtectedRoute'; // ✅ Added
 
 /* Chat */
 import ChatContainer from './components/chat/ChatContainer';
@@ -115,9 +119,15 @@ const App = () => {
         <Route path="/video" element={<VideoPage />} />
         <Route path="/comments" element={<CommentsPage />} />
 
-        {/* Admin (full isolated) */}
-        <Route path="/admin/*" element={<AdminPage />} />
+        {/* Admin Login */}
+        <Route path="/admin/login" element={<AdminLogin />} /> {/* ✅ Added */}
 
+        {/* Protected Admin Routes */}
+        <Route element={<AdminProtectedRoute />}> {/* ✅ Added */}
+          <Route path="/admin/*" element={<AdminPage />} />
+        </Route>
+
+        {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
 
