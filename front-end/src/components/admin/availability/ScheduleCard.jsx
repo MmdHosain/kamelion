@@ -1,250 +1,250 @@
-import React from 'react';
-import { ChevronUp, ChevronDown, Trash2 } from 'lucide-react';
+// ScheduleCard.jsx — Full corrected component
 
-// ─────────────────────────────────────────────
-//  CONSTANTS
-// ─────────────────────────────────────────────
-const DAYS = [
-  { key: 'Sun', label: 'S' },
-  { key: 'Mon', label: 'M' },
-  { key: 'Tue', label: 'T' },
-  { key: 'Wed', label: 'W' },
-  { key: 'Thu', label: 'T' },
-  { key: 'Fri', label: 'F' },
-  { key: 'Sat', label: 'S' },
-];
+import React, { useCallback } from 'react';
+import { Trash2, ChevronUp, ChevronDown } from 'lucide-react';
 
-const SLOT_STEPS = [10, 15, 20, 30, 45, 60];
-const GAP_STEPS  = [0, 5, 10, 15, 20, 30];
+// ─────────────────────────────────────────────────────────────────────────────
+// SUB-COMPONENTS
+// ─────────────────────────────────────────────────────────────────────────────
 
-// ─────────────────────────────────────────────
-//  INTERNAL SUB-COMPONENTS (private to this file)
-// ─────────────────────────────────────────────
-
-/** HH:MM time input with label underneath */
-const TimeField = ({ value, onChange }) => (
-  <div className="flex flex-col gap-1.5">
-    <input
-      type="time"
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      className="
-        w-28 px-3 py-2 text-sm font-semibold text-gray-700
-        border border-gray-200 rounded-lg bg-white
-        focus:outline-none focus:ring-2 focus:ring-[#2F5D50]/25 focus:border-[#2F5D50]
-        transition-all duration-150 cursor-pointer
-        [&::-webkit-calendar-picker-indicator]:opacity-0
-        [&::-webkit-calendar-picker-indicator]:absolute
-      "
-    />
-    <span className="text-[10px] text-gray-400 tracking-widest font-medium pl-1">
-      HH:MM
-    </span>
-  </div>
-);
-
-/** Step spinner — cycles through a fixed options array */
-const StepSpinner = ({ value, options, onChange }) => {
-  const index   = options.indexOf(value);
-  const canUp   = index < options.length - 1;
-  const canDown = index > 0;
+/** Compact number spinner with proportionally sized chevrons */
+const Spinner = ({ value, min = 5, max = 120, step = 5, onChange }) => {
+  const increment = () => onChange(Math.min(value + step, max));
+  const decrement = () => onChange(Math.max(value - step, min));
 
   return (
-    <div className="flex items-stretch border border-gray-200 rounded-lg overflow-hidden bg-white w-24">
-      {/* Value display */}
-      <span className="flex-1 flex items-center justify-center text-sm font-semibold text-gray-700 select-none">
-        {value}
-      </span>
-
-      {/* Arrow column */}
-      <div className="flex flex-col border-l border-gray-200">
+    <div className="flex flex-col items-center w-[72px]">
+      <div className="flex flex-col items-center border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm w-full">
+        {/* Up arrow */}
         <button
           type="button"
-          onClick={() => canUp && onChange(options[index + 1])}
-          disabled={!canUp}
+          onClick={increment}
           className="
-            flex items-center justify-center px-2 py-1.5
-            text-gray-400 hover:text-[#2F5D50] hover:bg-gray-50
-            disabled:opacity-30 disabled:cursor-not-allowed
-            transition-colors duration-100
+            w-full flex items-center justify-center
+            h-6                          
+            hover:bg-gray-50 active:bg-gray-100
+            transition-colors
+            border-b border-gray-100
           "
-          aria-label="Increase"
         >
-          <ChevronUp size={13} strokeWidth={2.5} />
+          <ChevronUp size={12} strokeWidth={2.5} className="text-gray-500" />
         </button>
 
-        <div className="h-px bg-gray-200" />
+        {/* Value display */}
+        <div className="
+          w-full h-9
+          flex items-center justify-center
+          text-sm font-semibold text-gray-800
+          select-none
+        ">
+          {value}
+        </div>
 
+        {/* Down arrow */}
         <button
           type="button"
-          onClick={() => canDown && onChange(options[index - 1])}
-          disabled={!canDown}
+          onClick={decrement}
           className="
-            flex items-center justify-center px-2 py-1.5
-            text-gray-400 hover:text-[#2F5D50] hover:bg-gray-50
-            disabled:opacity-30 disabled:cursor-not-allowed
-            transition-colors duration-100
+            w-full flex items-center justify-center
+            h-6                          
+            hover:bg-gray-50 active:bg-gray-100
+            transition-colors
+            border-t border-gray-100
           "
-          aria-label="Decrease"
         >
-          <ChevronDown size={13} strokeWidth={2.5} />
+          <ChevronDown size={12} strokeWidth={2.5} className="text-gray-500" />
         </button>
       </div>
     </div>
   );
 };
 
-/** Custom toggle switch */
-const ToggleSwitch = ({ checked, onChange }) => (
+/** Correctly proportioned toggle switch */
+const Toggle = ({ checked, onChange }) => (
   <button
     type="button"
     role="switch"
     aria-checked={checked}
     onClick={() => onChange(!checked)}
     className={`
-      relative inline-flex items-center w-12 h-6 rounded-full
-      transition-colors duration-200 focus:outline-none
-      focus-visible:ring-2 focus-visible:ring-[#2F5D50]/40
+      relative inline-flex items-center
+      w-10 h-[22px]           
+      rounded-full
+      transition-colors duration-200 ease-in-out
+      focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1
+      focus-visible:ring-[#2F5D50]
       ${checked ? 'bg-[#2F5D50]' : 'bg-gray-300'}
     `}
   >
+    {/* Thumb */}
     <span
       className={`
-        inline-block w-[18px] h-[18px] bg-white rounded-full shadow-md
-        transform transition-transform duration-200
-        ${checked ? 'translate-x-6' : 'translate-x-1'}
+        absolute top-[3px]
+        w-4 h-4                 
+        rounded-full bg-white
+        shadow-[0_1px_3px_rgba(0,0,0,0.25)]
+        transition-transform duration-200 ease-in-out
+        ${checked ? 'translate-x-[22px]' : 'translate-x-[3px]'}
       `}
     />
   </button>
 );
 
-/** Day-of-week circular pill */
-const DayPill = ({ label, active, onClick }) => (
-  <button
-    type="button"
-    onClick={onClick}
-    className={`
-      w-9 h-9 rounded-full text-xs font-semibold
-      transition-all duration-150 focus:outline-none
-      focus-visible:ring-2 focus-visible:ring-[#2F5D50]/40
-      ${active
-        ? 'bg-[#2F5D50] text-white shadow-sm'
-        : 'bg-white border border-gray-300 text-gray-400 hover:border-[#2F5D50] hover:text-[#2F5D50]'
-      }
-    `}
-  >
-    {label}
-  </button>
+// ─────────────────────────────────────────────────────────────────────────────
+// TIME INPUT
+// ─────────────────────────────────────────────────────────────────────────────
+
+const TimeInput = ({ value, onChange }) => (
+  <input
+    type="time"
+    value={value}
+    onChange={(e) => onChange(e.target.value)}
+    className="
+      w-[112px] px-2.5 py-2
+      border border-gray-200 rounded-xl
+      text-sm font-medium text-gray-800
+      bg-white shadow-sm
+      focus:outline-none focus:ring-2 focus:ring-[#2F5D50]/40
+      appearance-none
+    "
+  />
 );
 
-// ─────────────────────────────────────────────
-//  MAIN EXPORTED COMPONENT
-// ─────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// DAY SELECTOR
+// ─────────────────────────────────────────────────────────────────────────────
 
-/**
- * ScheduleCard
- *
- * @param {object}   schedule  - The full schedule object from parent state
- * @param {function} onChange  - (updatedSchedule) => void  — parent updates its array
- * @param {function} [onDelete] - () => void — optional delete handler
- */
-const ScheduleCard = ({ schedule, onChange, onDelete }) => {
+const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const DAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
-  /** Generic field updater — keeps all other fields intact */
-  const set = (field, value) => onChange({ ...schedule, [field]: value });
-
-  /** Toggle a day key in/out of the selectedDays array */
-  const toggleDay = (key) => {
-    const next = schedule.selectedDays.includes(key)
-      ? schedule.selectedDays.filter((d) => d !== key)
-      : [...schedule.selectedDays, key];
-    set('selectedDays', next);
+const DaySelector = ({ selectedDays, onChange }) => {
+  const toggle = (day) => {
+    const next = selectedDays.includes(day)
+      ? selectedDays.filter((d) => d !== day)
+      : [...selectedDays, day];
+    onChange(next);
   };
 
   return (
-    <div
-      className="
-        relative bg-white rounded-xl shadow-sm border border-gray-100
-        p-5 flex flex-col gap-5 w-full max-w-xs
-        hover:shadow-md transition-shadow duration-200
-      "
-    >
-      {/* ── Optional Delete Button ─────────────── */}
-      {onDelete && (
-        <button
-          type="button"
-          onClick={onDelete}
-          aria-label="Delete schedule"
-          className="
-            absolute top-3 right-3 p-1.5 rounded-lg
-            text-gray-300 hover:text-red-400 hover:bg-red-50
-            transition-colors duration-150
-          "
-        >
-          <Trash2 size={15} />
-        </button>
-      )}
+    <div className="flex items-center justify-between gap-1 w-full">
+      {DAYS.map((day, i) => {
+        const active = selectedDays.includes(day);
+        return (
+          <button
+            key={day}
+            type="button"
+            onClick={() => toggle(day)}
+            className={`
+              w-8 h-8 rounded-full           
+              text-[11px] font-semibold
+              flex items-center justify-center
+              transition-all duration-150
+              focus:outline-none
+              ${active
+                ? 'bg-[#2F5D50] text-white shadow-sm'
+                : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
+              }
+            `}
+          >
+            {DAY_LABELS[i]}
+          </button>
+        );
+      })}
+    </div>
+  );
+};
 
-      {/* ── ROW 1 : Time Range ─────────────────── */}
-      <div className="flex items-start gap-2">
-        <TimeField
-          value={schedule.startTime}
-          onChange={(v) => set('startTime', v)}
-        />
+// ─────────────────────────────────────────────────────────────────────────────
+// SCHEDULE CARD
+// ─────────────────────────────────────────────────────────────────────────────
 
-        <span className="text-sm text-gray-400 mt-2.5 select-none">to</span>
+const ScheduleCard = ({ schedule, onChange, onDelete }) => {
+  const update = useCallback(
+    (field, value) => onChange({ ...schedule, [field]: value }),
+    [schedule, onChange]
+  );
 
-        <TimeField
-          value={schedule.endTime}
-          onChange={(v) => set('endTime', v)}
-        />
+  return (
+    <div className="
+      bg-white rounded-2xl
+      p-4
+      shadow-[0_2px_12px_rgba(0,0,0,0.07)]
+      border border-gray-100
+      flex flex-col gap-4
+      w-full
+    ">
+
+      {/* ── Row 1: Time range + delete ── */}
+      <div className="flex items-center gap-2">
+        <TimeInput value={schedule.startTime} onChange={(v) => update('startTime', v)} />
+        <span className="text-xs text-gray-400 font-medium flex-shrink-0">to</span>
+        <TimeInput value={schedule.endTime} onChange={(v) => update('endTime', v)} />
+
+        {onDelete && (
+          <button
+            type="button"
+            onClick={onDelete}
+            aria-label="Delete schedule"
+            className="
+              ml-auto p-1.5 rounded-lg
+              text-gray-300 hover:text-red-400 hover:bg-red-50
+              transition-colors
+            "
+          >
+            <Trash2 size={15} strokeWidth={1.8} />
+          </button>
+        )}
       </div>
 
-      {/* ── ROW 2 : Slot Duration & Gap ────────── */}
-      <div className="flex items-start gap-4">
-        {/* Slot duration */}
-        <div className="flex flex-col gap-1.5">
-          <StepSpinner
-            value={schedule.slotDuration}
-            options={SLOT_STEPS}
-            onChange={(v) => set('slotDuration', v)}
-          />
-          <span className="text-[10px] text-gray-400 pl-1">
-            {schedule.slotDuration} min each
-          </span>
-        </div>
+      {/* HH:MM labels */}
+      <div className="flex gap-2 -mt-3 px-0.5">
+        <span className="text-[10px] text-gray-400 w-[112px] text-center">HH:MM</span>
+        <span className="text-[10px] text-gray-400 w-[112px] text-center">HH:MM</span>
+      </div>
 
-        {/* Gap duration */}
-        <div className="flex flex-col gap-1.5">
-          <StepSpinner
+      {/* ── Row 2: Gap + Slot spinners + Toggle ── */}
+      <div className="flex items-center gap-3">
+
+        {/* Gap spinner */}
+        <div className="flex flex-col items-center gap-1">
+          <Spinner
             value={schedule.gapDuration}
-            options={GAP_STEPS}
-            onChange={(v) => set('gapDuration', v)}
+            onChange={(v) => update('gapDuration', v)}
           />
-          <span className="text-[10px] text-gray-400 pl-1">
-            {schedule.gapDuration} min gap
+          <span className="text-[10px] text-gray-400 whitespace-nowrap">
+            min gap {schedule.gapDuration}
+          </span>
+        </div>
+
+        {/* Slot spinner */}
+        <div className="flex flex-col items-center gap-1">
+          <Spinner
+            value={schedule.slotDuration}
+            onChange={(v) => update('slotDuration', v)}
+          />
+          <span className="text-[10px] text-gray-400 whitespace-nowrap">
+            min each {schedule.slotDuration}
+          </span>
+        </div>
+
+        {/* Toggle — pushed to the right */}
+        <div className="ml-auto flex flex-col items-center gap-1">
+          <Toggle
+            checked={schedule.isActive}
+            onChange={(v) => update('isActive', v)}
+          />
+          <span className="text-[10px] text-gray-400">
+            {schedule.isActive ? 'active' : 'paused'}
           </span>
         </div>
       </div>
 
-      {/* ── ROW 3 : Toggle + Day Selector ─────── */}
-      <div className="flex items-center gap-3 flex-wrap">
-        <ToggleSwitch
-          checked={schedule.isActive}
-          onChange={(v) => set('isActive', v)}
-        />
+      {/* ── Row 3: Day selector ── */}
+      <DaySelector
+        selectedDays={schedule.selectedDays}
+        onChange={(v) => update('selectedDays', v)}
+      />
 
-        <div className="flex items-center gap-1.5">
-          {DAYS.map(({ key, label }) => (
-            <DayPill
-              key={key}
-              label={label}
-              active={schedule.selectedDays.includes(key)}
-              onClick={() => toggleDay(key)}
-            />
-          ))}
-        </div>
-      </div>
     </div>
   );
 };
