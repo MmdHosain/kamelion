@@ -1,121 +1,186 @@
-// ScheduleCard.jsx — Full corrected component
+// ScheduleCard.jsx
 
 import React, { useCallback } from 'react';
-import { Trash2, ChevronUp, ChevronDown } from 'lucide-react';
+import { Trash2, ChevronUp, ChevronDown, Clock } from 'lucide-react';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SUB-COMPONENTS
+// HELPERS
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Compact number spinner with proportionally sized chevrons */
-const Spinner = ({ value, min = 5, max = 120, step = 5, onChange }) => {
+/** Convert "HH:MM" (24h) → "HH:MM AM/PM" for display */
+const to12Hour = (time24) => {
+  if (!time24) return '';
+  const [hStr, mStr] = time24.split(':');
+  let h = parseInt(hStr, 10);
+  const m = mStr ?? '00';
+  const period = h >= 12 ? 'PM' : 'AM';
+  h = h % 12 || 12;
+  return `${String(h).padStart(2, '0')}:${m} ${period}`;
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TIME INPUT  — native picker hidden behind a styled display chip
+// ─────────────────────────────────────────────────────────────────────────────
+
+const TimeInput = ({ value, onChange }) => (
+  <label className="relative flex items-center cursor-pointer group">
+    {/* Visible styled box */}
+    <div className="
+      flex items-center justify-between gap-2
+      w-[130px] px-3 py-[9px]
+      bg-white border border-gray-200 rounded-xl
+      shadow-sm
+      group-focus-within:ring-2 group-focus-within:ring-[#2F5D50]/30
+      group-focus-within:border-[#2F5D50]/50
+      transition-all
+    ">
+      <span className="text-[13px] font-medium text-gray-700 leading-none">
+        {to12Hour(value)}
+      </span>
+      <Clock size={13} strokeWidth={1.8} className="text-gray-400 flex-shrink-0" />
+    </div>
+
+    {/* Native time picker — invisible, sits on top */}
+    <input
+      type="time"
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className="
+        absolute inset-0 w-full h-full
+        opacity-0 cursor-pointer
+      "
+    />
+  </label>
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SPINNER  — vertical box: chevron-up / value / chevron-down
+// ─────────────────────────────────────────────────────────────────────────────
+
+const Spinner = ({ value, label, min = 5, max = 120, step = 5, onChange }) => {
   const increment = () => onChange(Math.min(value + step, max));
   const decrement = () => onChange(Math.max(value - step, min));
 
   return (
-    <div className="flex flex-col items-center w-[72px]">
-      <div className="flex flex-col items-center border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm w-full">
-        {/* Up arrow */}
+    <div className="flex flex-col items-center gap-[6px]">
+
+      {/* The vertical pill box */}
+      <div className="
+        flex flex-col items-center
+        w-[58px]
+        border border-gray-200 rounded-xl
+        overflow-hidden bg-white
+        shadow-sm
+        divide-y divide-gray-100
+      ">
+        {/* ▲ Up */}
         <button
           type="button"
           onClick={increment}
+          aria-label="Increase"
           className="
-            w-full flex items-center justify-center
-            h-6                          
+            w-full h-7
+            flex items-center justify-center
             hover:bg-gray-50 active:bg-gray-100
             transition-colors
-            border-b border-gray-100
           "
         >
-          <ChevronUp size={12} strokeWidth={2.5} className="text-gray-500" />
+          <ChevronUp size={13} strokeWidth={2.5} className="text-gray-400" />
         </button>
 
-        {/* Value display */}
+        {/* Value */}
         <div className="
-          w-full h-9
+          w-full h-10
           flex items-center justify-center
-          text-sm font-semibold text-gray-800
-          select-none
+          text-[15px] font-semibold text-gray-800
+          select-none bg-white
         ">
           {value}
         </div>
 
-        {/* Down arrow */}
+        {/* ▼ Down */}
         <button
           type="button"
           onClick={decrement}
+          aria-label="Decrease"
           className="
-            w-full flex items-center justify-center
-            h-6                          
+            w-full h-7
+            flex items-center justify-center
             hover:bg-gray-50 active:bg-gray-100
             transition-colors
-            border-t border-gray-100
           "
         >
-          <ChevronDown size={12} strokeWidth={2.5} className="text-gray-500" />
+          <ChevronDown size={13} strokeWidth={2.5} className="text-gray-400" />
         </button>
       </div>
+
+      {/* Label below box */}
+      {label && (
+        <span className="text-[10px] text-gray-400 text-center leading-tight whitespace-nowrap">
+          {label}
+        </span>
+      )}
     </div>
   );
 };
 
-/** Correctly proportioned toggle switch */
+// ─────────────────────────────────────────────────────────────────────────────
+// TOGGLE  — fixed thumb overflow, perfectly contained within track
+// ─────────────────────────────────────────────────────────────────────────────
+
 const Toggle = ({ checked, onChange }) => (
-  <button
-    type="button"
-    role="switch"
-    aria-checked={checked}
-    onClick={() => onChange(!checked)}
-    className={`
-      relative inline-flex items-center
-      w-10 h-[22px]           
-      rounded-full
-      transition-colors duration-200 ease-in-out
-      focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1
-      focus-visible:ring-[#2F5D50]
-      ${checked ? 'bg-[#2F5D50]' : 'bg-gray-300'}
-    `}
-  >
-    {/* Thumb */}
-    <span
+  <div className="flex flex-col items-center gap-[6px]">
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      onClick={() => onChange(!checked)}
       className={`
-        absolute top-[3px]
-        w-4 h-4                 
-        rounded-full bg-white
-        shadow-[0_1px_3px_rgba(0,0,0,0.25)]
-        transition-transform duration-200 ease-in-out
-        ${checked ? 'translate-x-[22px]' : 'translate-x-[3px]'}
+        relative
+        w-11 h-6
+        rounded-full
+        transition-colors duration-200 ease-in-out
+        focus:outline-none focus-visible:ring-2
+        focus-visible:ring-offset-1 focus-visible:ring-[#2F5D50]
+        flex-shrink-0
+        ${checked ? 'bg-[#2F5D50]' : 'bg-gray-300'}
       `}
-    />
-  </button>
-);
+    >
+      {/*
+        Thumb sizing math:
+          Track h-6 = 24px
+          Thumb = 16px  (24 - 2×4px padding = 16)
+          Thumb top  = (24 - 16) / 2 = 4px  →  top-1
+          Off-state  left = 4px              →  left-1   (translate-x-0)
+          On-state   left = 44 - 4 - 16 = 24px → translate-x-[18px]
+          (44 = w-11 in px, 4 = left-1, 16 = thumb width)
+      */}
+      <span
+        className={`
+          absolute
+          top-1 left-1
+          w-4 h-4
+          rounded-full
+          bg-white
+          shadow-sm
+          transition-transform duration-200 ease-in-out
+          ${checked ? 'translate-x-[18px]' : 'translate-x-0'}
+        `}
+      />
+    </button>
 
-// ─────────────────────────────────────────────────────────────────────────────
-// TIME INPUT
-// ─────────────────────────────────────────────────────────────────────────────
-
-const TimeInput = ({ value, onChange }) => (
-  <input
-    type="time"
-    value={value}
-    onChange={(e) => onChange(e.target.value)}
-    className="
-      w-[112px] px-2.5 py-2
-      border border-gray-200 rounded-xl
-      text-sm font-medium text-gray-800
-      bg-white shadow-sm
-      focus:outline-none focus:ring-2 focus:ring-[#2F5D50]/40
-      appearance-none
-    "
-  />
+    <span className="text-[10px] text-gray-400 leading-none">
+      {checked ? 'active' : 'paused'}
+    </span>
+  </div>
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
 // DAY SELECTOR
 // ─────────────────────────────────────────────────────────────────────────────
 
-const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-const DAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+const DAYS      = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const DAY_SHORT = ['S',   'M',   'T',   'W',   'T',   'F',   'S'  ];
 
 const DaySelector = ({ selectedDays, onChange }) => {
   const toggle = (day) => {
@@ -131,22 +196,21 @@ const DaySelector = ({ selectedDays, onChange }) => {
         const active = selectedDays.includes(day);
         return (
           <button
-            key={day}
+            key={`${day}-${i}`}
             type="button"
             onClick={() => toggle(day)}
             className={`
-              w-8 h-8 rounded-full           
+              w-8 h-8 rounded-full
               text-[11px] font-semibold
               flex items-center justify-center
-              transition-all duration-150
-              focus:outline-none
+              transition-all duration-150 focus:outline-none
               ${active
                 ? 'bg-[#2F5D50] text-white shadow-sm'
                 : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
               }
             `}
           >
-            {DAY_LABELS[i]}
+            {DAY_SHORT[i]}
           </button>
         );
       })}
@@ -166,80 +230,84 @@ const ScheduleCard = ({ schedule, onChange, onDelete }) => {
 
   return (
     <div className="
+      relative                         
       bg-white rounded-2xl
-      p-4
-      shadow-[0_2px_12px_rgba(0,0,0,0.07)]
+      p-4 pt-8                         
+      shadow-[0_2px_16px_rgba(0,0,0,0.07)]
       border border-gray-100
       flex flex-col gap-4
       w-full
     ">
 
-      {/* ── Row 1: Time range + delete ── */}
+      {/* ── Trash icon — absolute top-left ──────────────────────────────── */}
+      {onDelete && (
+        <button
+          type="button"
+          onClick={onDelete}
+          aria-label="Delete schedule"
+          className="
+            absolute top-3 left-3
+            p-1.5 rounded-lg
+            text-gray-300
+            hover:text-red-400 hover:bg-red-50
+            transition-colors duration-150
+          "
+        >
+          <Trash2 size={14} strokeWidth={1.8} />
+        </button>
+      )}
+
+      {/* ── Row 1: Time range ───────────────────────────────────────────── */}
       <div className="flex items-center gap-2">
-        <TimeInput value={schedule.startTime} onChange={(v) => update('startTime', v)} />
+        <TimeInput
+          value={schedule.startTime}
+          onChange={(v) => update('startTime', v)}
+        />
         <span className="text-xs text-gray-400 font-medium flex-shrink-0">to</span>
-        <TimeInput value={schedule.endTime} onChange={(v) => update('endTime', v)} />
-
-        {onDelete && (
-          <button
-            type="button"
-            onClick={onDelete}
-            aria-label="Delete schedule"
-            className="
-              ml-auto p-1.5 rounded-lg
-              text-gray-300 hover:text-red-400 hover:bg-red-50
-              transition-colors
-            "
-          >
-            <Trash2 size={15} strokeWidth={1.8} />
-          </button>
-        )}
+        <TimeInput
+          value={schedule.endTime}
+          onChange={(v) => update('endTime', v)}
+        />
       </div>
 
-      {/* HH:MM labels */}
-      <div className="flex gap-2 -mt-3 px-0.5">
-        <span className="text-[10px] text-gray-400 w-[112px] text-center">HH:MM</span>
-        <span className="text-[10px] text-gray-400 w-[112px] text-center">HH:MM</span>
+      {/* HH:MM hint labels */}
+      <div className="flex gap-2 -mt-3">
+        <span className="text-[10px] text-gray-400 w-[130px] text-center">HH:MM</span>
+        <span className="text-[10px] text-gray-400 w-[130px] text-center">HH:MM</span>
       </div>
 
-      {/* ── Row 2: Gap + Slot spinners + Toggle ── */}
-      <div className="flex items-center gap-3">
+      {/* ── Row 2: Spinners + Toggle ─────────────────────────────────────── */}
+      {/*
+        Using items-end so the labels below each spinner / toggle
+        all align at the same baseline.
+      */}
+      <div className="flex items-end gap-4">
 
         {/* Gap spinner */}
-        <div className="flex flex-col items-center gap-1">
-          <Spinner
-            value={schedule.gapDuration}
-            onChange={(v) => update('gapDuration', v)}
-          />
-          <span className="text-[10px] text-gray-400 whitespace-nowrap">
-            min gap {schedule.gapDuration}
-          </span>
-        </div>
+        <Spinner
+          value={schedule.gapDuration}
+          label={`min gap ${schedule.gapDuration}`}
+          onChange={(v) => update('gapDuration', v)}
+        />
 
         {/* Slot spinner */}
-        <div className="flex flex-col items-center gap-1">
-          <Spinner
-            value={schedule.slotDuration}
-            onChange={(v) => update('slotDuration', v)}
-          />
-          <span className="text-[10px] text-gray-400 whitespace-nowrap">
-            min each {schedule.slotDuration}
-          </span>
-        </div>
+        <Spinner
+          value={schedule.slotDuration}
+          label={`min each ${schedule.slotDuration}`}
+          onChange={(v) => update('slotDuration', v)}
+        />
 
-        {/* Toggle — pushed to the right */}
-        <div className="ml-auto flex flex-col items-center gap-1">
-          <Toggle
-            checked={schedule.isActive}
-            onChange={(v) => update('isActive', v)}
-          />
-          <span className="text-[10px] text-gray-400">
-            {schedule.isActive ? 'active' : 'paused'}
-          </span>
-        </div>
+        {/* Spacer pushes toggle to the right */}
+        <div className="flex-1" />
+
+        {/* Toggle */}
+        <Toggle
+          checked={schedule.isActive}
+          onChange={(v) => update('isActive', v)}
+        />
       </div>
 
-      {/* ── Row 3: Day selector ── */}
+      {/* ── Row 3: Day selector ─────────────────────────────────────────── */}
       <DaySelector
         selectedDays={schedule.selectedDays}
         onChange={(v) => update('selectedDays', v)}
