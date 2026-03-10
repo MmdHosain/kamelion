@@ -3,6 +3,7 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { Plus, Save } from 'lucide-react';
 import ScheduleCard from '../../components/admin/availability/ScheduleCard';
+import ReservationsList from '../../components/admin/reservations/ReservationsList';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // CONSTANTS
@@ -270,8 +271,10 @@ const AppointmentsAvailability = () => {
           </div>
         )}
 
+
+        {/* ← NEW: Reservations tab — full list UI */}
+        {activeTab === 'Reservations' && <ReservationsList />}
         {/* 4. Placeholder content for other tabs */}
-        {activeTab === 'Reservations' && <Placeholder label="Reservations" />}
         {activeTab === 'Exceptions'   && <Placeholder label="Exceptions" />}
 
       </div>
