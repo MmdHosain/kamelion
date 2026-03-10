@@ -1,13 +1,12 @@
 // ScheduleCard.jsx
 
 import React, { useCallback } from 'react';
-import { Trash2, ChevronUp, ChevronDown, Clock } from 'lucide-react';
+import { Trash2, ChevronUp, ChevronDown, Clock, User } from 'lucide-react';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // HELPERS
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Convert "HH:MM" (24h) → "HH:MM AM/PM" for display */
 const to12Hour = (time24) => {
   if (!time24) return '';
   const [hStr, mStr] = time24.split(':');
@@ -19,12 +18,40 @@ const to12Hour = (time24) => {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// TIME INPUT  — native picker hidden behind a styled display chip
+// PATIENT NAME INPUT
+// ─────────────────────────────────────────────────────────────────────────────
+
+const PatientNameInput = ({ value, onChange }) => (
+  <div className="flex items-center gap-2 pb-3 border-b border-gray-100">
+    <User
+      size={13}
+      strokeWidth={1.8}
+      className="text-gray-300 flex-shrink-0"
+    />
+    <input
+      type="text"
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder="Schedule title or patient name…"
+      maxLength={60}
+      className="
+        flex-1
+        bg-transparent
+        text-[13px] font-medium text-gray-700
+        placeholder:text-gray-300
+        outline-none border-none
+        leading-none
+      "
+    />
+  </div>
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TIME INPUT
 // ─────────────────────────────────────────────────────────────────────────────
 
 const TimeInput = ({ value, onChange }) => (
   <label className="relative flex items-center cursor-pointer group">
-    {/* Visible styled box */}
     <div className="
       flex items-center justify-between gap-2
       w-[130px] px-3 py-[9px]
@@ -39,22 +66,17 @@ const TimeInput = ({ value, onChange }) => (
       </span>
       <Clock size={13} strokeWidth={1.8} className="text-gray-400 flex-shrink-0" />
     </div>
-
-    {/* Native time picker — invisible, sits on top */}
     <input
       type="time"
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="
-        absolute inset-0 w-full h-full
-        opacity-0 cursor-pointer
-      "
+      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
     />
   </label>
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SPINNER  — vertical box: chevron-up / value / chevron-down
+// SPINNER
 // ─────────────────────────────────────────────────────────────────────────────
 
 const Spinner = ({ value, label, min = 5, max = 120, step = 5, onChange }) => {
@@ -63,58 +85,33 @@ const Spinner = ({ value, label, min = 5, max = 120, step = 5, onChange }) => {
 
   return (
     <div className="flex flex-col items-center gap-[6px]">
-
-      {/* The vertical pill box */}
       <div className="
         flex flex-col items-center
         w-[58px]
         border border-gray-200 rounded-xl
-        overflow-hidden bg-white
-        shadow-sm
+        overflow-hidden bg-white shadow-sm
         divide-y divide-gray-100
       ">
-        {/* ▲ Up */}
         <button
           type="button"
           onClick={increment}
           aria-label="Increase"
-          className="
-            w-full h-7
-            flex items-center justify-center
-            hover:bg-gray-50 active:bg-gray-100
-            transition-colors
-          "
+          className="w-full h-7 flex items-center justify-center hover:bg-gray-50 active:bg-gray-100 transition-colors"
         >
           <ChevronUp size={13} strokeWidth={2.5} className="text-gray-400" />
         </button>
-
-        {/* Value */}
-        <div className="
-          w-full h-10
-          flex items-center justify-center
-          text-[15px] font-semibold text-gray-800
-          select-none bg-white
-        ">
+        <div className="w-full h-10 flex items-center justify-center text-[15px] font-semibold text-gray-800 select-none bg-white">
           {value}
         </div>
-
-        {/* ▼ Down */}
         <button
           type="button"
           onClick={decrement}
           aria-label="Decrease"
-          className="
-            w-full h-7
-            flex items-center justify-center
-            hover:bg-gray-50 active:bg-gray-100
-            transition-colors
-          "
+          className="w-full h-7 flex items-center justify-center hover:bg-gray-50 active:bg-gray-100 transition-colors"
         >
           <ChevronDown size={13} strokeWidth={2.5} className="text-gray-400" />
         </button>
       </div>
-
-      {/* Label below box */}
       {label && (
         <span className="text-[10px] text-gray-400 text-center leading-tight whitespace-nowrap">
           {label}
@@ -125,7 +122,7 @@ const Spinner = ({ value, label, min = 5, max = 120, step = 5, onChange }) => {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// TOGGLE  — fixed thumb overflow, perfectly contained within track
+// TOGGLE
 // ─────────────────────────────────────────────────────────────────────────────
 
 const Toggle = ({ checked, onChange }) => (
@@ -136,9 +133,7 @@ const Toggle = ({ checked, onChange }) => (
       aria-checked={checked}
       onClick={() => onChange(!checked)}
       className={`
-        relative
-        w-11 h-6
-        rounded-full
+        relative w-11 h-6 rounded-full
         transition-colors duration-200 ease-in-out
         focus:outline-none focus-visible:ring-2
         focus-visible:ring-offset-1 focus-visible:ring-[#2F5D50]
@@ -146,29 +141,15 @@ const Toggle = ({ checked, onChange }) => (
         ${checked ? 'bg-[#2F5D50]' : 'bg-gray-300'}
       `}
     >
-      {/*
-        Thumb sizing math:
-          Track h-6 = 24px
-          Thumb = 16px  (24 - 2×4px padding = 16)
-          Thumb top  = (24 - 16) / 2 = 4px  →  top-1
-          Off-state  left = 4px              →  left-1   (translate-x-0)
-          On-state   left = 44 - 4 - 16 = 24px → translate-x-[18px]
-          (44 = w-11 in px, 4 = left-1, 16 = thumb width)
-      */}
       <span
         className={`
-          absolute
-          top-1 left-1
-          w-4 h-4
-          rounded-full
-          bg-white
-          shadow-sm
+          absolute top-1 left-1
+          w-4 h-4 rounded-full bg-white shadow-sm
           transition-transform duration-200 ease-in-out
           ${checked ? 'translate-x-[18px]' : 'translate-x-0'}
         `}
       />
     </button>
-
     <span className="text-[10px] text-gray-400 leading-none">
       {checked ? 'active' : 'paused'}
     </span>
@@ -200,8 +181,7 @@ const DaySelector = ({ selectedDays, onChange }) => {
             type="button"
             onClick={() => toggle(day)}
             className={`
-              w-8 h-8 rounded-full
-              text-[11px] font-semibold
+              w-8 h-8 rounded-full text-[11px] font-semibold
               flex items-center justify-center
               transition-all duration-150 focus:outline-none
               ${active
@@ -230,16 +210,16 @@ const ScheduleCard = ({ schedule, onChange, onDelete }) => {
 
   return (
     <div className="
-      relative                         
+      relative
       bg-white rounded-2xl
-      p-4 pt-8                         
+      p-4 pt-8
       shadow-[0_2px_16px_rgba(0,0,0,0.07)]
       border border-gray-100
       flex flex-col gap-4
       w-full
     ">
 
-      {/* ── Trash icon — absolute top-left ──────────────────────────────── */}
+      {/* ── Trash icon — absolute top-left ───────────────────────────────── */}
       {onDelete && (
         <button
           type="button"
@@ -257,7 +237,13 @@ const ScheduleCard = ({ schedule, onChange, onDelete }) => {
         </button>
       )}
 
-      {/* ── Row 1: Time range ───────────────────────────────────────────── */}
+      {/* ── Row 0: Patient Name ──────────────────────────────────────────── */}
+      <PatientNameInput
+        value={schedule.patientName}
+        onChange={(v) => update('patientName', v)}
+      />
+
+      {/* ── Row 1: Time range ────────────────────────────────────────────── */}
       <div className="flex items-center gap-2">
         <TimeInput
           value={schedule.startTime}
@@ -277,37 +263,25 @@ const ScheduleCard = ({ schedule, onChange, onDelete }) => {
       </div>
 
       {/* ── Row 2: Spinners + Toggle ─────────────────────────────────────── */}
-      {/*
-        Using items-end so the labels below each spinner / toggle
-        all align at the same baseline.
-      */}
       <div className="flex items-end gap-4">
-
-        {/* Gap spinner */}
         <Spinner
           value={schedule.gapDuration}
           label={`min gap ${schedule.gapDuration}`}
           onChange={(v) => update('gapDuration', v)}
         />
-
-        {/* Slot spinner */}
         <Spinner
           value={schedule.slotDuration}
           label={`min each ${schedule.slotDuration}`}
           onChange={(v) => update('slotDuration', v)}
         />
-
-        {/* Spacer pushes toggle to the right */}
         <div className="flex-1" />
-
-        {/* Toggle */}
         <Toggle
           checked={schedule.isActive}
           onChange={(v) => update('isActive', v)}
         />
       </div>
 
-      {/* ── Row 3: Day selector ─────────────────────────────────────────── */}
+      {/* ── Row 3: Day selector ──────────────────────────────────────────── */}
       <DaySelector
         selectedDays={schedule.selectedDays}
         onChange={(v) => update('selectedDays', v)}

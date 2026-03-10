@@ -1,3 +1,5 @@
+// AppointmentsAvailability.jsx
+
 import React, { useState, useCallback } from 'react';
 import { Plus, Save } from 'lucide-react';
 import ScheduleCard from '../../components/admin/availability/ScheduleCard';
@@ -8,15 +10,32 @@ import ScheduleCard from '../../components/admin/availability/ScheduleCard';
 
 const TABS = ['Reservations', 'Exceptions', 'Availability'];
 
-/** Factory — always returns a fresh schedule with safe defaults */
-const createSchedule = () => ({
-  id: `schedule_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
-  startTime: '09:00',
-  endTime: '17:00',
+/**
+ * Factory — always returns a fresh schedule with safe defaults.
+ * Pass `overrides` to pre-fill specific fields (e.g. seed data).
+ *
+ * Shape (matches backend API contract):
+ * {
+ *   id           : string   — local key (swap with DB id after POST)
+ *   patientName  : string   — schedule title / patient label
+ *   startTime    : string   — "HH:MM" (24-hour)
+ *   endTime      : string   — "HH:MM" (24-hour)
+ *   slotDuration : number   — minutes per booking slot
+ *   gapDuration  : number   — buffer minutes between slots
+ *   isActive     : boolean  — schedule is live / paused
+ *   selectedDays : string[] — subset of ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']
+ * }
+ */
+const createSchedule = (overrides = {}) => ({
+  id:           `schedule_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+  patientName:  '',
+  startTime:    '09:00',
+  endTime:      '17:00',
   slotDuration: 30,
-  gapDuration: 15,
-  isActive: true,
+  gapDuration:  15,
+  isActive:     true,
   selectedDays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+  ...overrides,
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -35,45 +54,28 @@ const Placeholder = ({ label }) => (
 // ─────────────────────────────────────────────────────────────────────────────
 
 const AppointmentsAvailability = () => {
+
   // ── Tab state ──────────────────────────────────────────────────────────────
   const [activeTab, setActiveTab] = useState('Reservations');
 
   // ── Save feedback state ────────────────────────────────────────────────────
   const [saveStatus, setSaveStatus] = useState('idle'); // 'idle' | 'saving' | 'saved' | 'error'
 
-  /**
-   * BACKEND-READY SCHEDULE STATE
-   *
-   * Shape of each object (matches what your API expects):
-   * {
-   *   id           : string   — local stable key (replace with DB id after POST)
-   *   startTime    : string   — "HH:MM"  (24-hour)
-   *   endTime      : string   — "HH:MM"  (24-hour)
-   *   slotDuration : number   — minutes per booking slot
-   *   gapDuration  : number   — buffer minutes between slots
-   *   isActive     : boolean  — schedule is live / paused
-   *   selectedDays : string[] — subset of ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']
-   * }
-   */
+  // ── Schedule state ─────────────────────────────────────────────────────────
   const [schedules, setSchedules] = useState([
-    {
-      id: 'schedule_default_1',
-      startTime: '09:00',
-      endTime: '17:00',
-      slotDuration: 30,
-      gapDuration: 15,
-      isActive: true,
-      selectedDays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
-    },
-    {
-      id: 'schedule_default_2',
-      startTime: '09:00',
-      endTime: '17:00',
-      slotDuration: 30,
-      gapDuration: 15,
-      isActive: true,
-      selectedDays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
-    },
+    createSchedule({
+      id:          'schedule_default_1',
+      patientName: 'Morning Clinic',
+      startTime:   '09:00',
+      endTime:     '13:00',
+    }),
+    createSchedule({
+      id:          'schedule_default_2',
+      patientName: 'Afternoon Walk-ins',
+      startTime:   '14:00',
+      endTime:     '18:00',
+      selectedDays: ['Mon', 'Wed', 'Fri'],
+    }),
   ]);
 
   // ── CRUD handlers ──────────────────────────────────────────────────────────
@@ -119,26 +121,30 @@ const AppointmentsAvailability = () => {
   /**
    * saveSettings
    *
-   * Extracts the current schedules state and POSTs it to your backend.
+   * Serialises the current schedules state and POSTs it to your backend.
    * Wire the Authorization header to your auth token (JWT / session).
    *
-   * Expected request body:
+   * Request body shape:
    * {
-   *   schedules: [{ id, startTime, endTime, slotDuration, gapDuration, isActive, selectedDays }]
+   *   schedules: [{
+   *     id, patientName, startTime, endTime,
+   *     slotDuration, gapDuration, isActive, selectedDays
+   *   }]
    * }
    */
   const saveSettings = useCallback(async () => {
     setSaveStatus('saving');
 
-    // ── Payload ── (exactly what your backend will receive)
+    // Payload — exactly what the backend receives
     const payload = {
       schedules: schedules.map((s) => ({
-        id: s.id,
-        startTime: s.startTime,
-        endTime: s.endTime,
+        id:           s.id,
+        patientName:  s.patientName,   // ← included in API payload
+        startTime:    s.startTime,
+        endTime:      s.endTime,
         slotDuration: s.slotDuration,
-        gapDuration: s.gapDuration,
-        isActive: s.isActive,
+        gapDuration:  s.gapDuration,
+        isActive:     s.isActive,
         selectedDays: s.selectedDays,
       })),
     };
@@ -155,7 +161,7 @@ const AppointmentsAvailability = () => {
 
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
-      // Optional: use returned ids to reconcile local state with DB-generated ids
+      // Optional: reconcile local ids with DB-generated ids
       // const data = await response.json();
       // setSchedules(data.schedules);
 
@@ -168,19 +174,20 @@ const AppointmentsAvailability = () => {
     }
   }, [schedules]);
 
-  // ── Save button label helper ───────────────────────────────────────────────
+  // ── Save button helpers ────────────────────────────────────────────────────
+
   const saveLabel = {
-    idle: 'Save Settings',
+    idle:   'Save Settings',
     saving: 'Saving…',
-    saved: 'Saved ✓',
-    error: 'Error — Retry',
+    saved:  'Saved ✓',
+    error:  'Error — Retry',
   }[saveStatus];
 
   const saveBg = {
-    idle: 'bg-[#2F5D50] hover:bg-[#26503f]',
+    idle:   'bg-[#2F5D50] hover:bg-[#26503f]',
     saving: 'bg-[#2F5D50]/70 cursor-wait',
-    saved: 'bg-emerald-600',
-    error: 'bg-red-500 hover:bg-red-600',
+    saved:  'bg-emerald-600',
+    error:  'bg-red-500 hover:bg-red-600',
   }[saveStatus];
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -193,13 +200,12 @@ const AppointmentsAvailability = () => {
       {/* ── Dark Green Header ───────────────────────────────────────────── */}
       <div className="bg-[#2F5D50] px-4 sm:px-6 pt-6 pb-0 flex-shrink-0">
 
-        {/* Title row */}
+        {/* Title + Save row */}
         <div className="flex items-center justify-between mb-5">
           <h1 className="text-white text-xl sm:text-2xl font-semibold">
             Appointments
           </h1>
 
-          {/* Save button — visible on all screen sizes */}
           <button
             type="button"
             onClick={saveSettings}
@@ -248,22 +254,20 @@ const AppointmentsAvailability = () => {
 
             {/*
               RESPONSIVE CARD GRID
-              ─────────────────────────────────────────────
-              Mobile  (< sm) : 1 column, cards full-width
+              ────────────────────────────────────────────
+              Mobile  (< sm) : 1 column
               Tablet  (sm)   : 2 columns
-              Desktop (lg+)  : 3 columns
-              Cards keep their intrinsic max-width (max-w-xs)
-              and the grid stretches to fill available space.
+              Desktop (lg)   : 3 columns
+              Wide    (xl)   : 4 columns
             */}
-            <div
-              className="
-                grid gap-4
-                grid-cols-1
-                sm:grid-cols-2
-                lg:grid-cols-3
-                xl:grid-cols-4
-              "
-            >
+            <div className="
+              grid gap-4
+              grid-cols-1
+              sm:grid-cols-2
+              lg:grid-cols-3
+              xl:grid-cols-4
+            ">
+
               {/* Schedule cards */}
               {schedules.map((schedule) => (
                 <ScheduleCard
@@ -278,7 +282,7 @@ const AppointmentsAvailability = () => {
                 />
               ))}
 
-              {/* ── Add (+) Button Card ── */}
+              {/* ── Add (+) button card ── */}
               <div className="flex items-center justify-center min-h-[180px]">
                 <button
                   type="button"
@@ -286,31 +290,29 @@ const AppointmentsAvailability = () => {
                   aria-label="Add new schedule"
                   title="Add schedule"
                   className="
-                    w-16 h-16
-                    rounded-full
-                    bg-[#2a4e3f]
-                    text-white
+                    w-16 h-16 rounded-full
+                    bg-[#2a4e3f] text-white
                     flex items-center justify-center
                     shadow-[0_8px_24px_rgba(42,78,63,0.45)]
                     hover:bg-[#22423a]
                     hover:shadow-[0_12px_32px_rgba(42,78,63,0.55)]
-                    hover:scale-105
-                    active:scale-95
+                    hover:scale-105 active:scale-95
                     transition-all duration-200
                     focus:outline-none
-                    focus-visible:ring-4
-                    focus-visible:ring-[#2a4e3f]/40
+                    focus-visible:ring-4 focus-visible:ring-[#2a4e3f]/40
                   "
                 >
                   <Plus size={28} strokeWidth={2} />
                 </button>
               </div>
+
             </div>
 
             {/* Schedule count indicator */}
             <p className="text-xs text-gray-400 text-right pr-1">
               {schedules.length} schedule{schedules.length !== 1 ? 's' : ''} configured
             </p>
+
           </div>
         )}
 
