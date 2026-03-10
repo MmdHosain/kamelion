@@ -31,5 +31,9 @@ export const ADMIN_NAV_ITEMS = [
     label: 'Settings',
     icon: Settings,
     path: '/admin/settings'
+  },
+  { label: 'Appointments',
+    icon: Calendar,
+    path: '/admin/appointments' 
   }
 ];

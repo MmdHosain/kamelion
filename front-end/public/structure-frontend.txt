@@ -1,6 +1,7 @@
 ├── api
 │   ├── admin.js
-│   └── auth.js
+│   ├── auth.js
+│   └── schedules.js
 ├── App.css
 ├── App.jsx
 ├── assets
@@ -10,6 +11,8 @@
 │   └── message.types.ts
 ├── components
 │   ├── admin
+│   |   ├── admin
+|   │   │   └── ScheduleCard.jsx
 │   │   ├── AdminHeader.jsx
 │   │   ├── AdminLayout.jsx
 │   │   ├── AdminNavConfig.js
@@ -74,6 +77,7 @@
 │   │   ├── AdminLogin.jsx
 │   │   ├── AdminPage.jsx
 │   │   ├── ChatProfiles.jsx
+│   │   ├── AppointmentsAvailability.jsx
 │   │   └── ReservedTimes.jsx
 │   ├── CommentsPage.jsx
 │   ├── HomePage.jsx
