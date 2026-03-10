@@ -11,7 +11,7 @@
 │   └── message.types.ts
 ├── components
 │   ├── admin
-│   |   ├── admin
+│   |   ├── availability
 |   │   │   └── ScheduleCard.jsx
 │   │   ├── AdminHeader.jsx
 │   │   ├── AdminLayout.jsx

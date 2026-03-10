@@ -1,6 +1,6 @@
 // AppointmentsAvailability.jsx
 
-import React, { useState, useCallback, useRef } from 'react'; // ← DND: added useRef
+import React, { useState, useCallback, useRef } from 'react';
 import { Plus, Save } from 'lucide-react';
 import ScheduleCard from '../../components/admin/availability/ScheduleCard';
 
@@ -8,7 +8,7 @@ import ScheduleCard from '../../components/admin/availability/ScheduleCard';
 // CONSTANTS
 // ─────────────────────────────────────────────────────────────────────────────
 
-const TABS = ['Reservations', 'Exceptions', 'Availability'];
+const TABS = ['Availability', 'Reservations', 'Exceptions'];
 
 const createSchedule = (overrides = {}) => ({
   id:           `schedule_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
@@ -39,8 +39,9 @@ const Placeholder = ({ label }) => (
 
 const AppointmentsAvailability = () => {
 
-  const [activeTab,   setActiveTab]   = useState('Reservations');
-  const [saveStatus,  setSaveStatus]  = useState('idle');
+  // 1. Default tab is now 'Availability'
+  const [activeTab,  setActiveTab]  = useState('Availability');
+  const [saveStatus, setSaveStatus] = useState('idle');
 
   const [schedules, setSchedules] = useState([
     createSchedule({
@@ -59,16 +60,16 @@ const AppointmentsAvailability = () => {
   ]);
 
   // ─────────────────────────────────────────────────────────────────────────
-  // ← DND: Native HTML5 Drag & Drop refs
+  // DND: Native HTML5 Drag & Drop refs
   //
   // dragItem     — stores the INDEX of the schedule currently being dragged
   // dragOverItem — stores the INDEX of the schedule being hovered over
   // ─────────────────────────────────────────────────────────────────────────
-  const dragItem = useRef(null);
+  const dragItem     = useRef(null);
   const dragOverItem = useRef(null);
 
   // ─────────────────────────────────────────────────────────────────────────
-  // ← DND: handleSort
+  // DND: handleSort
   //
   // Called when drag ends (onDragEnd). Reorders the schedules array by:
   // 1. Making a copy of the current schedules
@@ -78,7 +79,6 @@ const AppointmentsAvailability = () => {
   // 5. Resetting the refs
   // ─────────────────────────────────────────────────────────────────────────
   const handleSort = useCallback(() => {
-    // Safety checks
     if (dragItem.current === null || dragOverItem.current === null) return;
     if (dragItem.current === dragOverItem.current) return;
 
@@ -87,18 +87,12 @@ const AppointmentsAvailability = () => {
 
     setSchedules((prevSchedules) => {
       const newSchedules = [...prevSchedules];
-      
-      // Remove the dragged item
       const draggedSchedule = newSchedules.splice(dragItemIndex, 1)[0];
-      
-      // Insert it at the new position
       newSchedules.splice(dragOverIndex, 0, draggedSchedule);
-      
       return newSchedules;
     });
 
-    // Reset refs
-    dragItem.current = null;
+    dragItem.current     = null;
     dragOverItem.current = null;
   }, []);
 
@@ -153,8 +147,19 @@ const AppointmentsAvailability = () => {
     }
   }, [schedules]);
 
-  const saveLabel = { idle: 'Save Settings', saving: 'Saving…', saved: 'Saved ✓', error: 'Error — Retry' }[saveStatus];
-  const saveBg    = { idle: 'bg-[#2F5D50] hover:bg-[#26503f]', saving: 'bg-[#2F5D50]/70 cursor-wait', saved: 'bg-emerald-600', error: 'bg-red-500 hover:bg-red-600' }[saveStatus];
+  const saveLabel = {
+    idle:   'Save Settings',
+    saving: 'Saving…',
+    saved:  'Saved ✓',
+    error:  'Error — Retry',
+  }[saveStatus];
+
+  const saveBg = {
+    idle:   'bg-[#2F5D50] hover:bg-[#26503f]',
+    saving: 'bg-[#2F5D50]/70 cursor-wait',
+    saved:  'bg-emerald-600',
+    error:  'bg-red-500 hover:bg-red-600',
+  }[saveStatus];
 
   // ─────────────────────────────────────────────────────────────────────────
   // RENDER
@@ -163,7 +168,7 @@ const AppointmentsAvailability = () => {
   return (
     <div className="-m-6 rounded-2xl overflow-hidden flex flex-col min-h-[calc(100vh-80px)]">
 
-      {/* Header */}
+      {/* ── Header ── */}
       <div className="bg-[#2F5D50] px-4 sm:px-6 pt-6 pb-0 flex-shrink-0">
         <div className="flex items-center justify-between mb-5">
           <h1 className="text-white text-xl sm:text-2xl font-semibold">Appointments</h1>
@@ -178,6 +183,7 @@ const AppointmentsAvailability = () => {
           </button>
         </div>
 
+        {/* 3. Tab buttons — active gets soft pink, inactive transparent */}
         <div className="flex items-end gap-1 overflow-x-auto pb-0 no-scrollbar">
           {TABS.map((tab) => (
             <button
@@ -195,10 +201,11 @@ const AppointmentsAvailability = () => {
         </div>
       </div>
 
-      {/* Body */}
+      {/* ── Body ── */}
       <div className="bg-[#F5F5F0] flex-1 p-4 sm:p-6">
 
-        {activeTab === 'Reservations' && (
+        {/* 2. ScheduleCard grid now lives under 'Availability' */}
+        {activeTab === 'Availability' && (
           <div className="flex flex-col gap-6">
 
             <div className="
@@ -210,11 +217,11 @@ const AppointmentsAvailability = () => {
             ">
               {schedules.map((schedule, index) => (
                 /*
-                  ← DND: Each card receives:
-                  - index         : its position in the schedules array
-                  - dragItem      : ref to track which card is being dragged
-                  - dragOverItem  : ref to track which card is being hovered over
-                  - handleSort    : callback to reorder when drag ends
+                  DND: Each card receives:
+                  - index        : its position in the schedules array
+                  - dragItem     : ref to track which card is being dragged
+                  - dragOverItem : ref to track which card is being hovered over
+                  - handleSort   : callback to reorder when drag ends
                 */
                 <ScheduleCard
                   key={schedule.id}
@@ -226,7 +233,6 @@ const AppointmentsAvailability = () => {
                       ? () => handleDeleteSchedule(schedule.id)
                       : undefined
                   }
-                  // ← DND: Pass drag handlers and refs
                   dragItem={dragItem}
                   dragOverItem={dragOverItem}
                   handleSort={handleSort}
@@ -264,8 +270,9 @@ const AppointmentsAvailability = () => {
           </div>
         )}
 
-        {activeTab === 'Exceptions'  && <Placeholder label="Exceptions" />}
-        {activeTab === 'Availability' && <Placeholder label="Availability" />}
+        {/* 4. Placeholder content for other tabs */}
+        {activeTab === 'Reservations' && <Placeholder label="Reservations" />}
+        {activeTab === 'Exceptions'   && <Placeholder label="Exceptions" />}
 
       </div>
     </div>
