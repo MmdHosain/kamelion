@@ -6,6 +6,7 @@ import AdminDashboard from './AdminDashboard';
 import ChatProfiles from './ChatProfiles';
 import ReservedTimes from './ReservedTimes';
 import AppointmentsAvailability from './AppointmentsAvailability'; // ← ADD THIS
+import PatientsList from '../../components/admin/patients/PatientsList';
 
 const AdminPage = () => {
   return (
@@ -15,6 +16,7 @@ const AdminPage = () => {
         <Route path="chat-profiles" element={<ChatProfiles />} />
         <Route path="reserved-times" element={<ReservedTimes />} />
         <Route path="appointments" element={<AppointmentsAvailability />} /> {/* ← ADD THIS */}
+        <Route path="patients" element={<PatientsList />} /> {/* ✅ add */}
       </Routes>
     </AdminLayout>
   );

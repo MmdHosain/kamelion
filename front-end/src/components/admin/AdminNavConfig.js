@@ -35,5 +35,9 @@ export const ADMIN_NAV_ITEMS = [
   { label: 'Appointments',
     icon: Calendar,
     path: '/admin/appointments' 
+  },
+  { label: 'Patients',
+    icon: Users,
+  path: '/admin/patients' 
   }
 ];
