@@ -1,7 +1,10 @@
 // src/components/admin/reservations/ReservationsList.jsx
 
 import { useState, useMemo, useEffect } from 'react';
-import { Trash2, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Plus, ChevronDown, X } from 'lucide-react';
+import {
+  Trash2, Search, ChevronLeft, ChevronRight,
+  ChevronsLeft, ChevronsRight, Plus, ChevronDown, X
+} from 'lucide-react';
 
 // ── Mock Data ──────────────────────────────────────────────────────────────────
 const mockReservations = [
@@ -19,26 +22,25 @@ const mockReservations = [
   { id: 12, phoneNumber: '+98 937 123 4567', fullName: 'Reza Karimi',    date: '2023-11-21', time: '13:00' },
 ];
 
-const ROW_OPTIONS   = [10, 25, 50, 100];
-const TABLE_HEADERS = ['Phone number', 'Full name', 'Date', 'Time', 'Action'];
-
-// ── Empty modal form state ─────────────────────────────────────────────────────
-const EMPTY_FORM = { phoneNumber: '', fullName: '', date: '', time: '' };
+const ROW_OPTIONS    = [10, 25, 50, 100];
+const TABLE_HEADERS  = ['Phone number', 'Full name', 'Date', 'Time', 'Action'];
+const EMPTY_FORM     = { phoneNumber: '', fullName: '', date: '', time: '' };
 
 // ── Component ──────────────────────────────────────────────────────────────────
 export default function ReservationsList() {
 
   // ── State ──────────────────────────────────────────────────────────────────
-  const [reservations,  setReservations]  = useState(mockReservations);
-  const [searchQuery,   setSearchQuery]   = useState('');
-  const [currentPage,   setCurrentPage]   = useState(1);
-  const [rowsPerPage,   setRowsPerPage]   = useState(50);
-  const [isModalOpen,   setIsModalOpen]   = useState(false);
-  const [formData,      setFormData]      = useState(EMPTY_FORM);
+  const [reservations, setReservations] = useState(mockReservations);
+  const [searchQuery,  setSearchQuery]  = useState('');
+  const [currentPage,  setCurrentPage]  = useState(1);
+  const [rowsPerPage,  setRowsPerPage]  = useState(10);          // default: 10
+  const [isModalOpen,  setIsModalOpen]  = useState(false);
+  const [formData,     setFormData]     = useState(EMPTY_FORM);
 
-  // ── Search — reset page on query change ───────────────────────────────────
+  // ── Reset page on search or rows-per-page change ───────────────────────────
   useEffect(() => { setCurrentPage(1); }, [searchQuery, rowsPerPage]);
 
+  // ── Filtered list (simulates API search param) ─────────────────────────────
   const filteredReservations = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     if (!q) return reservations;
@@ -50,8 +52,9 @@ export default function ReservationsList() {
   }, [reservations, searchQuery]);
 
   // ── Pagination ─────────────────────────────────────────────────────────────
-  const totalPages  = Math.max(1, Math.ceil(filteredReservations.length / rowsPerPage));
+  const totalPages = Math.max(1, Math.ceil(filteredReservations.length / rowsPerPage));
 
+  // Snap back if current page exceeds new totalPages (e.g. after delete)
   useEffect(() => {
     if (currentPage > totalPages) setCurrentPage(totalPages);
   }, [totalPages, currentPage]);
@@ -62,14 +65,11 @@ export default function ReservationsList() {
   const showingFrom = filteredReservations.length === 0 ? 0 : startIndex + 1;
   const showingTo   = Math.min(startIndex + rowsPerPage, filteredReservations.length);
 
-  // ── Pagination page numbers to render ─────────────────────────────────────
-  // Always show: first, last, current, and neighbours — with ellipsis gaps
+  // ── Page number list with ellipsis ────────────────────────────────────────
   const getPageNumbers = () => {
     if (totalPages <= 7) return Array.from({ length: totalPages }, (_, i) => i + 1);
     const pages = new Set([1, 2, 3, totalPages]);
-    pages.add(currentPage - 1);
-    pages.add(currentPage);
-    pages.add(currentPage + 1);
+    [currentPage - 1, currentPage, currentPage + 1].forEach((p) => pages.add(p));
     const sorted = [...pages].filter((p) => p >= 1 && p <= totalPages).sort((a, b) => a - b);
     const result = [];
     sorted.forEach((p, i) => {
@@ -79,27 +79,45 @@ export default function ReservationsList() {
     return result;
   };
 
-  // ── Action Handlers ────────────────────────────────────────────────────────
+  // ── Pagination handlers ────────────────────────────────────────────────────
+  const goFirst    = () => setCurrentPage(1);
+  const goLast     = () => setCurrentPage(totalPages);
+  const goPrev     = () => setCurrentPage((p) => Math.max(p - 1, 1));
+  const goNext     = () => setCurrentPage((p) => Math.min(p + 1, totalPages));
+  const goBack10   = () => setCurrentPage((p) => Math.max(p - 10, 1));          // << jumps -10
+  const goForward10 = () => setCurrentPage((p) => Math.min(p + 10, totalPages)); // >> jumps +10
+
+  // ── Delete — simulates DELETE /reservations/:id ────────────────────────────
   const handleDelete = (id) => {
     if (!window.confirm('Delete this reservation?')) return;
+    // TODO: await api.delete(`/reservations/${id}`)
     setReservations((prev) => prev.filter((r) => r.id !== id));
   };
 
-  // ── Modal Handlers ─────────────────────────────────────────────────────────
+  // ── Modal ──────────────────────────────────────────────────────────────────
   const openModal  = () => { setFormData(EMPTY_FORM); setIsModalOpen(true); };
   const closeModal = () => setIsModalOpen(false);
 
   const handleFormChange = (e) =>
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
 
-  // handleAddReservation — logic wired in next phase
-  const handleAddReservation = () => {
-    // TODO: replace with API call
-    console.log('New reservation payload:', formData);
-    closeModal();
+  // Simulates POST /reservations
+  const handleAddSubmit = () => {
+    const newReservation = {
+      id: Math.floor(Math.random() * 900000) + 100000, // random 6-digit id
+      phoneNumber: formData.phoneNumber,
+      fullName:    formData.fullName,
+      date:        formData.date,
+      time:        formData.time,
+    };
+    // TODO: const created = await api.post('/reservations', newReservation)
+    //       setReservations(prev => [created, ...prev])
+    setReservations((prev) => [newReservation, ...prev]);
+    setFormData(EMPTY_FORM);
+    setIsModalOpen(false);
   };
 
-  // ── Shared input class ─────────────────────────────────────────────────────
+  // ── Shared input style ─────────────────────────────────────────────────────
   const inputCls = `
     w-full px-3 py-2 text-sm border border-gray-200 rounded-lg
     focus:outline-none focus:ring-2 focus:ring-[#2D5A4C]
@@ -126,7 +144,7 @@ export default function ReservationsList() {
             />
           </div>
 
-          {/* Add Button — right, dark green */}
+          {/* Add — right, dark green */}
           <button
             onClick={openModal}
             className="flex items-center gap-2 px-5 py-2 bg-[#2D5A4C] hover:bg-[#234840] text-white text-sm font-medium rounded-lg transition-colors whitespace-nowrap"
@@ -158,21 +176,12 @@ export default function ReservationsList() {
                 paginatedReservations.map((r, idx) => (
                   <tr
                     key={r.id}
-                    className={`border border-gray-100 rounded-xl transition-colors hover:bg-green-50/40 ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/40'}`}
+                    className={`border-b border-gray-100 transition-colors hover:bg-green-50/40 ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/40'}`}
                   >
-                    {/* Phone Number */}
                     <td className="px-5 py-3 text-gray-700">{r.phoneNumber}</td>
-
-                    {/* Full Name */}
-                    <td className="px-5 py-3 text-gray-800 font-medium">{r.fullName}</td>
-
-                    {/* Date */}
+                    <td className="px-5 py-3 font-medium text-gray-800">{r.fullName}</td>
                     <td className="px-5 py-3 text-gray-600">{r.date}</td>
-
-                    {/* Time */}
                     <td className="px-5 py-3 text-gray-600">{r.time}</td>
-
-                    {/* Action — trash only */}
                     <td className="px-5 py-3 text-center">
                       <button
                         onClick={() => handleDelete(r.id)}
@@ -199,30 +208,24 @@ export default function ReservationsList() {
         {/* ── Pagination Footer ──────────────────────────────────────────────── */}
         <div className="flex items-center justify-between text-sm mt-auto">
 
-          {/* Page Controls — left: << < 1 2 3 ... 10 > >> */}
+          {/* Controls — left */}
           <div className="flex items-center gap-1">
 
-            {/* First page */}
-            <button
-              onClick={() => setCurrentPage(1)}
-              disabled={currentPage === 1}
+            {/* << jump back 10 */}
+            <button onClick={goBack10} disabled={currentPage === 1}
               className="p-1.5 rounded-md border border-gray-200 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-              aria-label="First page"
-            >
+              aria-label="Back 10 pages">
               <ChevronsLeft size={15} />
             </button>
 
-            {/* Prev page */}
-            <button
-              onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-              disabled={currentPage === 1}
+            {/* < prev 1 */}
+            <button onClick={goPrev} disabled={currentPage === 1}
               className="p-1.5 rounded-md border border-gray-200 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-              aria-label="Previous page"
-            >
+              aria-label="Previous page">
               <ChevronLeft size={15} />
             </button>
 
-            {/* Numbered pages with ellipsis */}
+            {/* Numbered pages */}
             {getPageNumbers().map((item, i) =>
               item === '...' ? (
                 <span key={`ellipsis-${i}`} className="px-1 text-gray-400 select-none">...</span>
@@ -235,7 +238,6 @@ export default function ReservationsList() {
                       ? 'bg-[#2D5A4C] text-white border-[#2D5A4C]'
                       : 'border-gray-200 hover:bg-gray-100 text-gray-600'
                   }`}
-                  aria-label={`Page ${item}`}
                   aria-current={item === currentPage ? 'page' : undefined}
                 >
                   {item}
@@ -243,23 +245,17 @@ export default function ReservationsList() {
               )
             )}
 
-            {/* Next page */}
-            <button
-              onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
-              disabled={currentPage === totalPages}
+            {/* > next 1 */}
+            <button onClick={goNext} disabled={currentPage === totalPages}
               className="p-1.5 rounded-md border border-gray-200 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-              aria-label="Next page"
-            >
+              aria-label="Next page">
               <ChevronRight size={15} />
             </button>
 
-            {/* Last page */}
-            <button
-              onClick={() => setCurrentPage(totalPages)}
-              disabled={currentPage === totalPages}
+            {/* >> jump forward 10 */}
+            <button onClick={goForward10} disabled={currentPage === totalPages}
               className="p-1.5 rounded-md border border-gray-200 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-              aria-label="Last page"
-            >
+              aria-label="Forward 10 pages">
               <ChevronsRight size={15} />
             </button>
 
@@ -271,7 +267,6 @@ export default function ReservationsList() {
               value={rowsPerPage}
               onChange={(e) => setRowsPerPage(Number(e.target.value))}
               className="appearance-none pl-3 pr-8 py-2 text-sm border border-gray-200 rounded-lg bg-white text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#2D5A4C] cursor-pointer"
-              aria-label="Rows per page"
             >
               {ROW_OPTIONS.map((n) => (
                 <option key={n} value={n}>show {n} rows</option>
@@ -292,87 +287,64 @@ export default function ReservationsList() {
         >
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 flex flex-col gap-5">
 
-            {/* Modal Header */}
+            {/* Header */}
             <div className="flex items-center justify-between">
               <h2 className="text-base font-semibold text-gray-800">Add Reservation</h2>
-              <button
-                onClick={closeModal}
+              <button onClick={closeModal}
                 className="p-1.5 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
-                aria-label="Close modal"
-              >
+                aria-label="Close modal">
                 <X size={18} />
               </button>
             </div>
 
-            {/* Modal Form */}
+            {/* Fields */}
             <div className="flex flex-col gap-4">
 
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-medium text-gray-600" htmlFor="phoneNumber">Phone Number</label>
-                <input
-                  id="phoneNumber"
-                  name="phoneNumber"
-                  type="text"
+                <input id="phoneNumber" name="phoneNumber" type="text"
                   placeholder="+98 937 123 4567"
                   value={formData.phoneNumber}
                   onChange={handleFormChange}
-                  className={inputCls}
-                />
+                  className={inputCls} />
               </div>
 
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-medium text-gray-600" htmlFor="fullName">Full Name</label>
-                <input
-                  id="fullName"
-                  name="fullName"
-                  type="text"
+                <input id="fullName" name="fullName" type="text"
                   placeholder="e.g. John Doe"
                   value={formData.fullName}
                   onChange={handleFormChange}
-                  className={inputCls}
-                />
+                  className={inputCls} />
               </div>
 
               <div className="flex gap-4">
                 <div className="flex flex-col gap-1.5 flex-1">
                   <label className="text-xs font-medium text-gray-600" htmlFor="date">Date</label>
-                  <input
-                    id="date"
-                    name="date"
-                    type="date"
+                  <input id="date" name="date" type="date"
                     value={formData.date}
                     onChange={handleFormChange}
-                    className={inputCls}
-                  />
+                    className={inputCls} />
                 </div>
-
                 <div className="flex flex-col gap-1.5 flex-1">
                   <label className="text-xs font-medium text-gray-600" htmlFor="time">Time</label>
-                  <input
-                    id="time"
-                    name="time"
-                    type="time"
+                  <input id="time" name="time" type="time"
                     value={formData.time}
                     onChange={handleFormChange}
-                    className={inputCls}
-                  />
+                    className={inputCls} />
                 </div>
               </div>
 
             </div>
 
-            {/* Modal Actions */}
+            {/* Actions */}
             <div className="flex items-center justify-end gap-3 pt-1">
-              <button
-                onClick={closeModal}
-                className="px-4 py-2 text-sm font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-              >
+              <button onClick={closeModal}
+                className="px-4 py-2 text-sm font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                 Cancel
               </button>
-              <button
-                onClick={handleAddReservation}
-                className="px-5 py-2 text-sm font-medium text-white bg-[#2D5A4C] hover:bg-[#234840] rounded-lg transition-colors"
-              >
+              <button onClick={handleAddSubmit}
+                className="px-5 py-2 text-sm font-medium text-white bg-[#2D5A4C] hover:bg-[#234840] rounded-lg transition-colors">
                 Add
               </button>
             </div>
