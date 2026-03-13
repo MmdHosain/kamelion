@@ -1,234 +1,385 @@
 // src/components/admin/reservations/ReservationsList.jsx
 
-import { useState } from 'react';
-import { Trash2, CheckCircle2, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useState, useMemo, useEffect } from 'react';
+import { Trash2, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Plus, ChevronDown, X } from 'lucide-react';
 
+// ── Mock Data ──────────────────────────────────────────────────────────────────
 const mockReservations = [
-  { id: 1, phoneNumber: '+98 937 123 4567', fullName: 'Bob Sadeghi',   date: '2023-11-15', time: '14:30' },
-  { id: 2, phoneNumber: '+98 937 123 4567', fullName: 'Jason Mustaer', date: '2023-11-15', time: '14:30' },
-  { id: 3, phoneNumber: '+98 937 123 4567', fullName: 'Sara Ahmadi',   date: '2023-11-16', time: '10:00' },
-  { id: 4, phoneNumber: '+98 937 123 4567', fullName: 'Ali Rezaei',    date: '2023-11-16', time: '11:30' },
-  { id: 5, phoneNumber: '+98 937 123 4567', fullName: 'Mina Hosseini', date: '2023-11-17', time: '09:00' },
-  { id: 6, phoneNumber: '+98 937 123 4567', fullName: 'Reza Karimi',   date: '2023-11-17', time: '13:00' },
-  { id: 7, phoneNumber: '+98 937 123 4567', fullName: 'Neda Moradi',   date: '2023-11-18', time: '15:00' },
+  { id: 1,  phoneNumber: '+98 937 123 4567', fullName: 'Bob Sadeghi',    date: '2023-11-15', time: '14:30' },
+  { id: 2,  phoneNumber: '+98 937 123 4567', fullName: 'Jason Mustaer',  date: '2023-11-15', time: '14:30' },
+  { id: 3,  phoneNumber: '+98 937 123 4567', fullName: 'Justin Rissai',  date: '2023-11-16', time: '14:30' },
+  { id: 4,  phoneNumber: '+98 937 123 4567', fullName: 'Nika Hiriem',    date: '2023-11-17', time: '14:30' },
+  { id: 5,  phoneNumber: '+98 937 123 4567', fullName: 'Asran Surnighi', date: '2023-11-12', time: '14:30' },
+  { id: 6,  phoneNumber: '+98 937 123 4567', fullName: 'Juliria Wamson', date: '2023-11-15', time: '14:00' },
+  { id: 7,  phoneNumber: '+98 937 123 4567', fullName: 'John Sadeghi',   date: '2023-11-10', time: '14:30' },
+  { id: 8,  phoneNumber: '+98 937 123 4567', fullName: 'John Uniann',    date: '2023-11-10', time: '14:30' },
+  { id: 9,  phoneNumber: '+98 937 123 4567', fullName: 'Sara Ahmadi',    date: '2023-11-18', time: '09:00' },
+  { id: 10, phoneNumber: '+98 937 123 4567', fullName: 'Ali Rezaei',     date: '2023-11-19', time: '11:30' },
+  { id: 11, phoneNumber: '+98 937 123 4567', fullName: 'Mina Hosseini',  date: '2023-11-20', time: '10:00' },
+  { id: 12, phoneNumber: '+98 937 123 4567', fullName: 'Reza Karimi',    date: '2023-11-21', time: '13:00' },
 ];
 
-const ITEMS_PER_PAGE = 5;
+const ROW_OPTIONS   = [10, 25, 50, 100];
+const TABLE_HEADERS = ['Phone number', 'Full name', 'Date', 'Time', 'Action'];
 
-// ── New column order: ACTION → TIME → DATE → FULL NAME → PHONE NUMBER
-const TABLE_HEADERS = ['ACTION', 'TIME', 'DATE', 'FULL NAME', 'PHONE NUMBER'];
+// ── Empty modal form state ─────────────────────────────────────────────────────
+const EMPTY_FORM = { phoneNumber: '', fullName: '', date: '', time: '' };
 
+// ── Component ──────────────────────────────────────────────────────────────────
 export default function ReservationsList() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
 
-  // ── Filtering ──────────────────────────────────────────────────────────────
-  const filtered = mockReservations.filter((r) =>
-    r.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    r.phoneNumber.includes(searchQuery)
-  );
+  // ── State ──────────────────────────────────────────────────────────────────
+  const [reservations,  setReservations]  = useState(mockReservations);
+  const [searchQuery,   setSearchQuery]   = useState('');
+  const [currentPage,   setCurrentPage]   = useState(1);
+  const [rowsPerPage,   setRowsPerPage]   = useState(50);
+  const [isModalOpen,   setIsModalOpen]   = useState(false);
+  const [formData,      setFormData]      = useState(EMPTY_FORM);
+
+  // ── Search — reset page on query change ───────────────────────────────────
+  useEffect(() => { setCurrentPage(1); }, [searchQuery, rowsPerPage]);
+
+  const filteredReservations = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return reservations;
+    return reservations.filter(
+      (r) =>
+        r.fullName.toLowerCase().includes(q) ||
+        r.phoneNumber.includes(q)
+    );
+  }, [reservations, searchQuery]);
 
   // ── Pagination ─────────────────────────────────────────────────────────────
-  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const paginated  = filtered.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  const totalPages  = Math.max(1, Math.ceil(filteredReservations.length / rowsPerPage));
 
-  const handleSearch = (e) => {
-    setSearchQuery(e.target.value);
-    setCurrentPage(1);
+  useEffect(() => {
+    if (currentPage > totalPages) setCurrentPage(totalPages);
+  }, [totalPages, currentPage]);
+
+  const startIndex            = (currentPage - 1) * rowsPerPage;
+  const paginatedReservations = filteredReservations.slice(startIndex, startIndex + rowsPerPage);
+
+  const showingFrom = filteredReservations.length === 0 ? 0 : startIndex + 1;
+  const showingTo   = Math.min(startIndex + rowsPerPage, filteredReservations.length);
+
+  // ── Pagination page numbers to render ─────────────────────────────────────
+  // Always show: first, last, current, and neighbours — with ellipsis gaps
+  const getPageNumbers = () => {
+    if (totalPages <= 7) return Array.from({ length: totalPages }, (_, i) => i + 1);
+    const pages = new Set([1, 2, 3, totalPages]);
+    pages.add(currentPage - 1);
+    pages.add(currentPage);
+    pages.add(currentPage + 1);
+    const sorted = [...pages].filter((p) => p >= 1 && p <= totalPages).sort((a, b) => a - b);
+    const result = [];
+    sorted.forEach((p, i) => {
+      if (i > 0 && p - sorted[i - 1] > 1) result.push('...');
+      result.push(p);
+    });
+    return result;
   };
 
-  const handleDelete = (id) => console.log('Delete reservation id:', id);
-  const handleCheck  = (id) => console.log('Confirm reservation id:', id);
+  // ── Action Handlers ────────────────────────────────────────────────────────
+  const handleDelete = (id) => {
+    if (!window.confirm('Delete this reservation?')) return;
+    setReservations((prev) => prev.filter((r) => r.id !== id));
+  };
 
+  // ── Modal Handlers ─────────────────────────────────────────────────────────
+  const openModal  = () => { setFormData(EMPTY_FORM); setIsModalOpen(true); };
+  const closeModal = () => setIsModalOpen(false);
+
+  const handleFormChange = (e) =>
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+
+  // handleAddReservation — logic wired in next phase
+  const handleAddReservation = () => {
+    // TODO: replace with API call
+    console.log('New reservation payload:', formData);
+    closeModal();
+  };
+
+  // ── Shared input class ─────────────────────────────────────────────────────
+  const inputCls = `
+    w-full px-3 py-2 text-sm border border-gray-200 rounded-lg
+    focus:outline-none focus:ring-2 focus:ring-[#2D5A4C]
+    placeholder:text-gray-400
+  `;
+
+  // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <div className="p-6 bg-white rounded-2xl shadow-sm min-h-[500px] flex flex-col gap-5">
+    <>
+      <div className="p-6 bg-white rounded-2xl shadow-sm min-h-[500px] flex flex-col gap-5">
 
-      {/* ── Top Bar ─────────────────────────────────────────────────────────── */}
-      {/* Change 1: Add button LEFT, Search bar RIGHT */}
-      <div className="flex items-center justify-between gap-4">
+        {/* ── Top Bar ───────────────────────────────────────────────────────── */}
+        <div className="flex items-center justify-between gap-4">
 
-        {/* Add Button — left side */}
-        <button
-          className="
-            flex items-center gap-1 px-4 py-2
-            bg-blue-600 hover:bg-blue-700
-            text-white text-sm font-medium
-            rounded-lg transition-colors whitespace-nowrap
-          "
-        >
-          + Add
-        </button>
+          {/* Search — left */}
+          <div className="relative w-full max-w-md">
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-[#2D5A4C] placeholder:text-gray-400"
+            />
+          </div>
 
-        {/* Search Bar — right side */}
-        <div className="relative w-full max-w-sm">
-          <Search
-            size={16}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-          />
-          <input
-            type="text"
-            placeholder="...Search by name or phone"
-            value={searchQuery}
-            onChange={handleSearch}
-            className="
-              w-full pl-9 pr-4 py-2 text-sm
-              border border-gray-200 rounded-lg
-              focus:outline-none focus:ring-2 focus:ring-blue-500
-              placeholder:text-gray-400
-            "
-          />
+          {/* Add Button — right, dark green */}
+          <button
+            onClick={openModal}
+            className="flex items-center gap-2 px-5 py-2 bg-[#2D5A4C] hover:bg-[#234840] text-white text-sm font-medium rounded-lg transition-colors whitespace-nowrap"
+          >
+            Add <Plus size={16} />
+          </button>
+
         </div>
-      </div>
 
-      {/* ── Table ───────────────────────────────────────────────────────────── */}
-      <div className="overflow-x-auto rounded-xl border border-gray-100">
-        <table className="w-full text-sm text-left">
+        {/* ── Table ─────────────────────────────────────────────────────────── */}
+        <div className="overflow-x-auto rounded-xl border border-gray-100">
+          <table className="w-full text-sm text-left">
 
-          {/* Change 2: New column order + muted uppercase headers */}
-          <thead className="bg-gray-50">
-            <tr>
-              {TABLE_HEADERS.map((header) => (
-                <th
-                  key={header}
-                  className="px-5 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500"
-                >
-                  {header}
-                </th>
-              ))}
-            </tr>
-          </thead>
-
-          {/* Body */}
-          <tbody className="divide-y divide-gray-100">
-            {paginated.length > 0 ? (
-              paginated.map((reservation, index) => (
-                <tr
-                  key={reservation.id}
-                  className={`
-                    transition-colors hover:bg-blue-50
-                    ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}
-                  `}
-                >
-                  {/* Change 2 & 3: ACTION column first — Trash (red) + CheckCircle2 (green) */}
-                  <td className="px-5 py-3">
-                    <div className="flex items-center gap-3">
-
-                      {/* Trash icon — red */}
-                      <button
-                        onClick={() => handleDelete(reservation.id)}
-                        className="p-1.5 rounded-md text-red-500 hover:bg-red-100 transition-colors"
-                        title="Delete"
-                      >
-                        <Trash2 size={15} />
-                      </button>
-
-                      {/* Check icon — green (replaces pencil/edit) */}
-                      <button
-                        onClick={() => handleCheck(reservation.id)}
-                        className="p-1.5 rounded-md text-green-600 hover:bg-green-100 transition-colors"
-                        title="Confirm"
-                      >
-                        <CheckCircle2 size={15} />
-                      </button>
-
-                    </div>
-                  </td>
-
-                  {/* TIME */}
-                  <td className="px-5 py-3 text-gray-600">{reservation.time}</td>
-
-                  {/* DATE */}
-                  <td className="px-5 py-3 text-gray-600">{reservation.date}</td>
-
-                  {/* FULL NAME */}
-                  <td className="px-5 py-3 font-medium text-gray-800">{reservation.fullName}</td>
-
-                  {/* Change 4: PHONE NUMBER — teal/green color */}
-                  <td className="px-5 py-3 font-medium text-teal-700">{reservation.phoneNumber}</td>
-
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan={5} className="px-5 py-10 text-center text-gray-400">
-                  No reservations found.
-                </td>
+            <thead>
+              <tr className="border-b border-gray-100">
+                {TABLE_HEADERS.map((h) => (
+                  <th
+                    key={h}
+                    className={`px-5 py-3 text-sm font-semibold text-gray-700 ${h === 'Action' ? 'text-center' : ''}`}
+                  >
+                    {h}
+                  </th>
+                ))}
               </tr>
-            )}
-          </tbody>
+            </thead>
 
-        </table>
-      </div>
+            <tbody>
+              {paginatedReservations.length > 0 ? (
+                paginatedReservations.map((r, idx) => (
+                  <tr
+                    key={r.id}
+                    className={`border border-gray-100 rounded-xl transition-colors hover:bg-green-50/40 ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/40'}`}
+                  >
+                    {/* Phone Number */}
+                    <td className="px-5 py-3 text-gray-700">{r.phoneNumber}</td>
 
-      {/* ── Pagination ───────────────────────────────────────────────────────── */}
-      {/* Change 5: Page controls LEFT, result summary text RIGHT */}
-      <div className="flex items-center justify-between text-sm text-gray-500 mt-auto">
+                    {/* Full Name */}
+                    <td className="px-5 py-3 text-gray-800 font-medium">{r.fullName}</td>
 
-        {/* Page Controls — left side */}
-        <div className="flex items-center gap-1">
+                    {/* Date */}
+                    <td className="px-5 py-3 text-gray-600">{r.date}</td>
 
-          {/* Previous arrow */}
-          <button
-            onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-            disabled={currentPage === 1}
-            className="
-              p-1.5 rounded-md border border-gray-200
-              hover:bg-gray-100 disabled:opacity-40
-              disabled:cursor-not-allowed transition-colors
-            "
-          >
-            <ChevronLeft size={16} />
-          </button>
+                    {/* Time */}
+                    <td className="px-5 py-3 text-gray-600">{r.time}</td>
 
-          {/* Page number buttons */}
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                    {/* Action — trash only */}
+                    <td className="px-5 py-3 text-center">
+                      <button
+                        onClick={() => handleDelete(r.id)}
+                        className="inline-flex items-center justify-center p-1.5 rounded-md text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                        title="Delete reservation"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={5} className="px-5 py-12 text-center text-gray-400">
+                    No reservations found.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+
+          </table>
+        </div>
+
+        {/* ── Pagination Footer ──────────────────────────────────────────────── */}
+        <div className="flex items-center justify-between text-sm mt-auto">
+
+          {/* Page Controls — left: << < 1 2 3 ... 10 > >> */}
+          <div className="flex items-center gap-1">
+
+            {/* First page */}
             <button
-              key={page}
-              onClick={() => setCurrentPage(page)}
-              className={`
-                w-8 h-8 rounded-md text-sm font-medium border transition-colors
-                ${
-                  page === currentPage
-                    ? 'bg-blue-600 text-white border-blue-600'
-                    : 'border-gray-200 hover:bg-gray-100 text-gray-600'
-                }
-              `}
+              onClick={() => setCurrentPage(1)}
+              disabled={currentPage === 1}
+              className="p-1.5 rounded-md border border-gray-200 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              aria-label="First page"
             >
-              {page}
+              <ChevronsLeft size={15} />
             </button>
-          ))}
 
-          {/* Next arrow */}
-          <button
-            onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
-            disabled={currentPage === totalPages || totalPages === 0}
-            className="
-              p-1.5 rounded-md border border-gray-200
-              hover:bg-gray-100 disabled:opacity-40
-              disabled:cursor-not-allowed transition-colors
-            "
-          >
-            <ChevronRight size={16} />
-          </button>
+            {/* Prev page */}
+            <button
+              onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+              disabled={currentPage === 1}
+              className="p-1.5 rounded-md border border-gray-200 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              aria-label="Previous page"
+            >
+              <ChevronLeft size={15} />
+            </button>
+
+            {/* Numbered pages with ellipsis */}
+            {getPageNumbers().map((item, i) =>
+              item === '...' ? (
+                <span key={`ellipsis-${i}`} className="px-1 text-gray-400 select-none">...</span>
+              ) : (
+                <button
+                  key={item}
+                  onClick={() => setCurrentPage(item)}
+                  className={`w-8 h-8 rounded-md text-sm font-medium border transition-colors ${
+                    item === currentPage
+                      ? 'bg-[#2D5A4C] text-white border-[#2D5A4C]'
+                      : 'border-gray-200 hover:bg-gray-100 text-gray-600'
+                  }`}
+                  aria-label={`Page ${item}`}
+                  aria-current={item === currentPage ? 'page' : undefined}
+                >
+                  {item}
+                </button>
+              )
+            )}
+
+            {/* Next page */}
+            <button
+              onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className="p-1.5 rounded-md border border-gray-200 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              aria-label="Next page"
+            >
+              <ChevronRight size={15} />
+            </button>
+
+            {/* Last page */}
+            <button
+              onClick={() => setCurrentPage(totalPages)}
+              disabled={currentPage === totalPages}
+              className="p-1.5 rounded-md border border-gray-200 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              aria-label="Last page"
+            >
+              <ChevronsRight size={15} />
+            </button>
+
+          </div>
+
+          {/* Rows-per-page dropdown — right */}
+          <div className="relative">
+            <select
+              value={rowsPerPage}
+              onChange={(e) => setRowsPerPage(Number(e.target.value))}
+              className="appearance-none pl-3 pr-8 py-2 text-sm border border-gray-200 rounded-lg bg-white text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#2D5A4C] cursor-pointer"
+              aria-label="Rows per page"
+            >
+              {ROW_OPTIONS.map((n) => (
+                <option key={n} value={n}>show {n} rows</option>
+              ))}
+            </select>
+            <ChevronDown size={14} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+          </div>
 
         </div>
 
-        {/* Result summary text — right side */}
-        <span className="text-gray-500 text-sm">
-          Showing{' '}
-          <span className="font-semibold text-gray-700">
-            {filtered.length === 0
-              ? '0'
-              : `${startIndex + 1}–${Math.min(startIndex + ITEMS_PER_PAGE, filtered.length)}`}
-          </span>{' '}
-          of{' '}
-          <span className="font-semibold text-gray-700">{filtered.length}</span>{' '}
-          reservations
-        </span>
-
       </div>
 
-    </div>
+      {/* ── Add Reservation Modal ──────────────────────────────────────────────── */}
+      {isModalOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+          onClick={(e) => { if (e.target === e.currentTarget) closeModal(); }}
+        >
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 flex flex-col gap-5">
+
+            {/* Modal Header */}
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-semibold text-gray-800">Add Reservation</h2>
+              <button
+                onClick={closeModal}
+                className="p-1.5 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                aria-label="Close modal"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Modal Form */}
+            <div className="flex flex-col gap-4">
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-medium text-gray-600" htmlFor="phoneNumber">Phone Number</label>
+                <input
+                  id="phoneNumber"
+                  name="phoneNumber"
+                  type="text"
+                  placeholder="+98 937 123 4567"
+                  value={formData.phoneNumber}
+                  onChange={handleFormChange}
+                  className={inputCls}
+                />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-medium text-gray-600" htmlFor="fullName">Full Name</label>
+                <input
+                  id="fullName"
+                  name="fullName"
+                  type="text"
+                  placeholder="e.g. John Doe"
+                  value={formData.fullName}
+                  onChange={handleFormChange}
+                  className={inputCls}
+                />
+              </div>
+
+              <div className="flex gap-4">
+                <div className="flex flex-col gap-1.5 flex-1">
+                  <label className="text-xs font-medium text-gray-600" htmlFor="date">Date</label>
+                  <input
+                    id="date"
+                    name="date"
+                    type="date"
+                    value={formData.date}
+                    onChange={handleFormChange}
+                    className={inputCls}
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1.5 flex-1">
+                  <label className="text-xs font-medium text-gray-600" htmlFor="time">Time</label>
+                  <input
+                    id="time"
+                    name="time"
+                    type="time"
+                    value={formData.time}
+                    onChange={handleFormChange}
+                    className={inputCls}
+                  />
+                </div>
+              </div>
+
+            </div>
+
+            {/* Modal Actions */}
+            <div className="flex items-center justify-end gap-3 pt-1">
+              <button
+                onClick={closeModal}
+                className="px-4 py-2 text-sm font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAddReservation}
+                className="px-5 py-2 text-sm font-medium text-white bg-[#2D5A4C] hover:bg-[#234840] rounded-lg transition-colors"
+              >
+                Add
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+    </>
   );
 }
