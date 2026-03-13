@@ -27,7 +27,7 @@ const AdminLogin = () => {
         role: 'admin',
       });
 
-      navigate('/admin/dashboard');
+      navigate('/admin');
     } catch (err) {
       setError(err.message || 'Login failed');
     } finally {
