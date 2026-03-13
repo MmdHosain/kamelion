@@ -1,6 +1,7 @@
 ├── api
 │   ├── admin.js
 │   ├── auth.js
+│   ├── reservationService.js
 │   └── schedules.js
 ├── App.css
 ├── App.jsx
@@ -13,6 +14,8 @@
 │   ├── admin
 │   |   ├── availability
 |   │   │   └── ScheduleCard.jsx
+│   |   ├── reservations
+|   │   │   └── ReservationsList.jsx
 │   │   ├── AdminHeader.jsx
 │   │   ├── AdminLayout.jsx
 │   │   ├── AdminNavConfig.js
