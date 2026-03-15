@@ -1,11 +1,13 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .serializers import RequestOTPSerializer, VerifyOTPSerializer
+from .serializers import RequestOTPSerializer, VerifyOTPSerializer, PatientProfileSerializer
 from .services import request_otp, verify_otp
+from .selectors import get_patient_profile
 
 
 class RequestOTPView(APIView):
@@ -56,3 +58,24 @@ class VerifyOTPView(APIView):
             "access": str(refresh.access_token),
             "refresh": str(refresh)
         })
+
+class MeView(APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        profile = get_patient_profile(request.user)
+        serializer = PatientProfileSerializer(profile)
+        return Response(serializer.data)
+
+    def patch(self, request):
+        profile = get_patient_profile(request.user)
+        serializer = PatientProfileSerializer(
+            profile,
+            data=request.data,
+            partial=True
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(serializer.data)
