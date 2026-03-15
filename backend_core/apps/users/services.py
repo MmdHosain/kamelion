@@ -34,6 +34,8 @@ def request_otp(phone_number: str):
     ).update(is_used=True)
 
     code = generate_otp()
+    
+    print(f"OTP for {phone_number}: {code}")
 
     otp = OTPRequest.objects.create(
         phone_number=phone_number,

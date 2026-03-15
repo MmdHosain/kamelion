@@ -127,9 +127,10 @@ class AvailabilityException(models.Model):
         # Ensures that the end_date is always on or after the start_date.
         constraints = [
             models.CheckConstraint(
-                check=models.Q(end_date__gte=models.F('start_date')),
-                name='end_date_after_start_date' # Name for the constraint.
+                condition=models.Q(end_date__gte=models.F('start_date')),
+                name='end_date_after_start_date'
             )
+
         ]
 
     def __str__(self):
