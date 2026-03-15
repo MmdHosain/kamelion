@@ -1,130 +1,186 @@
 # apps/users/models.py
 
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+# Used to create OTP expiration times
+from datetime import timedelta
+
+# AbstractBaseUser -> minimal auth system (password handling, last_login)
+# PermissionsMixin -> adds groups, permissions, and is_superuser support
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+
 from django.db import models
-from django.utils import timezone # Import timezone
+from django.utils import timezone
+
 
 class UserManager(BaseUserManager):
     """
-    Custom manager required by AbstractBaseUser.
-    Authentication is phone_number-based, no password on creation.
+    Custom manager for the User model.
+
+    Required when using AbstractBaseUser.
+    Handles creation of regular users and superusers.
     """
 
     def create_user(self, phone_number, full_name=None, password=None):
+        # Phone number is our login identifier
         if not phone_number:
             raise ValueError("Phone number is required")
 
+        # Create user instance
         user = self.model(
-            phone_number=phone_number,
+            phone_number=phone_number.strip(),  # normalize input
             full_name=full_name,
         )
-        # OTP-based system: no password needed for regular users
+
+        # OTP-based login → regular users do not need passwords
         user.set_unusable_password()
+
         user.save(using=self._db)
         return user
 
     def create_superuser(self, phone_number, full_name=None, password=None):
+        """
+        Create admin user for Django admin panel.
+        Superusers MUST have a password.
+        """
+
+        if not password:
+            raise ValueError("Superusers must have a password")
+
         user = self.create_user(
             phone_number=phone_number,
             full_name=full_name,
         )
+
+        # Give admin privileges
         user.is_staff = True
         user.is_superuser = True
-        # Superuser needs a real password for Django admin login
-        if password:
-            user.set_password(password)
+
+        # Superuser needs real password for admin login
+        user.set_password(password)
+
         user.save(using=self._db)
         return user
 
 
-class User(AbstractBaseUser):
+class User(AbstractBaseUser, PermissionsMixin):
     """
-    Phone-number based user.
-    is_staff = True  →  receptionist / admin (access to Django admin)
-    is_staff = False →  regular patient
+    Custom user model.
+
+    Authentication is based on phone number instead of username/email.
     """
 
+    # Unique phone number used for login
     phone_number = models.CharField(max_length=15, unique=True)
+
+    # Optional display name for the patient
     full_name = models.CharField(max_length=100, blank=True, null=True)
-    is_active = models.BooleanField(default=True)
-    is_staff = models.BooleanField(default=False)   # For receptionist/admin
-    is_superuser = models.BooleanField(default=False)
+
+    # Standard Django user flags
+    is_active = models.BooleanField(default=True)  # can login
+    is_staff = models.BooleanField(default=False)  # can access admin panel
+
+    # Timestamp for account creation
     created_at = models.DateTimeField(auto_now_add=True)
 
+    # Field used for authentication
     USERNAME_FIELD = 'phone_number'
-    REQUIRED_FIELDS = []   # phone_number is already USERNAME_FIELD
 
+    # No additional required fields for createsuperuser
+    REQUIRED_FIELDS = []
+
+    # Attach custom manager
     objects = UserManager()
 
     class Meta:
+        # Database index to speed up phone lookups
         indexes = [
             models.Index(fields=['phone_number']),
         ]
 
     def __str__(self):
+        # Human-readable representation
         return f"{self.phone_number} ({self.full_name or 'No name'})"
-
-    # These methods are required by AbstractBaseUser
-    def has_perm(self, perm, obj=None):
-        return self.is_superuser
-
-    def has_module_perms(self, app_label):
-        return self.is_superuser
 
 
 class PatientProfile(models.Model):
     """
-    Additional profile information for a patient user.
-    it is added so that additional data can be saved about patients.
-    """
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='patient_profile')
-    national_id = models.CharField(max_length=20, unique=True, blank=True, null=True)
-    date_of_birth = models.DateField(blank=True, null=True)
-    address = models.TextField(blank=True, null=True)
-    # Add any other patient-specific fields here
+    Stores additional medical/personal info about the patient.
 
+    Separated from User to keep authentication data minimal.
+    """
+
+    # One profile per user
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name='patient_profile'
+    )
+
+    # Optional national ID for clinic records
+    national_id = models.CharField(max_length=20, unique=True, blank=True, null=True)
+
+    # Date of birth used for medical context
+    date_of_birth = models.DateField(blank=True, null=True)
+
+    # Optional home address
+    address = models.TextField(blank=True, null=True)
+
+    # Audit timestamps
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         verbose_name = "Patient Profile"
         verbose_name_plural = "Patient Profiles"
+
+        # Indexes improve filtering performance
         indexes = [
             models.Index(fields=['national_id']),
             models.Index(fields=['date_of_birth']),
         ]
 
     def __str__(self):
-        return f"Profile for {self.user.phone_number} ({self.user.full_name or 'No name'})"
+        return f"Profile for {self.user.phone_number}"
 
 
 class OTPRequest(models.Model):
     """
-    One-time password records.
+    Stores OTP codes sent to users for login verification.
     """
 
+    # Phone number requesting the OTP
     phone_number = models.CharField(max_length=15)
+
+    # The 6-digit verification code
     code = models.CharField(max_length=6)
+
+    # When the OTP was created
     created_at = models.DateTimeField(auto_now_add=True)
+
+    # Expiration time (usually 5 minutes later)
+    expires_at = models.DateTimeField()
+
+    # Prevent OTP reuse
     is_used = models.BooleanField(default=False)
-    expires_at = models.DateTimeField() # Add expiration time
 
     class Meta:
+        # Indexes for fast OTP lookup and cleanup
         indexes = [
             models.Index(fields=['phone_number', 'is_used']),
-            models.Index(fields=['created_at']),
             models.Index(fields=['expires_at']),
         ]
 
-    def __str__(self):
-        status = "used" if self.is_used else "active"
-        return f"OTP for {self.phone_number} [{status}]"
-
     def save(self, *args, **kwargs):
-        # Set expiration time if not set (e.g., 5 minutes from creation)
+        """
+        Automatically set expiration time if not provided.
+        Default: 5 minutes from creation.
+        """
         if not self.expires_at:
-            self.expires_at = timezone.now() + timezone.timedelta(minutes=5)
+            self.expires_at = timezone.now() + timedelta(minutes=5)
+
         super().save(*args, **kwargs)
 
     def is_expired(self):
+        """
+        Helper method to check if OTP is expired.
+        """
         return timezone.now() > self.expires_at
