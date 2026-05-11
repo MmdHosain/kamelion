@@ -3,6 +3,8 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 
+from .pagination import AppointmentPagination
+
 from .serializers import (
     SlotQuerySerializer,
     BookAppointmentSerializer,
@@ -16,8 +18,15 @@ from .services import (
 )
 
 from .models import Appointment
+from rest_framework.generics import ListAPIView
 
 
+class AdminAppointmentsView(ListAPIView):
+    queryset = Appointment.objects.all().order_by("-appointment_date")
+    serializer_class = AppointmentSerializer
+    pagination_class = AppointmentPagination
+    
+    
 class AvailableSlotsView(APIView):
     permission_classes = [IsAuthenticated]
 
