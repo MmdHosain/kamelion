@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Appointment
+from .models import DoctorAvailability, AvailabilityException, Appointment
 
 
 class SlotQuerySerializer(serializers.Serializer):
@@ -24,3 +24,21 @@ class AppointmentSerializer(serializers.ModelSerializer):
             "reason",
             "created_at",
         ]
+
+
+class DoctorAvailabilitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DoctorAvailability
+        fields = "__all__"
+
+
+class AvailabilityExceptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AvailabilityException
+        fields = "__all__"
+
+
+class AppointmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Appointment
+        fields = "__all__"
