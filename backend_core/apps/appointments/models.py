@@ -137,7 +137,7 @@ class AvailabilityException(models.Model):
     class Meta:
         verbose_name = "Availability Exception"
         verbose_name_plural = "Availability Exceptions"
-
+        
         # Database constraint ensuring end_date >= start_date
         constraints = [
             models.CheckConstraint(
