@@ -47,6 +47,7 @@
 │   ├── TimeSlots.jsx
 │   └── ui
 │       ├── AppointmentModal.jsx
+│       ├── AuthModal.jsx
 │       ├── FixedChatInput.jsx
 │       ├── form
 │       │   └── DynamicForm.jsx

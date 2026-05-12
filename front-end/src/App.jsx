@@ -31,6 +31,7 @@ import AppointmentModal from './components/ui/AppointmentModal';
 import SignupModal from './components/ui/SignupModal';
 import LoginModal from './components/ui/LoginModal';
 import OtpModal from './components/ui/OtpModal';
+import AuthModal from './components/ui/AuthModal';
 
 const App = () => {
   const navigate = useNavigate();
@@ -63,6 +64,8 @@ const App = () => {
     otpOpen,
     loading,
     error,
+    authModalOpen,        
+    setAuthModalOpen,     
     handleAuthSubmit,
     handleVerifyOtp,
     setOtpOpen,
@@ -186,6 +189,11 @@ const App = () => {
             onClose={() => setOtpOpen(false)}
             loading={loading}
             error={error}
+          />
+
+          <AuthModal 
+            open={authModalOpen} 
+            onClose={() => setAuthModalOpen(false)} 
           />
         </>
       )}
