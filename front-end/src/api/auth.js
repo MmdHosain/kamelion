@@ -32,3 +32,16 @@ export const refreshToken = async (token) => {
   const response = await axios.post(`${API_BASE}/refresh/`, {}, setAuthHeader(token));
   return response.data;
 };
+
+export const sendOtp = async (phoneNumber) => {
+  const response = await axios.post(`${API_BASE}/send-otp/`, { phone_number: phoneNumber });
+  return response.data;
+};
+
+export const verifyOtp = async (phoneNumber, otp) => {
+  const response = await axios.post(`${API_BASE}/verify-otp/`, { 
+    phone_number: phoneNumber, 
+    otp: otp 
+  });
+  return response.data;
+};

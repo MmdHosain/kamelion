@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
-import { requestOtp, verifyOtpCode } from '../../api/auth';
+import { sendOtp, verifyOtp } from '../../api/auth';
 
 const AuthModal = ({ open, onClose }) => {
   const { handleAuthSuccess } = useAuth();
@@ -43,7 +43,7 @@ const AuthModal = ({ open, onClose }) => {
     setErrors({});
     
     try {
-      await requestOtp(formData.phone, formData.name);
+      await sendOtp(formData.phone);
       setStep(2);
     } catch (err) {
       setErrors({ submit: err.message || 'خطا در ارسال کد' });
@@ -63,7 +63,7 @@ const AuthModal = ({ open, onClose }) => {
     setErrors({});
     
     try {
-      const authData = await verifyOtpCode(formData.phone, formData.otp);
+      const authData = await verifyOtp(formData.phone, formData.otp);
       
       // Update auth context
       handleAuthSuccess(authData);
