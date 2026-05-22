@@ -1,29 +1,18 @@
-// src/services/reservationService.js
+import apiClient from '../lib/apiClient';
 
-const BASE_URL = '/api/reservations'; // swap with your actual base URL
+export const reservationService = {
+  createReservation: async (data) => {
+    const response = await apiClient.post('/reservations', data);
+    return response.data;
+  },
 
-// GET /reservations?search=&page=&limit=
-export const fetchReservations = async ({ search = '', page = 1, limit = 10 } = {}) => {
-  const params = new URLSearchParams({ search, page, limit });
-  const res = await fetch(`${BASE_URL}?${params}`);
-  if (!res.ok) throw new Error('Failed to fetch reservations');
-  return res.json(); // { data: [...], total: number }
-};
+  getUserReservations: async () => {
+    const response = await apiClient.get('/reservations/user');
+    return response.data;
+  },
 
-// POST /reservations
-export const createReservation = async (payload) => {
-  const res = await fetch(BASE_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  });
-  if (!res.ok) throw new Error('Failed to create reservation');
-  return res.json(); // created reservation object
-};
-
-// DELETE /reservations/:id
-export const deleteReservation = async (id) => {
-  const res = await fetch(`${BASE_URL}/${id}`, { method: 'DELETE' });
-  if (!res.ok) throw new Error('Failed to delete reservation');
-  return res.json(); // { success: true } or 204 No Content
+  cancelReservation: async (id) => {
+    const response = await apiClient.delete(`/reservations/${id}`);
+    return response.data;
+  },
 };

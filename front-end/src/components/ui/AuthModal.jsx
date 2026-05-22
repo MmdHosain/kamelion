@@ -1,233 +1,182 @@
-import { useState } from 'react';
-import { useAuth } from '../../hooks/useAuth';
-import { requestOtp, verifyOtpCode } from '../../api/auth';
+import { useState, useEffect } from 'react';
+import { X } from 'lucide-react';
+import useAuthStore from '../../store/authStore';
+import authService from '../../services/authService';
 
-const AuthModal = ({ open, onClose }) => {
-  const { handleAuthSuccess } = useAuth();
-  
-  const [step, setStep] = useState(1); // 1: Info, 2: OTP, 3: Success
-  const [formData, setFormData] = useState({
-    name: '',
-    phone: '',
-    otp: '',
-  });
+const AuthModal = () => {
+  const { 
+    authModalOpen, 
+    authStep, 
+    tempAuthData,
+    closeAuthModal, 
+    setAuthStep, 
+    setTempAuthData,
+    login 
+  } = useAuthStore();
+
+  const [formData, setFormData] = useState({ name: '', phone: '', otp: '' });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Reset modal state when closed
-  const handleClose = () => {
-    setStep(1);
-    setFormData({ name: '', phone: '', otp: '' });
-    setErrors({});
-    onClose();
-  };
-
-  // Step 1: Submit name and phone
-  const handleSubmitInfo = async () => {
-    const newErrors = {};
-    
-    if (!formData.name.trim() || formData.name.trim().length < 2) {
-      newErrors.name = 'نام باید حداقل ۲ حرف باشد';
+  useEffect(() => {
+    if (!authModalOpen) {
+      setFormData({ name: '', phone: '', otp: '' });
+      setErrors({});
+      setAuthStep('info');
     }
-    
-    if (!formData.phone.trim() || formData.phone.length < 10) {
+  }, [authModalOpen, setAuthStep]);
+
+  const validateInfo = () => {
+    const newErrors = {};
+    if (!formData.name || formData.name.length < 2) {
+      newErrors.name = 'نام باید حداقل ۲ کاراکتر باشد';
+    }
+    if (!formData.phone || formData.phone.length < 10) {
       newErrors.phone = 'شماره تلفن معتبر نیست';
     }
-    
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      return;
-    }
-    
-    setIsSubmitting(true);
-    setErrors({});
-    
-    try {
-      await requestOtp(formData.phone, formData.name);
-      setStep(2);
-    } catch (err) {
-      setErrors({ submit: err.message || 'خطا در ارسال کد' });
-    } finally {
-      setIsSubmitting(false);
-    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
-  // Step 2: Verify OTP
-  const handleVerifyOtp = async () => {
-    if (formData.otp.length !== 6) {
+  const validateOtp = () => {
+    if (!formData.otp || formData.otp.length !== 6) {
       setErrors({ otp: 'کد تایید باید ۶ رقم باشد' });
-      return;
+      return false;
     }
-    
-    setIsSubmitting(true);
     setErrors({});
-    
+    return true;
+  };
+
+  const handleInfoSubmit = async (e) => {
+    e.preventDefault();
+    if (!validateInfo()) return;
+
+    setIsSubmitting(true);
     try {
-      const authData = await verifyOtpCode(formData.phone, formData.otp);
-      
-      // Update auth context
-      handleAuthSuccess(authData);
-      
-      // Show success step
-      setStep(3);
-      
-      // Auto-close after 1.5 seconds
-      setTimeout(() => {
-        handleClose();
-      }, 1500);
-    } catch (err) {
-      setErrors({ otp: err.message || 'کد تایید اشتباه است' });
+      await authService.sendOtp(formData.phone, 'login', formData.name);
+      setTempAuthData({ phone: formData.phone, name: formData.name });
+      setAuthStep('otp');
+    } catch (error) {
+      setErrors({ submit: error.response?.data?.message || 'خطا در ارسال کد' });
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  if (!open) return null;
+  const handleOtpSubmit = async (e) => {
+    e.preventDefault();
+    if (!validateOtp()) return;
+
+    setIsSubmitting(true);
+    try {
+      const response = await authService.verifyOtp(
+        tempAuthData.phone,
+        formData.otp,
+        'login'
+      );
+      
+      login(response.user, {
+        accessToken: response.accessToken,
+        refreshToken: response.refreshToken,
+      });
+
+      setAuthStep('success');
+      setTimeout(() => closeAuthModal(), 1500);
+    } catch (error) {
+      setErrors({ otp: error.response?.data?.message || 'کد تایید نامعتبر است' });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (!authModalOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div 
-        className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl p-8 mx-4 transition-all duration-300"
-        style={{
-          minHeight: step === 1 ? '400px' : step === 2 ? '350px' : '250px',
-          animation: 'fadeIn 0.3s ease-in-out',
-        }}
-      >
-        {/* Close button (hidden on success step) */}
-        {step !== 3 && (
-          <button
-            onClick={handleClose}
-            className="absolute top-4 left-4 text-gray-400 hover:text-gray-600 transition"
-          >
-            ✕
-          </button>
-        )}
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+      <div className="relative w-full max-w-md bg-gray-900 rounded-2xl p-8 shadow-2xl">
+        <button
+          onClick={closeAuthModal}
+          className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
+        >
+          <X size={24} />
+        </button>
 
-        {/* Step 1: Name & Phone */}
-        {step === 1 && (
-          <div className="space-y-6">
-            <div className="text-center">
-              <h2 className="text-2xl font-bold text-gray-800 mb-2">ورود / ثبت نام</h2>
-              <p className="text-sm text-gray-500">برای رزرو نوبت، لطفا اطلاعات خود را وارد کنید</p>
-            </div>
-
+        {authStep === 'info' && (
+          <form onSubmit={handleInfoSubmit} className="space-y-6">
+            <h2 className="text-2xl font-bold text-white text-center">ورود / ثبت‌نام</h2>
+            
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">نام و نام خانوادگی</label>
               <input
                 type="text"
+                placeholder="نام و نام خانوادگی"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none transition ${
-                  errors.name ? 'border-red-400' : 'border-gray-200 focus:border-[#2F5D50]'
-                }`}
-                placeholder="نام خود را وارد کنید"
+                className="w-full px-4 py-3 bg-gray-800 text-white rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
               />
-              {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
+              {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">شماره تلفن</label>
               <input
                 type="tel"
+                placeholder="شماره موبایل"
                 value={formData.phone}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none transition ${
-                  errors.phone ? 'border-red-400' : 'border-gray-200 focus:border-[#2F5D50]'
-                }`}
-                placeholder="09123456789"
-                maxLength={11}
+                className="w-full px-4 py-3 bg-gray-800 text-white rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
               />
-              {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
+              {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
             </div>
 
-            {errors.submit && (
-              <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
-                {errors.submit}
-              </div>
-            )}
+            {errors.submit && <p className="text-red-500 text-sm">{errors.submit}</p>}
 
             <button
-              onClick={handleSubmitInfo}
+              type="submit"
               disabled={isSubmitting}
-              className="w-full bg-[#2F5D50] hover:bg-[#264a3f] text-white py-3 rounded-xl transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors disabled:opacity-50"
             >
               {isSubmitting ? 'در حال ارسال...' : 'ارسال کد تایید'}
             </button>
-          </div>
+          </form>
         )}
 
-        {/* Step 2: OTP */}
-        {step === 2 && (
-          <div className="space-y-6">
-            <div className="text-center">
-              <h2 className="text-2xl font-bold text-gray-800 mb-2">کد تایید</h2>
-              <p className="text-sm text-gray-500">
-                کد ۶ رقمی به شماره <span className="font-bold text-gray-700">{formData.phone}</span> ارسال شد
-              </p>
-              <p className="text-xs text-[#2F5D50] mt-2">
-                (برای تست از کد <span className="font-mono font-bold">123456</span> استفاده کنید)
-              </p>
-            </div>
+        {authStep === 'otp' && (
+          <form onSubmit={handleOtpSubmit} className="space-y-6">
+            <h2 className="text-2xl font-bold text-white text-center">کد تایید</h2>
+            <p className="text-gray-400 text-center">کد ارسال شده به {tempAuthData?.phone} را وارد کنید</p>
 
             <div>
               <input
                 type="text"
-                value={formData.otp}
-                onChange={(e) => {
-                  const value = e.target.value.replace(/\D/g, '');
-                  setFormData({ ...formData, otp: value });
-                }}
-                className={`w-full px-4 py-3 border-2 rounded-xl text-center text-2xl tracking-widest focus:outline-none transition ${
-                  errors.otp ? 'border-red-400' : 'border-gray-200 focus:border-[#2F5D50]'
-                }`}
-                placeholder="------"
+                placeholder="کد ۶ رقمی"
                 maxLength={6}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && formData.otp.length === 6) {
-                    handleVerifyOtp();
-                  }
-                }}
+                value={formData.otp}
+                onChange={(e) => setFormData({ ...formData, otp: e.target.value.replace(/\D/g, '') })}
+                className="w-full px-4 py-3 bg-gray-800 text-white rounded-lg text-center text-2xl tracking-widest focus:ring-2 focus:ring-blue-500 outline-none"
               />
-              {errors.otp && <p className="text-red-500 text-xs mt-1 text-center">{errors.otp}</p>}
+              {errors.otp && <p className="text-red-500 text-sm mt-1 text-center">{errors.otp}</p>}
             </div>
 
             <button
-              onClick={handleVerifyOtp}
-              disabled={isSubmitting || formData.otp.length !== 6}
-              className="w-full bg-[#2F5D50] hover:bg-[#264a3f] text-white py-3 rounded-xl transition disabled:opacity-50 disabled:cursor-not-allowed"
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors disabled:opacity-50"
             >
-              {isSubmitting ? 'در حال بررسی...' : 'تایید کد'}
+              {isSubmitting ? 'در حال تایید...' : 'تایید'}
             </button>
-
-            <button
-              onClick={() => setStep(1)}
-              className="w-full text-gray-500 hover:text-gray-700 text-sm transition"
-            >
-              ویرایش شماره تلفن
-            </button>
-          </div>
+          </form>
         )}
 
-        {/* Step 3: Success */}
-        {step === 3 && (
-          <div className="flex flex-col items-center justify-center space-y-4 py-8">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
-              <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        {authStep === 'success' && (
+          <div className="text-center space-y-4">
+            <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto">
+              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h3 className="text-xl font-bold text-gray-800">ورود موفق!</h3>
-            <p className="text-sm text-gray-500">در حال انتقال...</p>
+            <h2 className="text-2xl font-bold text-white">ورود موفق!</h2>
           </div>
         )}
       </div>
-
-      <style>{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: scale(0.95); }
-          to { opacity: 1; transform: scale(1); }
-        }
-      `}</style>
     </div>
   );
 };

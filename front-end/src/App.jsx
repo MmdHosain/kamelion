@@ -16,10 +16,10 @@ import HomePage from './pages/HomePage';
 import VideoPage from './pages/VideoPage';
 import CommentsPage from './pages/CommentsPage';
 import AdminPage from './pages/admin/AdminPage';
-import AdminLogin from './pages/admin/AdminLogin'; // ✅ Added
+import AdminLogin from './pages/admin/AdminLogin';
 
 /* Admin Protection */
-import AdminProtectedRoute from './components/admin/AdminProtectedRoute'; // ✅ Added
+import AdminProtectedRoute from './components/admin/AdminProtectedRoute';
 
 /* Chat */
 import ChatContainer from './components/chat/ChatContainer';
@@ -37,10 +37,8 @@ const App = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  /* Detect Admin route */
   const isAdminRoute = location.pathname.startsWith('/admin');
 
-  /* Chat */
   const {
     messages,
     inputValue,
@@ -56,7 +54,6 @@ const App = () => {
     isPlayingScenario
   } = useChat();
 
-  /* Auth */
   const {
     user,
     accessToken,
@@ -64,15 +61,14 @@ const App = () => {
     otpOpen,
     loading,
     error,
-    authModalOpen,        
-    setAuthModalOpen,     
+    authModalOpen,
+    setAuthModalOpen,
     handleAuthSubmit,
     handleVerifyOtp,
     setOtpOpen,
     logout
   } = useAuth();
 
-  /* UI State */
   const { scrolled } = useScrollState();
   const [openAppointment, setOpenAppointment] = useState(false);
   const [signupOpen, setSignupOpen] = useState(false);
@@ -98,16 +94,11 @@ const App = () => {
     handleCtaAction(payload, () => setSignupOpen(true));
   };
 
-  const shouldShowFixedInput =
-    chatState === 'minimized' && messages.length === 0;
-
-  const shouldShowResumeButton =
-    chatState === 'minimized' && messages.length > 0;
+  const shouldShowFixedInput = chatState === 'minimized' && messages.length === 0;
+  const shouldShowResumeButton = chatState === 'minimized' && messages.length > 0;
 
   return (
     <div className="min-h-screen flex flex-col font-sans bg-[#FAFAF8] text-[#6B6E6C] dir-rtl">
-
-      {/* PUBLIC LAYOUT (HIDDEN ON ADMIN ROUTES) */}
       {!isAdminRoute && (
         <Header
           scrolled={scrolled}
@@ -117,27 +108,21 @@ const App = () => {
       )}
 
       <Routes>
-        {/* Public */}
         <Route path="/" element={<HomePage />} />
         <Route path="/video" element={<VideoPage />} />
         <Route path="/comments" element={<CommentsPage />} />
 
-        {/* Admin Login */}
-        <Route path="/admin/login" element={<AdminLogin />} /> {/* ✅ Added */}
+        <Route path="/admin/login" element={<AdminLogin />} />
 
-        {/* Protected Admin Routes */}
-        <Route element={<AdminProtectedRoute />}> {/* ✅ Added */}
+        <Route element={<AdminProtectedRoute />}>
           <Route path="/admin/*" element={<AdminPage />} />
         </Route>
 
-        {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
 
-      {/* PUBLIC LAYOUT FOOTER */}
       {!isAdminRoute && <Footer />}
 
-      {/* PUBLIC CHAT UI */}
       {!isAdminRoute && (
         <>
           <FixedChatInput
@@ -191,13 +176,12 @@ const App = () => {
             error={error}
           />
 
-          <AuthModal 
-            open={authModalOpen} 
-            onClose={() => setAuthModalOpen(false)} 
+          <AuthModal
+            open={authModalOpen}
+            onClose={() => setAuthModalOpen(false)}
           />
         </>
       )}
-
     </div>
   );
 };
