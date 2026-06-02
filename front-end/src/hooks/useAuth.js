@@ -170,7 +170,10 @@ export const useAuth = () => {
         user: resolvedUser,
       };
     } catch (err) {
-      const msg = err?.response?.data?.message || 'Admin login failed';
+const msg =
+  err?.response?.data?.detail ||
+  err?.response?.data?.message ||
+  'Admin login failed';
       setError(msg);
       throw err;
     } finally {
