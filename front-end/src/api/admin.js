@@ -20,4 +20,9 @@ export const adminApi = {
     const response = await apiClient.delete(`/admin/reservations/${id}`);
     return response.data;
   },
+
+  getChatProfiles: async () => {
+    const response = await apiClient.get('/admin/chat-profiles');
+    return response.data;
+  },
 };

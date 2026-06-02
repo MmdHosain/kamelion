@@ -18,7 +18,6 @@ import CommentsPage from './pages/CommentsPage';
 import AdminPage from './pages/admin/AdminPage';
 import AdminLogin from './pages/admin/AdminLogin';
 
-/* Admin Protection */
 import AdminProtectedRoute from './components/admin/AdminProtectedRoute';
 
 /* Chat */
@@ -28,10 +27,10 @@ import FixedChatInput from './components/ui/FixedChatInput';
 
 /* Modals */
 import AppointmentModal from './components/ui/AppointmentModal';
-import SignupModal from './components/ui/SignupModal';
-import LoginModal from './components/ui/LoginModal';
-import OtpModal from './components/ui/OtpModal';
 import AuthModal from './components/ui/AuthModal';
+import useAuthStore from './store/authStore';
+
+const openAuthModal = useAuthStore.getState().openAuthModal;
 
 const App = () => {
   const navigate = useNavigate();
@@ -57,22 +56,15 @@ const App = () => {
   const {
     user,
     accessToken,
-    phoneNumber,
-    otpOpen,
-    loading,
-    error,
     authModalOpen,
-    setAuthModalOpen,
     handleAuthSubmit,
     handleVerifyOtp,
-    setOtpOpen,
     logout
   } = useAuth();
 
   const { scrolled } = useScrollState();
   const [openAppointment, setOpenAppointment] = useState(false);
-  const [signupOpen, setSignupOpen] = useState(false);
-  const [loginOpen, setLoginOpen] = useState(false);
+
 
   const handleFixedInputSubmit = (textValue) => {
     if (!textValue.trim()) return;
@@ -87,8 +79,9 @@ const App = () => {
   };
 
   const handleCtaActionWrapper = (payload) => {
-    if (payload?.action === 'open_signup') setSignupOpen(true);
-    if (payload?.action === 'open_login') setLoginOpen(true);
+
+    if (payload?.action === 'open_signup') openAuthModal();
+    if (payload?.action === 'open_login') openAuthModal();
     if (payload?.action === 'open_appointment') setOpenAppointment(true);
 
     handleCtaAction(payload, () => setSignupOpen(true));
@@ -155,31 +148,8 @@ const App = () => {
             onClose={() => setOpenAppointment(false)}
           />
 
-          <LoginModal
-            open={loginOpen}
-            onClose={() => setLoginOpen(false)}
-            onAuthSubmit={handleAuthSubmit}
-          />
+          <AuthModal />
 
-          <SignupModal
-            open={signupOpen}
-            onClose={() => setSignupOpen(false)}
-            onAuthSubmit={handleAuthSubmit}
-          />
-
-          <OtpModal
-            open={otpOpen}
-            phoneNumber={phoneNumber}
-            onVerify={handleVerifyOtp}
-            onClose={() => setOtpOpen(false)}
-            loading={loading}
-            error={error}
-          />
-
-          <AuthModal
-            open={authModalOpen}
-            onClose={() => setAuthModalOpen(false)}
-          />
         </>
       )}
     </div>

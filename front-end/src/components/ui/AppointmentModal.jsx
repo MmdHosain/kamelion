@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
-import { getAvailableSlotsForDate } from "../../api/schedules";
+import { getAvailableSlots } from "../../api/schedules";
 import { useAuth } from "../../hooks/useAuth";
 
 export default function AppointmentModal({ open, onClose }) {

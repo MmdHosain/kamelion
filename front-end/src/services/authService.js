@@ -1,61 +1,68 @@
-import axios from 'axios';
 import apiClient from '../lib/apiClient';
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'https://your-backend.com/api';
+const normalizeAuthResponse = (data) => {
+  const accessToken = data?.accessToken || data?.access || null;
+  const refreshToken = data?.refreshToken || data?.refresh || null;
+  const user = data?.user || null;
+
+  return {
+    ...data,
+    user,
+    accessToken,
+    refreshToken,
+  };
+};
+
+const USE_REQUEST_OTP_ENDPOINT = true;
 
 const authService = {
-  // OTP Flow
   sendOtp: async (phone, type = 'login', name = null) => {
-    const response = await axios.post(
-      `${BASE_URL}/auth/send-otp`,
-      { phone, type, name },
-      { withCredentials: true }
-    );
+    const endpoint = USE_REQUEST_OTP_ENDPOINT ? '/auth/request-otp' : '/auth/send-otp';
+
+    const response = await apiClient.post(endpoint, {
+      phone,
+      type,
+      name,
+    });
+
     return response.data;
   },
 
   verifyOtp: async (phone, code, type = 'login') => {
-    const response = await axios.post(
-      `${BASE_URL}/auth/verify-otp`,
-      { phone, code, type },
-      { withCredentials: true }
-    );
-    return response.data; // { user, accessToken, refreshToken }
+    const response = await apiClient.post('/auth/verify-otp', {
+      phone,
+      code,
+      type,
+    });
+
+    return normalizeAuthResponse(response.data);
   },
 
-  // Token Management
   refreshToken: async (refreshToken) => {
-    const response = await axios.post(
-      `${BASE_URL}/auth/refresh`,
-      { refreshToken },
-      { withCredentials: true }
-    );
-    return response.data;
+    const response = await apiClient.post('/auth/refresh', {
+      refreshToken,
+    });
+
+    return normalizeAuthResponse(response.data);
   },
 
-  // Logout
   logout: async () => {
     try {
-      await apiClient.post('/auth/logout');
+      const response = await apiClient.post('/auth/logout');
+      return response.data;
     } catch (error) {
       console.error('Logout API error:', error);
+      return null;
     }
   },
 
-  // Admin Login (if separate)
-  adminLogin: async (username, password) => {
-    const response = await axios.post(
-      `${BASE_URL}/auth/admin/login`,
-      { username, password },
-      { withCredentials: true }
-    );
-    return response.data;
-  },
+  adminLogin: async (phone_number, password) => {
+    const response = await apiClient.post('/auth/admin/login', {
+      phone_number,
+      password,
+    });
 
-  // Get Current User
-  getCurrentUser: async () => {
-    const response = await apiClient.get('/auth/me');
-    return response.data;
+    return normalizeAuthResponse(response.data);
   },
 };
 

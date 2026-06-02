@@ -4,14 +4,14 @@ import useAuthStore from '../../store/authStore';
 import authService from '../../services/authService';
 
 const AuthModal = () => {
-  const { 
-    authModalOpen, 
-    authStep, 
+  const {
+    authModalOpen,
+    authStep,
     tempAuthData,
-    closeAuthModal, 
-    setAuthStep, 
+    closeAuthModal,
+    setAuthStep,
     setTempAuthData,
-    login 
+    login
   } = useAuthStore();
 
   const [formData, setFormData] = useState({ name: '', phone: '', otp: '' });
@@ -69,25 +69,56 @@ const AuthModal = () => {
 
     setIsSubmitting(true);
     try {
-      const response = await authService.verifyOtp(
-        tempAuthData.phone,
-        formData.otp,
-        'login'
-      );
+      // ۱. تایید کد و دریافت توکن‌ها
+      const tokens = await authService.verifyOtp(tempAuthData.phone, formData.otp);
       
-      login(response.user, {
-        accessToken: response.accessToken,
-        refreshToken: response.refreshToken,
-      });
+      // ۲. ذخیره موقت توکن برای گرفتن پروفایل
+      // فرض: در store متدی مثل setTokens داری
+      useAuthStore.getState().setTokens(tokens.accessToken, tokens.refreshToken);
+
+      // ۳. گرفتن دیتای کاربر
+      const user = await authService.getCurrentUser();
+
+      // ۴. لاگین نهایی در استور
+      login(user, tokens);
 
       setAuthStep('success');
       setTimeout(() => closeAuthModal(), 1500);
     } catch (error) {
-      setErrors({ otp: error.response?.data?.message || 'کد تایید نامعتبر است' });
+      setErrors({ otp: 'کد تایید نامعتبر است' });
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  // داخل AuthModal.jsx، این متد را اضافه کن
+  const handleResendOtp = async () => {
+    setIsSubmitting(true);
+    try {
+      await authService.sendOtp(tempAuthData.phone, 'login', tempAuthData.name);
+      // اینجا می‌تونی یک Toast یا Notification هم بگذاری
+    } catch (error) {
+      setErrors({ otp: 'خطا در ارسال مجدد کد' });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // و در بخش JSX مربوط به authStep === 'otp'، دکمه را اضافه کن:
+  {
+    authStep === 'otp' && (
+      <form onSubmit={handleOtpSubmit} className="space-y-6">
+        {/* ... کدهای قبلی ... */}
+        <button
+          type="button"
+          onClick={handleResendOtp}
+          className="text-sm text-blue-400 hover:underline w-full text-center"
+        >
+          ارسال مجدد کد
+        </button>
+      </form>
+    )
+  }
 
   if (!authModalOpen) return null;
 
@@ -104,7 +135,7 @@ const AuthModal = () => {
         {authStep === 'info' && (
           <form onSubmit={handleInfoSubmit} className="space-y-6">
             <h2 className="text-2xl font-bold text-white text-center">ورود / ثبت‌نام</h2>
-            
+
             <div>
               <input
                 type="text"

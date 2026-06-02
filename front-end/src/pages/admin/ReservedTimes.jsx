@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { fetchReservedTimes } from '../../api/admin';
+import { adminApi } from '../../api/admin';
 
 const ReservedTimes = () => {
   const [slots, setSlots] = useState([]);
@@ -7,7 +7,7 @@ const ReservedTimes = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetchReservedTimes()
+    adminApi.getReservedTimes()
       .then(setSlots)
       .catch(() => setError('Failed to load reserved times'))
       .finally(() => setLoading(false));

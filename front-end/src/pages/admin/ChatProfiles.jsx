@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { fetchChatProfiles } from '../../api/admin';
+import { adminApi } from '../../api/admin';
 
 const ChatProfiles = () => {
   const [profiles, setProfiles] = useState([]);
@@ -7,7 +7,7 @@ const ChatProfiles = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetchChatProfiles()
+    adminApi.getChatProfiles()
       .then(setProfiles)
       .catch(() => setError('Failed to load chat profiles'))
       .finally(() => setLoading(false));
