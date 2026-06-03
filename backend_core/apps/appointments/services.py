@@ -20,13 +20,13 @@ def get_weekday_code(date):
     """
 
     mapping = {
-        0: DoctorAvailability.MONDAY,
-        1: DoctorAvailability.TUESDAY,
-        2: DoctorAvailability.WEDNESDAY,
-        3: DoctorAvailability.THURSDAY,
-        4: DoctorAvailability.FRIDAY,
-        5: DoctorAvailability.SATURDAY,
-        6: DoctorAvailability.SUNDAY,
+        0: "MON",
+        1: "TUE",
+        2: "WED",
+        3: "THU",
+        4: "FRI",
+        5: "SAT",
+        6: "SUN",
     }
 
     return mapping[date.weekday()]
@@ -40,10 +40,12 @@ def generate_slots(date):
 
     weekday = get_weekday_code(date)
 
-    availability = DoctorAvailability.objects.filter(
-        day_of_week=weekday,
-        is_active=True
-    ).first()
+    availability = None
+
+    for item in DoctorAvailability.objects.filter(is_active=True):
+        if weekday in (item.days_of_week or []):
+            availability = item
+            break
 
     if not availability:
         return []
@@ -55,7 +57,6 @@ def generate_slots(date):
     gap = timedelta(minutes=availability.time_gap)
 
     slots = []
-
     current = start
 
     while current + visit <= end:

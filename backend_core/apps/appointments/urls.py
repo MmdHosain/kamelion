@@ -3,7 +3,7 @@ from .views import (
     AvailableSlotsView,
     BookAppointmentView,
     MyAppointmentsView,
-    CancelAppointmentView
+    CancelAppointmentView,
 )
 
 urlpatterns = [

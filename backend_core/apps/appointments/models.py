@@ -8,109 +8,59 @@ from apps.users.models import User
 
 
 class DoctorAvailability(models.Model):
-    """
-    Defines the doctor's weekly working schedule.
-    Since this is a single‑doctor clinic, we only store the day of week
-    and the working hours for that day.
-    """
-
-    # Constants for weekday values stored in the database
-    MONDAY = "MON"
-    TUESDAY = "TUE"
-    WEDNESDAY = "WED"
-    THURSDAY = "THU"
-    FRIDAY = "FRI"
-    SATURDAY = "SAT"
-    SUNDAY = "SUN"
-
-    # Choices allow Django admin/forms to display readable names
     DAY_CHOICES = [
-        (MONDAY, "Monday"),
-        (TUESDAY, "Tuesday"),
-        (WEDNESDAY, "Wednesday"),
-        (THURSDAY, "Thursday"),
-        (FRIDAY, "Friday"),
-        (SATURDAY, "Saturday"),
-        (SUNDAY, "Sunday"),
+        ("SUN", "Sunday"),
+        ("MON", "Monday"),
+        ("TUE", "Tuesday"),
+        ("WED", "Wednesday"),
+        ("THU", "Thursday"),
+        ("FRI", "Friday"),
+        ("SAT", "Saturday"),
     ]
 
-    # Which weekday this rule applies to
-    day_of_week = models.CharField(
-        max_length=3,
-        choices=DAY_CHOICES,
-        unique=True,
-        help_text="Day of the week this availability applies to."
-    )
+    name = models.CharField(max_length=255, blank=True, default="")
+    days_of_week = models.JSONField(default=list)
+    start_time = models.TimeField()
+    end_time = models.TimeField()
+    visit_duration = models.PositiveIntegerField(default=30)
+    time_gap = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
 
-    # Start of clinic working hours
-    start_time = models.TimeField(
-        help_text="Start of working hours."
-    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
-    # End of clinic working hours
-    end_time = models.TimeField(
-        help_text="End of working hours."
-    )
+    def clean(self):
+        valid_days = {code for code, _ in self.DAY_CHOICES}
 
-    # How long each patient visit lasts (minutes)
-    visit_duration = models.PositiveIntegerField(
-        help_text="Visit duration in minutes (e.g. 15)."
-    )
+        if not isinstance(self.days_of_week, list) or not self.days_of_week:
+            raise ValidationError({"days_of_week": "At least one day must be selected."})
 
-    # Optional break between visits
-    time_gap = models.PositiveIntegerField(
-        default=0,
-        help_text="Gap between visits in minutes."
-    )
+        invalid_days = [day for day in self.days_of_week if day not in valid_days]
+        if invalid_days:
+            raise ValidationError({"days_of_week": f"Invalid day(s): {', '.join(invalid_days)}"})
 
-    # Allows temporarily disabling a schedule rule without deleting it
-    is_active = models.BooleanField(
-        default=True
-    )
+        if len(set(self.days_of_week)) != len(self.days_of_week):
+            raise ValidationError({"days_of_week": "Duplicate days are not allowed in one schedule."})
 
+        if self.end_time <= self.start_time:
+            raise ValidationError({"end_time": "End time must be after start time."})
+
+        if self.visit_duration <= 0:
+            raise ValidationError({"visit_duration": "Visit duration must be greater than zero."})
+
+        if self.time_gap < 0:
+            raise ValidationError({"time_gap": "Gap cannot be negative."})
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.name or f"Availability #{self.pk}"
     class Meta:
         verbose_name = "Doctor Availability"
         verbose_name_plural = "Doctor Availabilities"
-
-        # Default ordering when querying objects
-        ordering = ["day_of_week"]
-
-    def __str__(self):
-        """
-        Human‑readable representation of the object.
-        Used in Django admin and shell.
-        """
-        return f"{self.get_day_of_week_display()} {self.start_time} - {self.end_time}"
-
-    def clean(self):
-        """
-        Custom validation logic that runs before saving.
-
-        Ensures:
-        - end_time is after start_time
-        - visit_duration is valid
-        - visit duration does not exceed the total working window
-        """
-
-        if self.end_time <= self.start_time:
-            raise ValidationError("End time must be after start time.")
-
-        if self.visit_duration <= 0:
-            raise ValidationError("Visit duration must be positive.")
-
-        if self.time_gap < 0:
-            raise ValidationError("Time gap cannot be negative.")
-
-        # Calculate total working minutes for the day
-        total_minutes = (
-            datetime.datetime.combine(datetime.date.today(), self.end_time)
-            - datetime.datetime.combine(datetime.date.today(), self.start_time)
-        ).total_seconds() / 60
-
-        if self.visit_duration > total_minutes:
-            raise ValidationError(
-                "Visit duration cannot exceed total working time."
-            )
+        ordering = ["id"]
 
 
 class AvailabilityException(models.Model):
