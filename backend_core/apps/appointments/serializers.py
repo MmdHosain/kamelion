@@ -159,3 +159,27 @@ class DoctorAvailabilityBulkSerializer(serializers.Serializer):
                 raise serializers.ValidationError(f"Schedule #{index + 1}: time_gap cannot be negative.")
 
         return schedules
+    
+class AvailabilityExceptionBulkSerializer(serializers.Serializer):
+    exceptions = serializers.ListField()
+
+    def validate_exceptions(self, exceptions):
+        if not isinstance(exceptions, list):
+            raise serializers.ValidationError("Exceptions must be a list.")
+
+        for index, item in enumerate(exceptions):
+            start_date = item.get("start_date")
+            end_date = item.get("end_date")
+
+            if not start_date or not end_date:
+                raise serializers.ValidationError(
+                    f"Exception #{index + 1}: start_date and end_date are required."
+                )
+
+            if end_date < start_date:
+                raise serializers.ValidationError(
+                    f"Exception #{index + 1}: end_date must be after or equal to start_date."
+                )
+
+        return exceptions
+

@@ -1,8 +1,12 @@
 // src/components/admin/exceptions/ExceptionsList.jsx
 
-import { useState, useCallback } from 'react';
-import { Trash2, Plus } from 'lucide-react';
+import { useState, useCallback , useEffect } from 'react';
+import { Trash2, Plus, Save } from 'lucide-react';
 import CustomDateRangePicker from './CustomDateRangePicker';
+import {
+  getAdminExceptions,
+  bulkSaveAdminExceptions,
+} from '../../../api/schedules';
 
 const newException = () => ({
   id:        crypto.randomUUID(),
@@ -10,6 +14,33 @@ const newException = () => ({
   endDate:   '',
   note:      '',
 });
+
+const normalizeBackendExceptions = (rows = []) =>
+  rows.map((row) => ({
+    id: row.id,
+    startDate: row.start_date || '',
+    endDate: row.end_date || '',
+    note: row.reason || '',
+  }));
+
+const buildBackendExceptions = (exceptions = []) =>
+  exceptions
+    .filter((ex) => ex.startDate && ex.endDate)
+    .map((ex) => {
+      const payload = {
+        start_date: ex.startDate,
+        end_date: ex.endDate,
+        reason: ex.note || '',
+      };
+
+      // Existing DB rows have integer IDs.
+      // New frontend-only rows have crypto.randomUUID(), so do not send those IDs.
+      if (Number.isInteger(ex.id)) {
+        payload.id = ex.id;
+      }
+
+      return payload;
+    });
 
 export default function ExceptionsList() {
 

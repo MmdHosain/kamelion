@@ -4,7 +4,8 @@ from .views_admin import (
     AdminSlotViewSet,
     AdminExceptionViewSet,
     AdminAppointmentsView,
-    AdminSlotBulkSaveView,  # 1. Import this
+    AdminSlotBulkSaveView,
+    AdminExceptionBulkSaveView,
 )
 
 router = DefaultRouter()
@@ -12,8 +13,8 @@ router.register("slots", AdminSlotViewSet)
 router.register("exceptions", AdminExceptionViewSet)
 
 urlpatterns = [
-    # 2. Add this BEFORE router.urls to ensure it takes precedence
     path("slots/bulk/", AdminSlotBulkSaveView.as_view(), name="admin-slots-bulk"),
+    path("exceptions/bulk/", AdminExceptionBulkSaveView.as_view(), name="admin-exceptions-bulk"),
     path("", include(router.urls)),
     path("appointments/", AdminAppointmentsView.as_view()),
 ]

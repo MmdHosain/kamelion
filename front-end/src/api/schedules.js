@@ -37,8 +37,19 @@ export const bookSlot = async (date, time, reason = '') => {
 };
 
 export const bulkSaveAdminSlots = async (schedules) => {
-  // Ensure the payload matches the DoctorAvailabilityBulkSerializer expectation
   const payload = { schedules }; 
   const response = await apiClient.put('/admin/slots/bulk/', payload);
   return response.data;
 };
+
+export const getAdminExceptions = async () => {
+  const response = await apiClient.get('/admin/exceptions/');
+  return response.data;
+};
+
+export const bulkSaveAdminExceptions = async (exceptions) => {
+  const payload = { exceptions };
+  const response = await apiClient.put('/admin/exceptions/bulk/', payload);
+  return response.data;
+};
+
