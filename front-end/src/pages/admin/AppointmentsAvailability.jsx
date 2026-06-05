@@ -111,24 +111,18 @@ const AppointmentsAvailability = () => {
   const dragOverItem = useRef(null);
 
   useEffect(() => {
-    const load = async () => {
+  const load = async () => {
       try {
-        const data = await fetchAdminSlots();
-        // Ensure we map the backend 'days_of_week' to the frontend 'selectedDays'
-        const formattedSchedules = data.map(s => ({
-          ...s,
-          selectedDays: s.days_of_week || [] // Map backend key to frontend state key
-        }));
-        setSchedules(formattedSchedules);
+        const data = await getAdminSlots();
+        setSchedules(normalizeBackendRowsToCards(Array.isArray(data) ? data : []));
       } catch (err) {
-        toast.error("Failed to load schedules");
-      } finally {
-        setLoading(false);
+        console.error('[loadSchedules] Failed:', err);
+        setLoadError('Failed to load schedules');
       }
     };
+
     load();
   }, []);
-
 
   const handleSort = useCallback(() => {
     if (dragItem.current === null || dragOverItem.current === null) return;
