@@ -6,8 +6,8 @@ FILES_TO_COLLECT = [
 "src/pages/admin/AppointmentsAvailability.jsx",
 "src/components/admin/exceptions/ExceptionsList.jsx",
 "src/components/admin/exceptions/CustomDateRangePicker.jsx",
-# "src/lib/apiClient.js",
-# "src/App.jsx",
+ "src/lib/apiClient.js",
+ "src/App.jsx",
  "src/api/schedules.js",
 ]
 
