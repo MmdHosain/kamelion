@@ -1,37 +1,43 @@
 import React, { useState } from 'react';
 import { User, Lock } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 
 const AdminLogin = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const location = useLocation();
+  const { adminLogin, error: authError, loading } = useAuth();
 
-  const [username, setUsername] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [localError, setLocalError] = useState('');
+
+  const from = location.state?.from?.pathname || '/admin';
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setError('');
-    setLoading(true);
+    setLocalError('');
 
     try {
-      if (username !== '1234' || password !== '1234') {
-        throw new Error('Invalid credentials');
+      const response = await adminLogin(phoneNumber, password);
+
+      const isAdmin =
+        response?.user?.role === 'admin' ||
+        response?.user?.is_staff === true ||
+        response?.user?.is_superuser === true;
+
+      if (!isAdmin) {
+        setLocalError('You do not have admin access');
+        return;
       }
 
-      await login({
-        username,
-        role: 'admin',
-      });
-
-      navigate('/admin/dashboard');
+      navigate(from, { replace: true });
     } catch (err) {
-      setError(err.message || 'Login failed');
-    } finally {
-      setLoading(false);
+      setLocalError(
+        err?.response?.data?.detail ||
+        err?.response?.data?.message ||
+        'Login failed'
+      );
     }
   };
 
@@ -39,7 +45,6 @@ const AdminLogin = () => {
     <div className="min-h-screen flex items-center justify-center bg-[#8FA9A3] px-4">
       <div className="bg-white/40 p-4 sm:p-6 rounded-lg shadow-lg">
         <div className="w-full max-w-md rounded-md overflow-hidden shadow-md">
-
           <div className="bg-[#2B2B2B] px-6 py-4">
             <h1 className="text-white text-lg font-semibold tracking-wide">
               login to administration
@@ -56,9 +61,9 @@ const AdminLogin = () => {
               </div>
               <input
                 type="text"
-                placeholder="Username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                placeholder="Phone number"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
                 className="flex-1 px-3 py-2 text-sm outline-none bg-white"
                 required
               />
@@ -78,9 +83,9 @@ const AdminLogin = () => {
               />
             </div>
 
-            {error && (
+            {(localError || authError) && (
               <p className="text-sm text-red-600">
-                {error}
+                {localError || authError}
               </p>
             )}
 
@@ -111,7 +116,6 @@ const AdminLogin = () => {
               </button>
             </div>
           </form>
-
         </div>
       </div>
     </div>

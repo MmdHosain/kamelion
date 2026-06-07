@@ -1,0 +1,103 @@
+data flow summery for reservations:
+1. Initial Load
+Component mounts
+
+→ useEffect triggers loadReservations()
+
+→ fetchReservations({ search: ‘’, page: 1, limit: 10 })
+
+→ GET /api/reservations?search=&page=1&limit=10
+
+→ setReservations(data), setTotal(t)
+
+2. Search
+User types in search input
+
+→ setSearchQuery(value)
+
+→ useEffect resets currentPage to 1
+
+→ loadReservations() re-runs (searchQuery changed)
+
+→ GET /api/reservations?search=<query>&page=1&limit=10
+
+→ setReservations(filtered data), setTotal(filtered total)
+
+3. Pagination
+User clicks page button / << < > >>
+
+→ setCurrentPage(n)
+
+→ loadReservations() re-runs (currentPage changed)
+
+→ GET /api/reservations?search=<query>&page=n&limit=10
+
+→ setReservations(page n data)
+
+4. Rows Per Page
+User changes dropdown
+
+→ setRowsPerPage(n)
+
+→ useEffect resets currentPage to 1
+
+→ loadReservations() re-runs
+
+→ GET /api/reservations?search=<query>&page=1&limit=n
+
+5. Add Reservation
+User clicks “Add” button
+
+→ openModal() → setIsModalOpen(true)
+
+→ User fills form → handleFormChange updates formData state
+
+→ User clicks “Add” in modal
+
+→ handleAddSubmit()
+
+→ createReservation(formData)
+
+→ POST /api/reservations { phoneNumber, fullName, date, time }
+
+→ setCurrentPage(1), loadReservations()
+
+→ list refreshes with new entry visible
+
+6. Delete Reservation
+User clicks trash icon on a row
+
+→ window.confirm()
+
+→ confirmed → handleDelete(id)
+
+→ deleteReservation(id)
+
+→ DELETE /api/reservations/:id
+
+→ loadReservations() re-fetches current page
+
+→ if page is now empty, totalPages shrinks
+
+→ useEffect snaps currentPage back to totalPages
+
+State Map
+reservations ← raw page data from API
+
+total ← total record count from API (drives pagination math)
+
+searchQuery ← bound to search input, sent as ?search=
+
+currentPage ← sent as ?page=, reset to 1 on search/rowsPerPage change
+
+rowsPerPage ← sent as ?limit=, bound to dropdown
+
+loading ← true while any fetch is in flight
+
+error ← holds error message string if fetch fails
+
+isModalOpen ← controls modal visibility
+
+formData ← controlled form fields inside modal
+
+The single source of truth for the list is always the API response. No local filtering or derived state — every user action that changes what’s displayed triggers a new fetch.

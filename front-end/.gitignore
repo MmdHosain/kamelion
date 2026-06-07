@@ -25,3 +25,5 @@ dist-ssr
 
 public/images/
 public/videos/
+tree_generator.py
+p.py

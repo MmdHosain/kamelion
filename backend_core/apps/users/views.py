@@ -5,9 +5,15 @@ from rest_framework import status
 
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .serializers import RequestOTPSerializer, VerifyOTPSerializer, PatientProfileSerializer
+from .serializers import (
+    RequestOTPSerializer,
+    VerifyOTPSerializer,
+    AdminLoginSerializer,
+)
 from .services import request_otp, verify_otp
 from .selectors import get_patient_profile
+from django.contrib.auth import authenticate
+
 
 
 class RequestOTPView(APIView):
@@ -58,24 +64,51 @@ class VerifyOTPView(APIView):
             "access": str(refresh.access_token),
             "refresh": str(refresh)
         })
+class AdminLoginView(APIView):
+    authentication_classes = []
+    permission_classes = []
 
-class MeView(APIView):
-
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        profile = get_patient_profile(request.user)
-        serializer = PatientProfileSerializer(profile)
-        return Response(serializer.data)
-
-    def patch(self, request):
-        profile = get_patient_profile(request.user)
-        serializer = PatientProfileSerializer(
-            profile,
-            data=request.data,
-            partial=True
-        )
+    def post(self, request):
+        serializer = AdminLoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
 
-        return Response(serializer.data)
+        phone_number = serializer.validated_data["phone_number"]
+        password = serializer.validated_data["password"]
+
+        user = authenticate(
+            request,
+            username=phone_number,
+            password=password
+        )
+
+        if not user:
+            return Response(
+                {"detail": "Invalid credentials"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        if not user.is_staff:
+            return Response(
+                {"detail": "User is not admin"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        if not user.is_active:
+            return Response(
+                {"detail": "User is inactive"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        refresh = RefreshToken.for_user(user)
+
+        return Response({
+            "accessToken": str(refresh.access_token),
+            "refreshToken": str(refresh),
+            "user": {
+                "id": user.id,
+                "phone_number": user.phone_number,
+                "full_name": user.full_name,
+                "role": "admin"
+            }
+        }, status=status.HTTP_200_OK)
+

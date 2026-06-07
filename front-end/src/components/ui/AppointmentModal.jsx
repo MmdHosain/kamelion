@@ -1,71 +1,251 @@
 // components/AppointmentModal.jsx
-import { useState } from "react";
-import { getNext14Days } from "../../utils/dateUtils";
-import DayPicker from "../DayPicker";
-import TimeSlots from "../TimeSlots";
-
-const mockSlots = {
-  "2026-05-07": [
-    { time: "18:15", status: "available" },
-    { time: "18:30", status: "available" },
-    { time: "19:00", status: "pending" },
-    { time: "19:30", status: "available" },
-    { time: "20:00", status: "reserved" },
-  ],
-};
+import { useState, useEffect } from "react";
+import { DayPicker } from "react-day-picker";
+import "react-day-picker/dist/style.css";
+import { getAvailableSlots } from "../../api/schedules";
+import { useAuth } from "../../hooks/useAuth";
 
 export default function AppointmentModal({ open, onClose }) {
-  const days = getNext14Days();
-
-  const [activeDay, setActiveDay] = useState(days[0].key);
+  const { requireAuth, user } = useAuth();
+  
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [availableSlots, setAvailableSlots] = useState([]);
   const [selectedTime, setSelectedTime] = useState(null);
+  const [isLoadingSlots, setIsLoadingSlots] = useState(false);
+  const [errors, setErrors] = useState({});
+
+  useEffect(() => {
+    if (open) {
+      setSelectedDate(null);
+      setAvailableSlots([]);
+      setSelectedTime(null);
+      setIsLoadingSlots(false);
+      setErrors({});
+    }
+  }, [open]);
+
+  const fetchSlots = async (date) => {
+    if (!date) return;
+    
+    setIsLoadingSlots(true);
+    setErrors({});
+    setSelectedTime(null);
+    
+    try {
+      const slots = await getAvailableSlotsForDate(date);
+      setAvailableSlots(slots);
+      if (slots.length === 0) {
+        setErrors({ date: 'هیچ زمانی در این روز موجود نیست' });
+      }
+    } catch (err) {
+      console.error('Error fetching slots:', err);
+      setErrors({ date: 'امکان دریافت زمان‌های موجود وجود ندارد' });
+      setAvailableSlots([]);
+    } finally {
+      setIsLoadingSlots(false);
+    }
+  };
+
+  const handleDayClick = (day) => {
+    if (!day) return;
+    setSelectedDate(day);
+    fetchSlots(day);
+  };
+
+  const handleBookAppointment = () => {
+    if (!selectedTime || !selectedDate) return;
+
+    requireAuth(() => {
+      bookAppointment();
+    });
+  };
+
+  const bookAppointment = () => {
+    const appointmentData = {
+      date: selectedDate,
+      time: selectedTime,
+      userId: user?.id,
+      userName: user?.name,
+    };
+
+    console.log('Booking appointment:', appointmentData);
+    
+    alert(`نوبت شما برای ${selectedDate.toLocaleDateString('fa-IR', { weekday: 'short', day: 'numeric', month: 'short' })} ساعت ${selectedTime} ثبت شد`);
+    onClose();
+  };
+
+  const isPastDate = (day) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return day < today;
+  };
+
+  const isTooFarFuture = (day) => {
+    const limit = new Date();
+    limit.setMonth(limit.getMonth() + 6);
+    limit.setHours(0, 0, 0, 0);
+    return day > limit;
+  };
+
+  const isUnavailable = (day) => {
+    return day.getDay() === 0;
+  };
 
   if (!open) return null;
 
-  const slots = mockSlots[activeDay] || [];
-
   return (
     <div className="fixed inset-0 z-[9999] bg-black/40 backdrop-blur-sm flex items-center justify-center">
-      <div className="bg-[#FAFAF8] w-full max-w-3xl rounded-3xl p-6 relative">
-
-        <button 
+      <div className="bg-[#FAFAF8] w-full max-w-4xl rounded-3xl p-8 mx-4 max-h-[90vh] overflow-y-auto relative">
+        
+        <button
           onClick={onClose}
-          className="absolute top-4 left-4 text-gray-400 hover:text-black"
+          className="absolute top-4 left-4 text-gray-400 hover:text-black transition"
         >
           ✕
         </button>
 
-        <h2 className="text-xl font-bold text-[#2F5D50] mb-6">
-          انتخاب زمان نوبت
+        <h2 className="text-2xl font-bold text-[#2F5D50] mb-6 text-center">
+          انتخاب تاریخ و زمان نوبت
         </h2>
 
-        <DayPicker
-          days={days}
-          activeDay={activeDay}
-          onSelect={(dayKey) => {
-            setActiveDay(dayKey);
-            setSelectedTime(null); // ریست ساعت
-          }}
-        />
+        <div className="calendar-container flex flex-col lg:flex-row gap-6">
+          
+          {/* Calendar Section */}
+          <div className="flex-1 flex justify-center">
+            <DayPicker
+              mode="single"
+              selected={selectedDate}
+              onSelect={handleDayClick}
+              disabled={(day) => isPastDate(day) || isTooFarFuture(day) || isUnavailable(day)}
+              modifiers={{
+                unavailable: (day) => isPastDate(day) || isTooFarFuture(day) || isUnavailable(day),
+              }}
+              modifiersClassNames={{
+                unavailable: 'text-gray-300 cursor-not-allowed line-through',
+              }}
+              className="rdp-custom"
+              numberOfMonths={1}
+            />
+            {errors.date && (
+              <p className="text-red-500 text-sm text-center mt-4">{errors.date}</p>
+            )}
+          </div>
 
-        <TimeSlots
-          slots={slots}
-          selectedTime={selectedTime}
-          onSelectTime={setSelectedTime}
-        />
+          {/* Time Slots Section */}
+          <div className={`flex-1 p-6 rounded-2xl border-2 transition-all duration-300 ${
+            isLoadingSlots 
+              ? 'border-gray-200 bg-gray-50' 
+              : availableSlots.length > 0 
+                ? 'border-[#2F5D50]/20 bg-white' 
+                : 'border-gray-100 bg-gray-50'
+          }`}>
+            <h3 className="text-lg font-semibold text-gray-700 mb-4">
+              {selectedDate
+                ? `زمان‌های موجود`
+                : 'یک تاریخ را انتخاب کنید'}
+            </h3>
+            
+            {isLoadingSlots && (
+              <div className="flex justify-center items-center h-40">
+                <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-[#2F5D50]"></div>
+              </div>
+            )}
 
+            {!isLoadingSlots && availableSlots.length > 0 && (
+              <div className="grid grid-cols-2 gap-3">
+                {availableSlots.map((slot, index) => (
+                  <button
+                    key={index}
+                    onClick={() => {
+                      if (slot.status === 'available') {
+                        setSelectedTime(slot.time);
+                      }
+                    }}
+                    disabled={slot.status !== 'available'}
+                    className={`py-3 px-4 rounded-xl border-2 transition-all duration-200 text-center font-medium 
+                      ${slot.status === 'available'
+                        ? selectedTime === slot.time
+                          ? 'bg-[#2F5D50] border-[#2F5D50] text-white shadow-lg scale-105'
+                          : 'border-gray-200 text-gray-700 hover:border-[#2F5D50] hover:text-[#2F5D50] hover:scale-105'
+                        : slot.status === 'pending'
+                          ? 'bg-yellow-50 border-yellow-200 text-yellow-700 cursor-not-allowed opacity-60'
+                          : 'bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed opacity-50'
+                      }`}
+                  >
+                    <div className="text-base">{slot.time}</div>
+                    {slot.status === 'pending' && (
+                      <div className="text-xs mt-1">در انتظار</div>
+                    )}
+                    {slot.status === 'reserved' && (
+                      <div className="text-xs mt-1">رزرو شده</div>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+            
+            {!isLoadingSlots && availableSlots.length === 0 && selectedDate && (
+              <div className="text-center text-gray-500 py-10">
+                <p className="text-lg">متاسفانه در تاریخ انتخاب شده</p>
+                <p className="text-lg">زمان خالی موجود نیست</p>
+              </div>
+            )}
+
+            {!selectedDate && (
+              <div className="text-center text-gray-400 py-10">
+                <p>لطفاً ابتدا یک تاریخ انتخاب کنید</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Book Button */}
         <button
-          disabled={!selectedTime}
-          className={`mt-6 w-full py-3 rounded-xl text-white transition ${
-            selectedTime
-              ? "bg-[#2F5D50]"
-              : "bg-gray-300 cursor-not-allowed"
+          onClick={handleBookAppointment}
+          disabled={!selectedTime || !selectedDate}
+          className={`mt-8 w-full py-4 rounded-xl text-white font-bold text-lg transition-all duration-200 ${
+            selectedTime && selectedDate
+              ? 'bg-[#2F5D50] hover:bg-[#264a3f] hover:shadow-lg'
+              : 'bg-gray-300 cursor-not-allowed'
           }`}
         >
           ثبت نوبت
         </button>
 
       </div>
+
+      <style jsx>{`
+        .rdp-custom {
+          --rdp-cell-size: 50px;
+          --rdp-accent-color: #2F5D50;
+          --rdp-background-color: #2F5D50;
+          font-family: inherit;
+        }
+
+        .rdp-custom .rdp-day_selected {
+          background-color: #2F5D50 !important;
+          color: white !important;
+          font-weight: bold;
+        }
+
+        .rdp-custom .rdp-day_selected:hover {
+          background-color: #264a3f !important;
+        }
+
+        .rdp-custom .rdp-day:hover:not(.rdp-day_disabled):not(.rdp-day_selected) {
+          background-color: #2F5D50 !important;
+          color: white !important;
+        }
+
+        .rdp-custom .rdp-day_today {
+          font-weight: bold;
+          color: #2F5D50;
+        }
+
+        .rdp-custom .rdp-button:hover:not([disabled]):not(.rdp-day_selected) {
+          background-color: rgba(47, 93, 80, 0.1);
+        }
+      `}</style>
     </div>
   );
 }

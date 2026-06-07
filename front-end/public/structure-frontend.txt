@@ -1,6 +1,8 @@
 ├── api
 │   ├── admin.js
-│   └── auth.js
+│   ├── auth.js
+│   ├── reservationService.js
+│   └── schedules.js
 ├── App.css
 ├── App.jsx
 ├── assets
@@ -10,6 +12,10 @@
 │   └── message.types.ts
 ├── components
 │   ├── admin
+│   |   ├── availability
+|   │   │   └── ScheduleCard.jsx
+│   |   ├── reservations
+|   │   │   └── ReservationsList.jsx
 │   │   ├── AdminHeader.jsx
 │   │   ├── AdminLayout.jsx
 │   │   ├── AdminNavConfig.js
@@ -41,6 +47,7 @@
 │   ├── TimeSlots.jsx
 │   └── ui
 │       ├── AppointmentModal.jsx
+│       ├── AuthModal.jsx
 │       ├── FixedChatInput.jsx
 │       ├── form
 │       │   └── DynamicForm.jsx
@@ -74,6 +81,7 @@
 │   │   ├── AdminLogin.jsx
 │   │   ├── AdminPage.jsx
 │   │   ├── ChatProfiles.jsx
+│   │   ├── AppointmentsAvailability.jsx
 │   │   └── ReservedTimes.jsx
 │   ├── CommentsPage.jsx
 │   ├── HomePage.jsx

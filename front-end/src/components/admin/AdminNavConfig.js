@@ -8,9 +8,9 @@ import {
 
 export const ADMIN_NAV_ITEMS = [
   {
-    label: 'Dashboard',
-    icon: LayoutDashboard,
-    path: '/admin'
+    label: 'Appointments',
+    icon: Calendar,
+    path: '/admin/appointments'
   },
   {
     label: 'Patients',
@@ -18,9 +18,9 @@ export const ADMIN_NAV_ITEMS = [
     path: '/admin/patients'
   },
   {
-    label: 'Appointments',
-    icon: Calendar,
-    path: '/admin/appointments'
+    label: 'Stats',
+    icon: LayoutDashboard,
+    path: '/admin/stats'
   },
   {
     label: 'Reports',

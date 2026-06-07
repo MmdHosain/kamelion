@@ -85,7 +85,14 @@ FASTAPI_BASE_URL = config('FASTAPI_BASE_URL', default='http://localhost:8001')
 FASTAPI_TIMEOUT = config('FASTAPI_TIMEOUT', default=10, cast=int)
 
 # ── CORS ──────────────────────────────────────────────
-CORS_ALLOW_ALL_ORIGINS = True  # در production محدود کنید
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
 
 # ── Static ────────────────────────────────────────────
 STATIC_URL = '/static/'
@@ -106,3 +113,4 @@ TEMPLATES = [
         },
     },
 ]
+

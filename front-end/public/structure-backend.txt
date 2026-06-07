@@ -1,0 +1,66 @@
+backend_core/
+
+├── apps/
+│ ├── appointments/
+│ │ ├── migrations/
+│ │ ├── init.py
+│ │ ├── admin.py
+│ │ ├── admin_urls.py
+│ │ ├── apps.py
+│ │ ├── models.py
+│ │ ├── pagination.py
+│ │ ├── serializers.py
+│ │ ├── services.py
+│ │ ├── tests.py
+│ │ ├── urls.py
+│ │ ├── views.py
+│ │ └── views_admin.py
+│ │
+│ ├── chat_gateway/
+│ │ ├── migrations/
+│ │ ├── init.py
+│ │ ├── admin.py
+│ │ ├── apps.py
+│ │ ├── models.py
+│ │ ├── tests.py
+│ │ └── views.py
+│ │
+│ ├── common/
+│ │ ├── migrations/
+│ │ ├── init.py
+│ │ ├── admin.py
+│ │ ├── apps.py
+│ │ ├── models.py
+│ │ ├── tests.py
+│ │ └── views.py
+│ │
+│ └── users/
+│ ├── migrations/
+│ │ ├── 0001_initial.py
+│ │ └── 0002_patientprofile_…
+│ ├── init.py
+│ ├── admin.py
+│ ├── apps.py
+│ ├── models.py
+│ ├── selectors.py
+│ ├── serializers.py
+│ ├── services.py
+│ ├── tests.py
+│ ├── urls.py
+│ └── views.py
+│
+├── config/
+│ ├── init.py
+│ ├── asgi.py
+│ ├── settings.py
+│ ├── urls.py
+│ └── wsgi.py
+│
+├── manage.py
+├── requirements.txt
+├── package.json
+├── package-lock.json
+├── .env
+├── .gitignore
+├── node_modules/
+└── venv/
