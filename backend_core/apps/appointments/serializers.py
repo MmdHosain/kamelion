@@ -1,5 +1,8 @@
 from rest_framework import serializers
 from .models import DoctorAvailability, AvailabilityException, Appointment
+from rest_framework import serializers
+from .models import DoctorAvailability
+
 
 
 class SlotQuerySerializer(serializers.Serializer):
@@ -10,24 +13,6 @@ class BookAppointmentSerializer(serializers.Serializer):
     date = serializers.DateField()
     time = serializers.TimeField()
     reason = serializers.CharField(required=False, allow_blank=True)
-
-
-class AppointmentSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Appointment
-        fields = [
-            "id",
-            "appointment_date",
-            "appointment_time",
-            "status",
-            "reason",
-            "created_at",
-        ]
-
-
-from rest_framework import serializers
-from .models import DoctorAvailability
 
 
 class DoctorAvailabilitySerializer(serializers.ModelSerializer):
@@ -102,12 +87,30 @@ class AvailabilityExceptionSerializer(serializers.ModelSerializer):
         model = AvailabilityException
         fields = "__all__"
 
-
 class AppointmentSerializer(serializers.ModelSerializer):
+    full_name = serializers.CharField(
+        source="user.full_name",
+        read_only=True
+    )
+
+    phone_number = serializers.CharField(
+        source="user.phone_number",
+        read_only=True
+    )
+
     class Meta:
         model = Appointment
-        fields = "__all__"
-
+        fields = [
+            "id",
+            "full_name",
+            "phone_number",
+            "appointment_date",
+            "appointment_time",
+            "status",
+            "reason",
+            "created_at",
+            "updated_at",
+        ]
 class DoctorAvailabilityBulkSerializer(serializers.Serializer):
     schedules = serializers.ListField()
 

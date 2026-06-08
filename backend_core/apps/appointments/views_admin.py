@@ -5,7 +5,7 @@ from rest_framework.views import APIView
 from django.db import transaction
 from rest_framework.response import Response
 from rest_framework import status
-
+from django.db.models import Q, Case, When, Value, IntegerField
 from .models import DoctorAvailability, AvailabilityException, Appointment
 from .serializers import (
     DoctorAvailabilitySerializer,
@@ -15,6 +15,8 @@ from .serializers import (
     AppointmentSerializer,
 )
 from .pagination import AppointmentPagination
+
+
 
 
 class AdminSlotViewSet(viewsets.ModelViewSet):
@@ -27,12 +29,43 @@ class AdminExceptionViewSet(viewsets.ModelViewSet):
     serializer_class = AvailabilityExceptionSerializer
     permission_classes = [IsAdminUser]
 
-
 class AdminAppointmentsView(ListAPIView):
-    queryset = Appointment.objects.all().order_by("-id")
     serializer_class = AppointmentSerializer
     pagination_class = AppointmentPagination
     permission_classes = [IsAdminUser]
+
+    def get_queryset(self):
+        queryset = (
+            Appointment.objects
+            .select_related("user")
+            .all()
+            .order_by("-id")
+        )
+        
+        search = self.request.query_params.get("search")
+
+        if search:
+            search = search.strip()
+            terms = search.split()
+
+            for term in terms:
+                queryset = queryset.filter(
+                    Q(user__full_name__icontains=term) |
+                    Q(user__phone_number__icontains=term)
+                )
+
+            queryset = queryset.annotate(
+                rank=Case(
+                    When(user__full_name__iexact=search, then=Value(3)),
+                    When(user__phone_number__iexact=search, then=Value(3)),
+                    When(user__full_name__icontains=search, then=Value(2)),
+                    When(user__phone_number__icontains=search, then=Value(2)),
+                    default=Value(0),
+                    output_field=IntegerField(),
+                )
+            ).order_by("-rank", "-id")
+
+        return queryset
 
 class AdminSlotBulkSaveView(APIView):
     permission_classes = [IsAdminUser]
