@@ -79,12 +79,11 @@ const App = () => {
   };
 
   const handleCtaActionWrapper = (payload) => {
-
     if (payload?.action === 'open_signup') openAuthModal();
     if (payload?.action === 'open_login') openAuthModal();
     if (payload?.action === 'open_appointment') setOpenAppointment(true);
 
-    handleCtaAction(payload, () => setSignupOpen(true));
+    handleCtaAction(payload, () => openAuthModal());
   };
 
   const shouldShowFixedInput = chatState === 'minimized' && messages.length === 0;
@@ -138,7 +137,7 @@ const App = () => {
             setInputValue={setInputValue}
             handleSendMessage={handleSendMessage}
             handleCtaAction={handleCtaActionWrapper}
-            onOpenSignup={() => setSignupOpen(true)}
+            onOpenSignup={() => openAuthModal()}
             onMinimize={() => setChatState('minimized')}
             handleFixedInputSubmit={handleFixedInputSubmit}
           />

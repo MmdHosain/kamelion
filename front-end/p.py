@@ -3,12 +3,15 @@ from pathlib import Path
 OUTPUT_FILE = "frontend_auth_debug_dump.txt"
 
 FILES_TO_COLLECT = [
-"src/pages/admin/AppointmentsAvailability.jsx",
-"src/components/admin/exceptions/ExceptionsList.jsx",
-"src/components/admin/exceptions/CustomDateRangePicker.jsx",
+ "src/pages/admin/AppointmentsAvailability.jsx",
+ "src/hooks/useAuth.js",
+ "src/services/authService.js",
+ "src/store/authStore.js",
+ "src/api/reservationService.js",
  "src/lib/apiClient.js",
  "src/App.jsx",
- "src/api/schedules.js",
+ "src/main.jsx",
+ "src/components/ui/AppointmentModal.jsx"
 ]
 
 
