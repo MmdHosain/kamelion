@@ -46,6 +46,11 @@ const authService = {
     return normalizeAuthResponse(response.data);
   },
 
+  getCurrentUser: async () => {
+    const response = await apiClient.get('/auth/me');
+    return response.data;
+  },
+
   logout: async () => {
     try {
       const response = await apiClient.post('/auth/logout');

@@ -7,6 +7,7 @@ FILES_TO_COLLECT = [
  "src/hooks/useAuth.js",
  "src/services/authService.js",
  "src/store/authStore.js",
+ "src/components/ui/AuthModal.jsx",
  "src/api/reservationService.js",
  "src/lib/apiClient.js",
  "src/App.jsx",
