@@ -69,7 +69,11 @@ const AuthModal = () => {
     setErrors({});
 
     try {
-      await handleAuthSubmit(formData.phone, formData.name, 'login');
+      await handleAuthSubmit({
+        phone: formData.phone,
+        name: formData.name,
+        type: 'signup',
+      });
     } catch (err) {
       setErrors({
         submit:

@@ -118,7 +118,11 @@ export default function AppointmentModal({ open, onClose }) {
     if (!date) return;
 
     setIsLoadingSlots(true);
-    setErrors({});
+    setErrors((prev) => ({
+      ...prev,
+      date: '',
+      booking: '',
+    }));
     setSelectedTime(null);
 
     try {
@@ -129,20 +133,22 @@ export default function AppointmentModal({ open, onClose }) {
       setAvailableSlots(slots);
 
       if (slots.length === 0) {
-        setErrors({
+        setErrors((prev) => ({
+          ...prev,
           date: 'هیچ زمانی در این روز موجود نیست',
-        });
+        }));
       }
     } catch (err) {
       console.error('[AppointmentModal] Error fetching slots:', err);
 
       setAvailableSlots([]);
-      setErrors({
+      setErrors((prev) => ({
+        ...prev,
         date: getApiErrorMessage(
           err,
           'امکان دریافت زمان‌های موجود وجود ندارد'
         ),
-      });
+      }));
     } finally {
       setIsLoadingSlots(false);
     }
@@ -159,7 +165,10 @@ export default function AppointmentModal({ open, onClose }) {
     if (!selectedDate || !selectedTime) return;
 
     setIsBooking(true);
-    setErrors({});
+    setErrors((prev) => ({
+      ...prev,
+      booking: '',
+    }));
 
     try {
       const apiDate = formatDateForApi(selectedDate);
@@ -177,16 +186,18 @@ export default function AppointmentModal({ open, onClose }) {
       await fetchSlots(selectedDate);
 
       setSelectedTime(null);
+      setPendingBookingAfterAuth(false);
       onClose();
     } catch (err) {
       console.error('[AppointmentModal] Booking failed:', err);
 
-      setErrors({
+      setErrors((prev) => ({
+        ...prev,
         booking: getApiErrorMessage(
           err,
           'ثبت نوبت با خطا مواجه شد'
         ),
-      });
+      }));
     } finally {
       setIsBooking(false);
     }
@@ -226,6 +237,12 @@ export default function AppointmentModal({ open, onClose }) {
     doBookAppointment();
   };
 
+  const handleClose = () => {
+    setPendingBookingAfterAuth(false);
+    setErrors({});
+    onClose();
+  };
+
   const isPastDate = (day) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -250,7 +267,7 @@ export default function AppointmentModal({ open, onClose }) {
       <div className="bg-[#FAFAF8] w-full max-w-4xl rounded-3xl p-8 mx-4 max-h-[90vh] overflow-y-auto relative">
         <button
           type="button"
-          onClick={onClose}
+          onClick={handleClose}
           disabled={isBooking}
           className="absolute top-4 left-4 text-gray-400 hover:text-black transition disabled:opacity-50 disabled:cursor-not-allowed"
           aria-label="Close appointment modal"
