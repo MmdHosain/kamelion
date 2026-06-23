@@ -1,6 +1,7 @@
 from rest_framework import viewsets
 from rest_framework.permissions import IsAdminUser
-from rest_framework.generics import ListAPIView
+# 1. Change ListAPIView to ListCreateAPIView
+from rest_framework.generics import ListCreateAPIView, ListAPIView 
 from rest_framework.views import APIView
 from django.db import transaction
 from rest_framework.response import Response
@@ -13,6 +14,8 @@ from .serializers import (
     AvailabilityExceptionSerializer,
     AvailabilityExceptionBulkSerializer,
     AppointmentSerializer,
+    AdminAppointmentListSerializer,
+    AdminAppointmentCreateSerializer,
 )
 from .pagination import AppointmentPagination
 
@@ -27,12 +30,33 @@ class AdminExceptionViewSet(viewsets.ModelViewSet):
     serializer_class = AvailabilityExceptionSerializer
     permission_classes = [IsAdminUser]
 
-
-class AdminAppointmentsView(ListAPIView):
-    queryset = Appointment.objects.all().order_by("-id")
-    serializer_class = AppointmentSerializer
+# 3. Update this class to support POST
+class AdminAppointmentsView(ListCreateAPIView):
+    # Use select_related to optimize the join with User for phone/name
+    queryset = Appointment.objects.select_related("user").all().order_by("-appointment_date", "-appointment_time")
     pagination_class = AppointmentPagination
     permission_classes = [IsAdminUser]
+
+    def get_serializer_class(self):
+        if self.request.method == "POST":
+            return AdminAppointmentCreateSerializer
+        return AdminAppointmentListSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        # Save the appointment
+        appointment = serializer.save()
+        
+        # Return the response using the ListSerializer so the frontend gets 
+        # the phone_number and full_name immediately
+        response_serializer = AdminAppointmentListSerializer(appointment)
+        
+        return Response(
+            response_serializer.data,
+            status=status.HTTP_201_CREATED,
+        )
 
 class AdminSlotBulkSaveView(APIView):
     permission_classes = [IsAdminUser]

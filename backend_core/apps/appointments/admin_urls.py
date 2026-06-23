@@ -16,5 +16,5 @@ urlpatterns = [
     path("slots/bulk/", AdminSlotBulkSaveView.as_view(), name="admin-slots-bulk"),
     path("exceptions/bulk/", AdminExceptionBulkSaveView.as_view(), name="admin-exceptions-bulk"),
     path("", include(router.urls)),
-    path("appointments/", AdminAppointmentsView.as_view()),
+    path("appointments/", AdminAppointmentsView.as_view(), name="admin-appointments"),
 ]

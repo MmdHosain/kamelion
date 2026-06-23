@@ -3,17 +3,17 @@
 import React, { useState } from 'react';
 import { Trash2, ChevronDown, ChevronUp, GripVertical } from 'lucide-react'; // ← DND: GripVertical for drag handle
 
-// ─────────────────────────────────────────────────────────────────────────────
+
 // CONSTANTS
-// ─────────────────────────────────────────────────────────────────────────────
+
 
 const DAYS        = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const SLOT_OPTIONS = [10, 15, 20, 30, 45, 60];
 const GAP_OPTIONS  = [0, 5, 10, 15, 20, 30];
 
-// ─────────────────────────────────────────────────────────────────────────────
+
 // SCHEDULE CARD
-// ─────────────────────────────────────────────────────────────────────────────
+
 
 /**
  * Props:

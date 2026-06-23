@@ -27,14 +27,15 @@ const normalizeSlotStatus = (status) => {
 
   return normalized;
 };
-
 const normalizeSingleSlot = (slot) => {
   if (typeof slot === 'string') {
+    const time = slot.includes(':') ? slot.split(':').map(part => part.padStart(2, '0')).join(':').slice(0, 5) : slot;
     return {
-      time: slot.slice(0, 5),
+      time: time,
       status: 'available',
     };
   }
+
 
   if (slot && typeof slot === 'object') {
     const rawTime =
