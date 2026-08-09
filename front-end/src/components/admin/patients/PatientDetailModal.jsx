@@ -3,21 +3,6 @@ import { X } from "lucide-react";
 import { adminApi } from "../../../api/admin";
 import { getApiErrorMessage } from "../../../utils/errorUtils";
 
-const scrollbarStyles = `
-  .custom-scroll::-webkit-scrollbar { width: 4px; }
-  .custom-scroll::-webkit-scrollbar-track { background: transparent; }
-  .custom-scroll::-webkit-scrollbar-thumb {
-    background: transparent;
-    border-radius: 999px;
-  }
-  .custom-scroll-wrapper:hover .custom-scroll::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-  }
-  .custom-scroll::-webkit-scrollbar-thumb:hover {
-    background: #94a3b8 !important;
-  }
-`;
-
 const formatDateTime = (date) => {
   const d = new Date(date);
   const yyyy = d.getFullYear();
@@ -76,8 +61,6 @@ const PatientDetailModal = ({ patient, onClose }) => {
 
   return (
     <>
-      <style>{scrollbarStyles}</style>
-
       {/* Overlay */}
       <div
         className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm"

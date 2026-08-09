@@ -21,7 +21,7 @@ const MessageRenderer = ({ message, onCtaAction }) => {
         {content && (
           <div
             className="
-              chat-message
+              animate-messageIn
               bg-[#1a2522] text-[#FAFAF8]
               px-4 py-3
               rounded-2xl rounded-tl-md
@@ -50,7 +50,7 @@ const MessageRenderer = ({ message, onCtaAction }) => {
       <div className={`flex w-full mb-4 ${isUser ? 'justify-end' : 'justify-start'}`}>
         <div
           className={`
-            chat-message
+            animate-messageIn
             max-w-[85%] px-4 py-3
             text-sm leading-6
             transition-all duration-200 ease-out
@@ -84,7 +84,7 @@ const MessageRenderer = ({ message, onCtaAction }) => {
       <div className="flex w-full mb-4 justify-start">
         <div
           className="
-            chat-message
+            animate-messageIn
             bg-[#222]
             border border-white/10
             p-4

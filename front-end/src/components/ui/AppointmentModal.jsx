@@ -388,39 +388,6 @@ export default function AppointmentModal({ open, onClose }) {
           {isBooking ? 'در حال ثبت...' : 'ثبت نوبت'}
         </button>
       </div>
-
-      <style>{`
-        .rdp-custom {
-          --rdp-cell-size: 50px;
-          --rdp-accent-color: #2F5D50;
-          --rdp-background-color: #2F5D50;
-          font-family: inherit;
-        }
-
-        .rdp-custom .rdp-day_selected {
-          background-color: #2F5D50 !important;
-          color: white !important;
-          font-weight: bold;
-        }
-
-        .rdp-custom .rdp-day_selected:hover {
-          background-color: #264a3f !important;
-        }
-
-        .rdp-custom .rdp-day:hover:not(.rdp-day_disabled):not(.rdp-day_selected) {
-          background-color: #2F5D50 !important;
-          color: white !important;
-        }
-
-        .rdp-custom .rdp-day_today {
-          font-weight: bold;
-          color: #2F5D50;
-        }
-
-        .rdp-custom .rdp-button:hover:not([disabled]):not(.rdp-day_selected) {
-          background-color: rgba(47, 93, 80, 0.1);
-        }
-      `}</style>
     </div>
   );
 }
