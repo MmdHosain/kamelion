@@ -4,6 +4,7 @@ import {
   ChevronsLeft, ChevronsRight, Plus, ChevronDown, X
 } from 'lucide-react';
 import { reservationService } from '../../../api/reservationService';
+import { getApiErrorMessage } from '../../../utils/errorUtils';
 
 const ROW_OPTIONS = [10, 25, 50, 100];
 const TABLE_HEADERS = ['Phone number', 'Full name', 'Date', 'Time', 'Action'];
@@ -37,24 +38,6 @@ const normalizeReservation = (item) => ({
   time: (item.appointment_time || item.time || '').slice(0, 5),
 });
 
-const getErrorMessage = (error, fallback) => {
-  const data = error?.response?.data;
-  if (!data) return fallback;
-
-  // Handle common DRF error structures
-  const extract = (val) => (Array.isArray(val) ? val[0] : val);
-
-  return (
-    extract(data.detail) ||
-    extract(data.non_field_errors) ||
-    extract(data.phone_number) ||
-    extract(data.appointment_date) ||
-    extract(data.appointment_time) ||
-    fallback
-  );
-};
-
-
 export default function ReservationsList() {
   const [reservations, setReservations] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -82,7 +65,7 @@ export default function ReservationsList() {
       } catch (error) {
         if (!isMounted) return;
         setReservations([]);
-        setLoadError(getErrorMessage(error, 'Failed to load reservations.'));
+        setLoadError(getApiErrorMessage(error, 'Failed to load reservations.'));
       } finally {
         if (isMounted) {
           setIsLoading(false);
@@ -195,7 +178,7 @@ export default function ReservationsList() {
       setIsModalOpen(false);
     } catch (error) {
       const errorData = error?.response?.data;
-      console.log('Error from server:', errorData);
+      
       // Check if user_exists is false (could be a direct boolean or wrapped in an array)
       const userExistsVal = Array.isArray(errorData?.user_exists) 
         ? errorData.user_exists[0] 
@@ -216,7 +199,7 @@ export default function ReservationsList() {
         }
       }
 
-      setSubmitError(getErrorMessage(error, 'Failed to add reservation.'));
+      setSubmitError(getApiErrorMessage(error, 'Failed to add reservation.'));
     } finally {
       setIsSubmitting(false);
     }

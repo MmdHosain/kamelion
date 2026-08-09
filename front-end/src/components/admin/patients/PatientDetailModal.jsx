@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { X } from "lucide-react";
+import { adminApi } from "../../../api/admin";
+import { getApiErrorMessage } from "../../../utils/errorUtils";
 
 const scrollbarStyles = `
   .custom-scroll::-webkit-scrollbar { width: 4px; }
@@ -38,23 +40,38 @@ const AI_FIELDS = [
 const PatientDetailModal = ({ patient, onClose }) => {
   const [notes, setNotes] = useState(patient?.notes || []);
   const [noteInput, setNoteInput] = useState("");
+  const [isSubmittingNote, setIsSubmittingNote] = useState(false);
+  const [noteError, setNoteError] = useState("");
 
   if (!patient) return null;
 
   const aiProfile     = patient.aiProfile     || {};
   const appointments  = patient.appointments  || [];
 
-  const handleAddNote = () => {
+  const handleAddNote = async () => {
     const trimmed = noteInput.trim();
     if (!trimmed) return;
-    const newNote = {
-      id: Date.now(),
-      text: trimmed,
-      createdAt: formatDateTime(new Date()),
-    };
-    // TODO: POST /api/patients/:id/notes — send newNote to backend here
-    setNotes((prev) => [newNote, ...prev]);
-    setNoteInput("");
+
+    setIsSubmittingNote(true);
+    setNoteError("");
+
+    try {
+      // Sending the newly created note to backend
+      const newNoteRes = await adminApi.addPatientNote(patient.id, trimmed);
+      
+      const newNote = {
+        id: newNoteRes?.id || Date.now(),
+        text: newNoteRes?.text || trimmed,
+        createdAt: newNoteRes?.createdAt || formatDateTime(new Date()),
+      };
+
+      setNotes((prev) => [newNote, ...prev]);
+      setNoteInput("");
+    } catch (err) {
+      setNoteError(getApiErrorMessage(err, "Failed to save note."));
+    } finally {
+      setIsSubmittingNote(false);
+    }
   };
 
   return (
@@ -99,14 +116,22 @@ const PatientDetailModal = ({ patient, onClose }) => {
                 onKeyDown={(e) => e.key === "Enter" && e.ctrlKey && handleAddNote()}
                 placeholder="Write a note..."
                 rows={4}
-                className="w-full resize-none rounded-lg border border-gray-200 p-2.5 text-sm text-gray-700 placeholder-gray-300 focus:outline-none focus:border-[#2D5A4C] transition-colors shrink-0"
+                disabled={isSubmittingNote}
+                className="w-full resize-none rounded-lg border border-gray-200 p-2.5 text-sm text-gray-700 placeholder-gray-300 focus:outline-none focus:border-[#2D5A4C] transition-colors shrink-0 disabled:opacity-60 disabled:cursor-not-allowed"
               />
+              
+              {noteError && (
+                <span className="text-xs text-red-500 font-medium">
+                  {noteError}
+                </span>
+              )}
 
               <button
                 onClick={handleAddNote}
-                className="w-full bg-[#2A5C4D] hover:bg-[#234e41] text-white text-sm font-medium py-2 rounded-lg transition-colors shrink-0"
+                disabled={isSubmittingNote}
+                className="w-full bg-[#2A5C4D] hover:bg-[#234e41] text-white text-sm font-medium py-2 rounded-lg transition-colors shrink-0 disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                Add
+                {isSubmittingNote ? "Adding..." : "Add"}
               </button>
 
               <div className="custom-scroll flex-1 overflow-y-auto flex flex-col gap-2 min-h-0">

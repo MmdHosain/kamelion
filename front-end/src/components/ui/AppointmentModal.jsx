@@ -5,6 +5,7 @@ import { DayPicker } from 'react-day-picker';
 import 'react-day-picker/dist/style.css';
 import { getAvailableSlots, bookSlot } from '../../api/reservationService';
 import { useAuth } from '../../hooks/useAuth';
+import { getApiErrorMessage } from '../../utils/errorUtils';
 
 const formatDateForApi = (date) => {
   if (!date) return '';
@@ -73,23 +74,6 @@ const normalizeSlotsResponse = (data) => {
   return rawSlots
     .map(normalizeSingleSlot)
     .filter((slot) => slot && slot.time);
-};
-
-const getApiErrorMessage = (err, fallback) => {
-  const data = err?.response?.data;
-
-  if (!data) return fallback;
-  if (typeof data === 'string') return data;
-
-  return (
-    data.detail ||
-    data.error ||
-    data.message ||
-    data.non_field_errors?.[0] ||
-    data.date?.[0] ||
-    data.time?.[0] ||
-    fallback
-  );
 };
 
 export default function AppointmentModal({ open, onClose }) {
