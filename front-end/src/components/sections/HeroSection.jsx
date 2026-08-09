@@ -7,7 +7,7 @@ const HeroSection = () => {
         className="absolute inset-0 bg-cover bg-center"
         style={{ backgroundImage: "url('/images/fac624df-a6d0-4eea-a6ac-26782fd1ba69.png')" }}
       />
-      <div className="absolute inset-0 bg-[#2F5D50]/60"></div>
+      <div className="absolute inset-0 bg-primary/60"></div>
 
       <div className="relative z-10 h-full max-w-6xl mx-auto px-4">
         <div className="h-full flex flex-col justify-center items-center md:items-start text-center md:text-right gap-3">
@@ -23,13 +23,13 @@ const HeroSection = () => {
           <div className="flex gap-4 mt-6 flex-wrap justify-center md:justify-start">
             <a
               href="https://drhamidahmadi.ir/contact/"
-              className="bg-[#2F5D50] hover:bg-[#264C42] text-white font-medium text-[15px] md:text-[16px] px-6 md:px-8 py-3 rounded-md shadow-lg hover:shadow-xl transition-all"
+              className="bg-primary hover:bg-primaryLight text-white font-medium text-[15px] md:text-[16px] px-6 md:px-8 py-3 rounded-md shadow-lg hover:shadow-xl transition-all"
             >
               ویزیت حضوری
             </a>
             <a
               href="https://web.whatsapp.com/send?phone=989212129902"
-              className="bg-[#E6C5CC] hover:bg-[#d9b2bb] text-[#2F5D50] font-medium text-[15px] md:text-[16px] px-6 md:px-8 py-3 rounded-md shadow-lg hover:shadow-xl transition-all border border-[#2F5D50]/10"
+              className="bg-secondary hover:bg-[#d9b2bb] text-primary font-medium text-[15px] md:text-[16px] px-6 md:px-8 py-3 rounded-md shadow-lg hover:shadow-xl transition-all border border-primary/10"
             >
               ویزیت آنلاین
             </a>

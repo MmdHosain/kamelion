@@ -9,8 +9,8 @@ export default function CommentsSlider({ comments = [] }) {
   if (!comments.length) return null;
 
   return (
-    <div className="w-full py-16 bg-[#FAFAF8]">
-      <h2 className="text-2xl font-bold text-center text-[#2F5D50] mb-10">
+    <div className="w-full py-16 bg-lightText">
+      <h2 className="text-2xl font-bold text-center text-primary mb-10">
         نظر مراجعین
       </h2>
 
@@ -37,11 +37,11 @@ export default function CommentsSlider({ comments = [] }) {
                        w-[330px] md:w-[420px] !h-auto"
           >
             <div className="flex items-center gap-4 mb-4">
-              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#E6C5CC] to-[#f2dde3] flex items-center justify-center text-xl font-bold text-[#2F5D50]">
+              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-secondary to-[#f2dde3] flex items-center justify-center text-xl font-bold text-primary">
                 {c.name[0]}
               </div>
               <div>
-                <p className="text-[#2F5D50] text-lg font-semibold">{c.name}</p>
+                <p className="text-primary text-lg font-semibold">{c.name}</p>
                 <p className="text-sm text-gray-500">{c.role || "مراجع"}</p>
               </div>
             </div>
@@ -53,3 +53,4 @@ export default function CommentsSlider({ comments = [] }) {
     </div>
   );
 }
+

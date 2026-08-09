@@ -74,7 +74,7 @@ const FixedChatInput = ({
         />
       )}
       <div className="max-w-xl mx-auto w-full relative group">
-        <div className="absolute -inset-1 bg-gradient-to-r from-[#2F5D50]/30 to-[#E6C5CC]/30 rounded-2xl blur opacity-30 group-hover:opacity-50 transition duration-500"></div>
+        <div className="absolute -inset-1 bg-gradient-to-r from-primary/30 to-secondary/30 rounded-2xl blur opacity-30 group-hover:opacity-50 transition duration-500"></div>
         
         {showSuggestions && (
           <div className="mt-4 w-full">
@@ -98,8 +98,8 @@ const FixedChatInput = ({
                     <button
                       key={index}
                       onClick={() => handleSuggestionClick(suggestion)}
-                      className={`text-right text-md text-black bg-[#E6C5CC]
-                        hover:bg-[#2F5D50]/20 border border-[#E6C5CC]/30
+                      className={`text-right text-md text-black bg-secondary
+                        hover:bg-primary/20 border border-secondary/30
                         rounded-xl px-4 py-2 transition transform hover:scale-[1.02]
                         ${index === 0 ? 'opacity-70' :
                           index === 1 ? 'opacity-80' :
@@ -114,8 +114,8 @@ const FixedChatInput = ({
           </div>
         )}
         
-        <div className="relative bg-white/95 backdrop-blur-sm border border-[#E6C5CC]/20 rounded-2xl shadow-lg flex items-center p-2 pr-4 transition-all hover:shadow-xl">
-          <div className="text-[#2F5D50] animate-pulse mr-2">
+        <div className="relative bg-white/95 backdrop-blur-sm border border-secondary/20 rounded-2xl shadow-lg flex items-center p-2 pr-4 transition-all hover:shadow-xl">
+          <div className="text-primary animate-pulse mr-2">
             <Sparkles size={20} />
           </div>
           <input
@@ -124,20 +124,20 @@ const FixedChatInput = ({
             onChange={(e) => onChange(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="سوال خود را از دستیار پزشکی بپرسید..."
-            className="flex-1 py-3 px-3 bg-transparent outline-none text-[#2F5D50] placeholder-[#6B6E6C]/60 text-base font-medium"
+            className="flex-1 py-3 px-3 bg-transparent outline-none text-primary placeholder-mutedText/60 text-base font-medium"
           />
           <button
             onClick={handleSubmit}
             className={`p-2.5 rounded-xl transition-all duration-300 flex items-center justify-center shadow-sm
               ${value
-                ? 'bg-[#2F5D50] hover:bg-[#264C42] text-white scale-105'
-                : 'bg-[#E6C5CC]/30 text-[#2F5D50]/70 hover:bg-[#E6C5CC]/40'
+                ? 'bg-primary hover:bg-primaryLight text-white scale-105'
+                : 'bg-secondary/30 text-primary/70 hover:bg-secondary/40'
               }`}
           >
             {value ? <ArrowLeft size={18} /> : <MessageSquare size={18} />}
           </button>
         </div>
-        <div className="absolute -bottom-6 left-0 right-0 text-center text-[11px] text-[#6B6E6C] font-medium">
+        <div className="absolute -bottom-6 left-0 right-0 text-center text-[11px] text-mutedText font-medium">
           پاسخگویی تخصصی • مشاوره رایگان • رزرو نوبت آنلاین
         </div>
       </div>

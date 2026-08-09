@@ -18,6 +18,13 @@ This document tracks the execution of the CSS refactoring plan.
   - Removed obsolete `@keyframes messageIn` and `.chat-message` styling from `index.css`, transitioning components (e.g. `MessageRenderer.jsx`) to use the new `animate-messageIn` tailwind utility class.
 
 ## Phase 3: Project-Wide Search & Replace (Tailwind Classes)
-- **Status:** Pending
+- **Status:** Completed
 - **Details:**
-  - Will replace arbitrary hex colors in component classNames (e.g., `bg-[#2F5D50]`, `text-[#E6C5CC]`) with semantic utility classes (`bg-primary`, `text-secondary`, etc.).
+  - Replaced arbitrary hex colors in component classNames across all components.
+  - Replaced `[#2F5D50]` with `primary`.
+  - Replaced `[#264C42]` with `primaryLight`.
+  - Replaced `[#E6C5CC]` with `secondary`.
+  - Replaced `[#1a2522]` with `dark`.
+  - Replaced `[#FAFAF8]` with `lightText`.
+  - Replaced `[#6B6E6C]` with `mutedText`.
+  - Updated `index.css` to use `theme('colors.primary')` for `.rdp-custom` styles.

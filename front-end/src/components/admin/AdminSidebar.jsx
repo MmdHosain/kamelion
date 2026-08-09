@@ -6,15 +6,15 @@ import { Menu } from 'lucide-react';
 const AdminSidebar = ({ open, onToggle, onMenuClick }) => {
   return (
     <aside
-      className={`bg-[#2F5D50] text-white transition-all duration-300
+      className={`bg-primary text-white transition-all duration-300
       ${open ? 'w-64' : 'w-20'} hidden md:flex flex-col`}
     >
       <button
         onClick={onMenuClick}
-        className="p-2 rounded-lg hover:bg-[#2F5D50]/40 transition"
+        className="p-2 rounded-lg hover:bg-primary/40 transition"
       >
         Admin
-        <Menu size={22} className="text-[#E6C5CC]" />
+        <Menu size={22} className="text-secondary" />
       </button>        
       <nav className="flex-1 px-3 py-4 space-y-1">
         {ADMIN_NAV_ITEMS.map(({ label, icon: Icon, path }) => (
@@ -25,7 +25,7 @@ const AdminSidebar = ({ open, onToggle, onMenuClick }) => {
             className={({ isActive }) =>
               `flex items-center gap-3 px-3 py-2 rounded-lg transition
                ${isActive
-                ? 'bg-[#E6C5CC] text-[#2F5D50]'
+                ? 'bg-secondary text-primary'
                 : 'hover:bg-white/10'}`
             }
           >

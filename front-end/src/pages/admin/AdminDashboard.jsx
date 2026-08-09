@@ -43,10 +43,10 @@ const AdminDashboard = () => {
       {/* ================= Statistics Chart ================= */}
       <div className="lg:col-span-3 bg-white rounded-2xl shadow-sm p-6">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-lg font-semibold text-[#2F5D50]">
+          <h2 className="text-lg font-semibold text-primary">
             Statistics
           </h2>
-          <select className="border rounded-lg px-3 py-1 text-sm text-[#6B6E6C]">
+          <select className="border rounded-lg px-3 py-1 text-sm text-mutedText">
             <option>2026</option>
             <option>2025</option>
           </select>
@@ -72,7 +72,7 @@ const AdminDashboard = () => {
 
       {/* ================= Earning in Month ================= */}
       <div className="bg-white rounded-2xl shadow-sm p-6">
-        <h2 className="text-lg font-semibold text-[#2F5D50] mb-4">
+        <h2 className="text-lg font-semibold text-primary mb-4">
           Earning in Month
         </h2>
 
@@ -88,12 +88,12 @@ const AdminDashboard = () => {
               <Cell fill={ACCENT} />
             </Pie>
           </PieChart>
-          <div className="absolute text-xl font-semibold text-[#2F5D50]">
+          <div className="absolute text-xl font-semibold text-primary">
             75%
           </div>
         </div>
 
-        <div className="space-y-2 mt-4 text-sm text-[#6B6E6C]">
+        <div className="space-y-2 mt-4 text-sm text-mutedText">
           <div className="flex justify-between">
             <span>Deposit</span>
             <span>$12,400</span>
@@ -111,47 +111,47 @@ const AdminDashboard = () => {
 
       {/* ================= Monthly Sale ================= */}
       <div className="bg-white rounded-2xl shadow-sm p-6">
-        <h3 className="text-sm text-[#6B6E6C] mb-2">
+        <h3 className="text-sm text-mutedText mb-2">
           Monthly Sale
         </h3>
-        <div className="text-2xl font-semibold text-[#2F5D50] mb-4">
+        <div className="text-2xl font-semibold text-primary mb-4">
           $8,420
         </div>
 
-        <div className="w-full bg-[#E6C5CC]/40 rounded-full h-2">
+        <div className="w-full bg-secondary/40 rounded-full h-2">
           <div
-            className="bg-[#2F5D50] h-2 rounded-full"
+            className="bg-primary h-2 rounded-full"
             style={{ width: '70%' }}
           />
         </div>
-        <div className="mt-2 text-xs text-[#6B6E6C]">
+        <div className="mt-2 text-xs text-mutedText">
           ▲ 12% from last month
         </div>
       </div>
 
       {/* ================= Yearly Sale ================= */}
       <div className="bg-white rounded-2xl shadow-sm p-6">
-        <h3 className="text-sm text-[#6B6E6C] mb-2">
+        <h3 className="text-sm text-mutedText mb-2">
           Yearly Sale
         </h3>
-        <div className="text-2xl font-semibold text-[#2F5D50] mb-4">
+        <div className="text-2xl font-semibold text-primary mb-4">
           $96,300
         </div>
 
-        <div className="w-full bg-[#E6C5CC]/40 rounded-full h-2">
+        <div className="w-full bg-secondary/40 rounded-full h-2">
           <div
-            className="bg-[#2F5D50] h-2 rounded-full"
+            className="bg-primary h-2 rounded-full"
             style={{ width: '85%' }}
           />
         </div>
-        <div className="mt-2 text-xs text-[#6B6E6C]">
+        <div className="mt-2 text-xs text-mutedText">
           ▲ 24% growth
         </div>
       </div>
 
       {/* ================= Calendar ================= */}
       <div className="bg-white rounded-2xl shadow-sm p-6">
-        <h2 className="text-lg font-semibold text-[#2F5D50] mb-4">
+        <h2 className="text-lg font-semibold text-primary mb-4">
           Calendar
         </h2>
 
@@ -162,10 +162,10 @@ const AdminDashboard = () => {
               className={`rounded-lg py-2 cursor-pointer
                 ${
                   day === today
-                    ? 'bg-[#2F5D50] text-white'
+                    ? 'bg-primary text-white'
                     : day === eventDay
-                    ? 'bg-[#E6C5CC] text-[#2F5D50]'
-                    : 'text-[#6B6E6C]'
+                    ? 'bg-secondary text-primary'
+                    : 'text-mutedText'
                 }
               `}
             >

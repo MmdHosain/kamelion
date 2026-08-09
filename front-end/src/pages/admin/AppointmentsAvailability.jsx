@@ -203,15 +203,15 @@ const AppointmentsAvailability = () => {
   }[saveStatus];
 
   const saveBg = {
-    idle: 'bg-[#2F5D50] hover:bg-[#26503f]',
-    saving: 'bg-[#2F5D50]/70 cursor-wait',
+    idle: 'bg-primary hover:bg-[#26503f]',
+    saving: 'bg-primary/70 cursor-wait',
     saved: 'bg-emerald-600',
     error: 'bg-red-500 hover:bg-red-600',
   }[saveStatus];
 
   return (
     <div className="-m-6 rounded-2xl overflow-hidden flex flex-col min-h-[calc(100vh-80px)]">
-      <div className="bg-[#2F5D50] px-4 sm:px-6 pt-6 pb-0 flex-shrink-0">
+      <div className="bg-primary px-4 sm:px-6 pt-6 pb-0 flex-shrink-0">
         <div className="flex items-center justify-between mb-5">
           <h1 className="text-white text-xl sm:text-2xl font-semibold">Appointments</h1>
           <button
@@ -231,7 +231,7 @@ const AppointmentsAvailability = () => {
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={`flex-shrink-0 px-4 sm:px-5 py-2.5 rounded-t-xl text-sm font-medium whitespace-nowrap transition-all duration-150 focus:outline-none ${activeTab === tab
-                ? 'bg-[#E9C9CD] text-[#2F5D50] shadow-sm'
+                ? 'bg-[#E9C9CD] text-primary shadow-sm'
                 : 'text-white/75 hover:text-white hover:bg-white/10'
                 }`}
             >

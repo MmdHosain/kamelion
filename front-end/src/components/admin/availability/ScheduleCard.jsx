@@ -102,7 +102,7 @@ const ScheduleCard = ({
         transition-all duration-200
         cursor-move
         ${isDragging 
-          ? 'opacity-50 scale-105 shadow-2xl border-2 border-dashed border-[#2F5D50] rotate-2' 
+          ? 'opacity-50 scale-105 shadow-2xl border-2 border-dashed border-primary rotate-2' 
           : 'hover:shadow-md'
         }
       `}
@@ -123,7 +123,7 @@ const ScheduleCard = ({
             className={`
               relative w-9 h-5 rounded-full flex-shrink-0
               transition-colors duration-200
-              ${schedule.isActive ? 'bg-[#2F5D50]' : 'bg-gray-200'}
+              ${schedule.isActive ? 'bg-primary' : 'bg-gray-200'}
             `}
             aria-label={schedule.isActive ? 'Deactivate schedule' : 'Activate schedule'}
           >
@@ -180,7 +180,7 @@ const ScheduleCard = ({
           <div
             className="
               p-1.5 rounded-lg text-gray-300
-              hover:text-[#2F5D50] hover:bg-[#2F5D50]/5
+              hover:text-primary hover:bg-primary/5
               transition-colors duration-150
               cursor-grab active:cursor-grabbing
             "
@@ -242,7 +242,7 @@ const ScheduleCard = ({
                 className="
                   w-full text-sm text-gray-700 bg-gray-50
                   border border-gray-200 rounded-lg px-2 py-1.5
-                  focus:outline-none focus:ring-2 focus:ring-[#2F5D50]/30
+                  focus:outline-none focus:ring-2 focus:ring-primary/30
                 "
               />
             </label>
@@ -258,7 +258,7 @@ const ScheduleCard = ({
                 className="
                   w-full text-sm text-gray-700 bg-gray-50
                   border border-gray-200 rounded-lg px-2 py-1.5
-                  focus:outline-none focus:ring-2 focus:ring-[#2F5D50]/30
+                  focus:outline-none focus:ring-2 focus:ring-primary/30
                 "
               />
             </label>
@@ -277,7 +277,7 @@ const ScheduleCard = ({
                 className="
                   w-full text-sm text-gray-700 bg-gray-50
                   border border-gray-200 rounded-lg px-2 py-1.5
-                  focus:outline-none focus:ring-2 focus:ring-[#2F5D50]/30
+                  focus:outline-none focus:ring-2 focus:ring-primary/30
                 "
               >
                 {SLOT_OPTIONS.map((v) => (
@@ -296,7 +296,7 @@ const ScheduleCard = ({
                 className="
                   w-full text-sm text-gray-700 bg-gray-50
                   border border-gray-200 rounded-lg px-2 py-1.5
-                  focus:outline-none focus:ring-2 focus:ring-[#2F5D50]/30
+                  focus:outline-none focus:ring-2 focus:ring-primary/30
                 "
               >
                 {GAP_OPTIONS.map((v) => (
@@ -326,7 +326,7 @@ const ScheduleCard = ({
                       px-2 py-1 rounded-lg text-xs font-semibold
                       transition-all duration-150
                       ${active
-                        ? 'bg-[#2F5D50] text-white shadow-sm'
+                        ? 'bg-primary text-white shadow-sm'
                         : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
                       }
                     `}

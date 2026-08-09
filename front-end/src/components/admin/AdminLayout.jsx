@@ -5,13 +5,13 @@ const AdminLayout = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   return (
-    <div className="min-h-screen flex bg-[#FAFAF8] text-[#6B6E6C]">
+    <div className="min-h-screen flex bg-lightText text-mutedText">
       <AdminSidebar onMenuClick={() => setSidebarOpen(!sidebarOpen)} open={sidebarOpen} onToggle={setSidebarOpen} />
 
       <div className="flex-1 flex flex-col">
 
 
-        <main className="p-6 bg-[#FAFAF8] min-h-[calc(100vh-64px)]">
+        <main className="p-6 bg-lightText min-h-[calc(100vh-64px)]">
           <div className="bg-white rounded-2xl shadow-sm p-6">
             {children}
           </div>

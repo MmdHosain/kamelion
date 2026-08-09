@@ -90,7 +90,7 @@ const App = () => {
   const shouldShowResumeButton = chatState === 'minimized' && messages.length > 0;
 
   return (
-    <div className="min-h-screen flex flex-col font-sans bg-[#FAFAF8] text-[#6B6E6C] dir-rtl">
+    <div className="min-h-screen flex flex-col font-sans bg-lightText text-mutedText dir-rtl">
       {!isAdminRoute && (
         <Header
           scrolled={scrolled}

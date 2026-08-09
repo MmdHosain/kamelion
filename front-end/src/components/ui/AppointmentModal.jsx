@@ -249,7 +249,7 @@ export default function AppointmentModal({ open, onClose }) {
 
   return (
     <div className="fixed inset-0 z-[9999] bg-black/40 backdrop-blur-sm flex items-center justify-center">
-      <div className="bg-[#FAFAF8] w-full max-w-4xl rounded-3xl p-8 mx-4 max-h-[90vh] overflow-y-auto relative">
+      <div className="bg-lightText w-full max-w-4xl rounded-3xl p-8 mx-4 max-h-[90vh] overflow-y-auto relative">
         <button
           type="button"
           onClick={handleClose}
@@ -260,7 +260,7 @@ export default function AppointmentModal({ open, onClose }) {
           ✕
         </button>
 
-        <h2 className="text-2xl font-bold text-[#2F5D50] mb-6 text-center">
+        <h2 className="text-2xl font-bold text-primary mb-6 text-center">
           انتخاب تاریخ و زمان نوبت
         </h2>
 
@@ -295,7 +295,7 @@ export default function AppointmentModal({ open, onClose }) {
               isLoadingSlots
                 ? 'border-gray-200 bg-gray-50'
                 : availableSlots.length > 0
-                  ? 'border-[#2F5D50]/20 bg-white'
+                  ? 'border-primary/20 bg-white'
                   : 'border-gray-100 bg-gray-50'
             }`}
           >
@@ -305,7 +305,7 @@ export default function AppointmentModal({ open, onClose }) {
 
             {isLoadingSlots && (
               <div className="flex justify-center items-center h-40">
-                <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-[#2F5D50]" />
+                <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary" />
               </div>
             )}
 
@@ -332,8 +332,8 @@ export default function AppointmentModal({ open, onClose }) {
                       className={`py-3 px-4 rounded-xl border-2 transition-all duration-200 text-center font-medium ${
                         isAvailable
                           ? isSelected
-                            ? 'bg-[#2F5D50] border-[#2F5D50] text-white shadow-lg scale-105'
-                            : 'border-gray-200 text-gray-700 hover:border-[#2F5D50] hover:text-[#2F5D50] hover:scale-105'
+                            ? 'bg-primary border-primary text-white shadow-lg scale-105'
+                            : 'border-gray-200 text-gray-700 hover:border-primary hover:text-primary hover:scale-105'
                           : slot.status === 'pending'
                             ? 'bg-yellow-50 border-yellow-200 text-yellow-700 cursor-not-allowed opacity-60'
                             : 'bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed opacity-50'
@@ -381,7 +381,7 @@ export default function AppointmentModal({ open, onClose }) {
           disabled={!selectedTime || !selectedDate || isBooking}
           className={`mt-8 w-full py-4 rounded-xl text-white font-bold text-lg transition-all duration-200 ${
             selectedTime && selectedDate && !isBooking
-              ? 'bg-[#2F5D50] hover:bg-[#264a3f] hover:shadow-lg'
+              ? 'bg-primary hover:bg-[#264a3f] hover:shadow-lg'
               : 'bg-gray-300 cursor-not-allowed'
           }`}
         >

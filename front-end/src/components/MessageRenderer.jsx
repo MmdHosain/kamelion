@@ -22,13 +22,13 @@ const MessageRenderer = ({ message, onCtaAction }) => {
           <div
             className="
               animate-messageIn
-              bg-[#1a2522] text-[#FAFAF8]
+              bg-dark text-lightText
               px-4 py-3
               rounded-2xl rounded-tl-md
               max-w-[85%]
               text-sm leading-6
               mb-2
-              border border-[#2F5D50]/20
+              border border-primary/20
               shadow-sm
             "
           >
@@ -58,14 +58,14 @@ const MessageRenderer = ({ message, onCtaAction }) => {
             ${
               isUser
                 ? `
-                  bg-[#2F5D50] text-white
+                  bg-primary text-white
                   rounded-2xl rounded-br-md
                   shadow-sm
                 `
                 : `
-                  bg-[#1a2522] text-[#FAFAF8]
+                  bg-dark text-lightText
                   rounded-2xl rounded-tl-md
-                  border border-[#2F5D50]/20
+                  border border-primary/20
                 `
             }
           `}
@@ -105,7 +105,7 @@ const MessageRenderer = ({ message, onCtaAction }) => {
                 bg-black/50
                 text-white text-sm
                 border border-white/10
-                focus:border-[#2F5D50]
+                focus:border-primary
                 outline-none
               "
             />
@@ -113,7 +113,7 @@ const MessageRenderer = ({ message, onCtaAction }) => {
           <button
             className="
               w-full
-              bg-[#2F5D50]
+              bg-primary
               hover:bg-[#3a7464]
               text-white
               py-2
@@ -136,13 +136,13 @@ const MessageRenderer = ({ message, onCtaAction }) => {
   if (type === 'cta') {
     return (
       <div className="flex w-full mb-4 justify-start">
-        <div className="bg-[#1a2522] border border-[#2F5D50]/20 p-4 rounded-2xl rounded-tl-md max-w-[85%]">
-          <p className="text-[#FAFAF8] text-sm mb-3 leading-6">
+        <div className="bg-dark border border-primary/20 p-4 rounded-2xl rounded-tl-md max-w-[85%]">
+          <p className="text-lightText text-sm mb-3 leading-6">
             {content}
           </p>
           <button
             onClick={() => onCtaAction?.(payload)}
-            className="bg-[#2F5D50] hover:bg-[#264C42] text-white text-sm px-4 py-2 rounded-lg transition"
+            className="bg-primary hover:bg-primaryLight text-white text-sm px-4 py-2 rounded-lg transition"
           >
             {payload?.buttonLabel || 'ادامه'}
           </button>

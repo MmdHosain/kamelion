@@ -25,19 +25,19 @@ const CommentModal = ({ open, onClose, onSubmitSuccess }) => {
     <div className="fixed inset-0 bg-black/40 z-[999] flex items-end sm:items-center justify-center px-4">
       <div className="bg-white w-full max-w-lg rounded-t-3xl sm:rounded-3xl p-6 relative animate-slideUp">
 
-        <div className="w-12 h-1 bg-[#E6C5CC] rounded-full mx-auto mb-4 sm:hidden" />
+        <div className="w-12 h-1 bg-secondary rounded-full mx-auto mb-4 sm:hidden" />
 
         <button
           onClick={onClose}
-          className="absolute top-4 left-4 text-xl text-[#6B6E6C]"
+          className="absolute top-4 left-4 text-xl text-mutedText"
         >
           ×
         </button>
 
-        <h2 className="text-lg font-bold text-[#2F5D50] mb-2">
+        <h2 className="text-lg font-bold text-primary mb-2">
           ثبت تجربه شما
         </h2>
-        <p className="text-xs text-[#6B6E6C] mb-4">
+        <p className="text-xs text-mutedText mb-4">
           نظر شما به بهبود کیفیت خدمات کمک می‌کند
         </p>
 
@@ -55,16 +55,16 @@ const CommentModal = ({ open, onClose, onSubmitSuccess }) => {
         </div>
 
         <textarea
-          className="w-full border border-[#E6C5CC]/40 rounded-2xl p-3 mt-2
-                     focus:outline-none focus:ring-1 focus:ring-[#2F5D50]/40"
+          className="w-full border border-secondary/40 rounded-2xl p-3 mt-2
+                     focus:outline-none focus:ring-1 focus:ring-primary/40"
           placeholder="تجربه خود را صادقانه بنویسید..."
           value={text}
           onChange={e => setText(e.target.value)}
         />
 
         <input
-          className="w-full border border-[#E6C5CC]/40 rounded-2xl p-3 mt-3
-                     focus:outline-none focus:ring-1 focus:ring-[#2F5D50]/40"
+          className="w-full border border-secondary/40 rounded-2xl p-3 mt-3
+                     focus:outline-none focus:ring-1 focus:ring-primary/40"
           placeholder="شماره موبایل (اختیاری)"
           value={mobile}
           onChange={e => setMobile(e.target.value)}
@@ -73,7 +73,7 @@ const CommentModal = ({ open, onClose, onSubmitSuccess }) => {
         <button
           onClick={submit}
           className="w-full mt-5 py-3 rounded-2xl
-                     bg-gradient-to-r from-[#2F5D50] to-[#264C42]
+                     bg-gradient-to-r from-primary to-primaryLight
                      text-white font-medium
                      hover:scale-[1.02] transition"
         >

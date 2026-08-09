@@ -33,7 +33,7 @@ const ChatContainer = ({
         ${chatState === 'minimized' ? 'pointer-events-none bg-black/0' : 'bg-black/30 backdrop-blur-sm'}
       `}
     >
-      <div className={`fixed bottom-0 left-0 right-0 bg-[#0f1715] border-t border-[#2F5D50]/30 shadow-2xl transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] flex flex-col
+      <div className={`fixed bottom-0 left-0 right-0 bg-[#0f1715] border-t border-primary/30 shadow-2xl transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] flex flex-col
         ${chatState === 'maximized' ? 'h-[85vh] translate-y-0 rounded-t-3xl' : 'translate-y-full'}
       `}>
         <ChatHeader onMinimize={onMinimize} />
@@ -46,7 +46,7 @@ const ChatContainer = ({
               onSendMessage={handleSuggestionClick}
             />
           </div>
-          <div className="p-4 bg-[#111c18] border-t border-[#2F5D50]/30">
+          <div className="p-4 bg-[#111c18] border-t border-primary/30">
             <div className="relative flex items-center gap-2">
               <ChatInput
                 value={inputValue}

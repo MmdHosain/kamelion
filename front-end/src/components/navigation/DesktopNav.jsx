@@ -15,11 +15,11 @@ const DesktopNav = ({ onNavigate }) => {
         <button
           key={i}
           onClick={item.onClick}
-          className="relative transition-all duration-300 hover:text-[#2F5D50] group"
+          className="relative transition-all duration-300 hover:text-primary group"
         >
           {item.label}
           <span
-            className="absolute left-0 right-0 mx-auto -bottom-1 w-0 group-hover:w-full h-[2px] rounded-full bg-[#2F5D50] transition-all duration-300 ease-in-out"
+            className="absolute left-0 right-0 mx-auto -bottom-1 w-0 group-hover:w-full h-[2px] rounded-full bg-primary transition-all duration-300 ease-in-out"
           />
         </button>
       ))}

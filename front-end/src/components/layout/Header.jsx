@@ -24,7 +24,7 @@ const Header = ({ scrolled, onNavigate, onOpenAppointment }) => {
               alt="Logo"
               className={`transition-all duration-500 ${scrolled ? 'h-9' : 'h-10'}`}
             />
-            <h1 className="hidden md:flex text-[#2F5D50] text-lg font-bold tracking-tight">
+            <h1 className="hidden md:flex text-primary text-lg font-bold tracking-tight">
               دکتر <span className="font-normal ml-1">نگار معشوری</span>
             </h1>
           </div>
@@ -36,15 +36,15 @@ const Header = ({ scrolled, onNavigate, onOpenAppointment }) => {
           <div className="flex items-center gap-3">
             <button
               onClick={onOpenAppointment}
-              className="bg-gradient-to-r from-[#2F5D50] to-[#264C42] hover:opacity-90 text-white px-4 py-2 rounded-lg text-sm shadow-md hover:shadow-lg transition-all"
+              className="bg-gradient-to-r from-primary to-primaryLight hover:opacity-90 text-white px-4 py-2 rounded-lg text-sm shadow-md hover:shadow-lg transition-all"
             >
               دریافت نوبت
             </button>
             <button
               onClick={() => setMobileMenuOpen(true)}
-              className="md:hidden p-2 rounded-md hover:bg-[#2F5D50]/10 transition-all duration-300"
+              className="md:hidden p-2 rounded-md hover:bg-primary/10 transition-all duration-300"
             >
-              <Menu className="text-[#2F5D50]" size={24} />
+              <Menu className="text-primary" size={24} />
             </button>
           </div>
         </div>

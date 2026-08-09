@@ -23,7 +23,7 @@ export default function VideoPage({ onBack }) {
   ];
 
   return (
-    <div className="min-h-screen bg-[#FAFAF8] text-[#2F5D50] px-6 py-12 dir-rtl">
+    <div className="min-h-screen bg-lightText text-primary px-6 py-12 dir-rtl">
 
       {/* top header */}
       <div className="max-w-6xl mx-auto flex justify-between items-center mb-10">
@@ -33,7 +33,7 @@ export default function VideoPage({ onBack }) {
 
         <button
           onClick={onBack}
-          className="flex items-center gap-1 text-[#2F5D50] hover:text-[#21463E] transition-all duration-300 font-medium hover:gap-2"
+          className="flex items-center gap-1 text-primary hover:text-[#21463E] transition-all duration-300 font-medium hover:gap-2"
         >
           بازگشت
 
@@ -43,10 +43,10 @@ export default function VideoPage({ onBack }) {
             width="18"
             height="18"
             fill="none"
-            stroke="#2F5D50"
+            stroke="currentColor"
             strokeWidth="2"
             viewBox="0 0 24 24"
-            className="transition-transform group-hover:-translate-x-1"
+            className="transition-transform group-hover:-translate-x-1 stroke-primary"
           >
             <path d="M10 6l6 6-6 6" />
           </svg>
@@ -60,7 +60,7 @@ export default function VideoPage({ onBack }) {
           <div
             key={index}
             className="
-              bg-white rounded-2xl shadow-md p-4 border border-[#E6C5CC]/30 
+              bg-white rounded-2xl shadow-md p-4 border border-secondary/30 
               transition-all duration-500
             "
           >
@@ -84,7 +84,7 @@ export default function VideoPage({ onBack }) {
               )}
             </div>
 
-            <p className="text-sm text-[#2F5D50] font-medium mt-3 text-center">
+            <p className="text-sm text-primary font-medium mt-3 text-center">
               {video.title}
             </p>
           </div>

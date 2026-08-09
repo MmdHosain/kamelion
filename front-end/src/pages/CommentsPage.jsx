@@ -23,7 +23,7 @@ const CommentsPage = ({ onBack }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#FAFAF8] to-white pb-32 relative">
+    <div className="min-h-screen bg-gradient-to-b from-lightText to-white pb-32 relative">
 
       {/* Floating Back Button (Video Style) */}
       <button
@@ -33,15 +33,15 @@ const CommentsPage = ({ onBack }) => {
                    flex items-center justify-center
                    hover:scale-105 transition"
       >
-        <ArrowRight className="text-[#2F5D50]" />
+        <ArrowRight className="text-primary" />
       </button>
 
       {/* Title */}
       <div className="pt-24 pb-6 text-center">
-        <h1 className="text-2xl font-bold text-[#2F5D50]">
+        <h1 className="text-2xl font-bold text-primary">
           تجربه و نظرات مراجعین
         </h1>
-        <p className="text-sm text-[#6B6E6C] mt-2">
+        <p className="text-sm text-mutedText mt-2">
           دیدگاه واقعی مراجعین درباره تجربه درمان
         </p>
       </div>
@@ -52,19 +52,19 @@ const CommentsPage = ({ onBack }) => {
           <div
             key={c.id}
             className="bg-white rounded-3xl p-5 shadow-sm
-                       border border-[#E6C5CC]/30
+                       border border-secondary/30
                        hover:shadow-md transition"
           >
             <div className="flex items-center gap-3 mb-3">
               <div className="w-11 h-11 rounded-full
-                              bg-gradient-to-br from-[#E6C5CC] to-[#f2dde3]
-                              text-[#2F5D50]
+                              bg-gradient-to-br from-secondary to-[#f2dde3]
+                              text-primary
                               flex items-center justify-center font-bold">
                 {c.name[0]}
               </div>
 
               <div className="flex-1">
-                <p className="text-sm font-semibold text-[#2F5D50]">
+                <p className="text-sm font-semibold text-primary">
                   {c.name}
                 </p>
                 <div className="text-sm">
@@ -77,7 +77,7 @@ const CommentsPage = ({ onBack }) => {
               {c.text}
             </p>
 
-            <button className="mt-4 flex items-center gap-1 text-xs text-[#6B6E6C] hover:text-[#2F5D50] transition">
+            <button className="mt-4 flex items-center gap-1 text-xs text-mutedText hover:text-primary transition">
               <Heart size={14} />
               پسندیدم
             </button>
@@ -89,7 +89,7 @@ const CommentsPage = ({ onBack }) => {
       <button
         onClick={() => setOpenModal(true)}
         className="fixed bottom-24 right-4 z-40
-                   bg-gradient-to-r from-[#2F5D50] to-[#264C42]
+                   bg-gradient-to-r from-primary to-primaryLight
                    text-white px-7 py-3 rounded-full
                    shadow-xl hover:shadow-2xl
                    hover:scale-105 transition-all"
