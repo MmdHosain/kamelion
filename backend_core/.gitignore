@@ -1,8 +1,13 @@
-venv/
-.venv/
 
-__pycache__/
-*.pyc
 .DS_Store
 
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+node_modules/
+
 .env
+.env.*
+!.env.example
