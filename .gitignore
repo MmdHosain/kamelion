@@ -1,17 +1,29 @@
+# macOS
 .DS_Store
-# Python
-.venv/
-venv/
-__pycache__/
-*.pyc
 
-# Node
-node_modules/
+# Python
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.mypy_cache/
+
+# Django
+db.sqlite3
+media/
 
 # Environment
 .env
 .env.*
 !.env.example
 
-# Jupyter
-.ipynb_checkpoints/
+# Node
+node_modules/
+
+# VS Code
+.vscode/
+
+# Logs
+*.log
