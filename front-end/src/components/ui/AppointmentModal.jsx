@@ -381,7 +381,7 @@ export default function AppointmentModal({ open, onClose }) {
           disabled={!selectedTime || !selectedDate || isBooking}
           className={`mt-8 w-full py-4 rounded-xl text-white font-bold text-lg transition-all duration-200 ${
             selectedTime && selectedDate && !isBooking
-              ? 'bg-primary hover:bg-[#264a3f] hover:shadow-lg'
+              ? 'bg-primary hover:bg-primaryHover hover:shadow-lg'
               : 'bg-gray-300 cursor-not-allowed'
           }`}
         >

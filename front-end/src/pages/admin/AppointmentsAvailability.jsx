@@ -203,7 +203,7 @@ const AppointmentsAvailability = () => {
   }[saveStatus];
 
   const saveBg = {
-    idle: 'bg-primary hover:bg-[#26503f]',
+    idle: 'bg-primary hover:bg-primaryHover',
     saving: 'bg-primary/70 cursor-wait',
     saved: 'bg-emerald-600',
     error: 'bg-red-500 hover:bg-red-600',
@@ -231,7 +231,7 @@ const AppointmentsAvailability = () => {
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={`flex-shrink-0 px-4 sm:px-5 py-2.5 rounded-t-xl text-sm font-medium whitespace-nowrap transition-all duration-150 focus:outline-none ${activeTab === tab
-                ? 'bg-[#E9C9CD] text-primary shadow-sm'
+                ? 'bg-secondaryMuted text-primary shadow-sm'
                 : 'text-white/75 hover:text-white hover:bg-white/10'
                 }`}
             >
@@ -241,7 +241,7 @@ const AppointmentsAvailability = () => {
         </div>
       </div>
 
-      <div className="bg-[#F5F5F0] flex-1 p-4 sm:p-6">
+      <div className="bg-gray-50 flex-1 p-4 sm:p-6">
         {activeTab === 'Availability' && (
           <div className="flex flex-col gap-6">
             {loadError && (
@@ -270,7 +270,7 @@ const AppointmentsAvailability = () => {
                 type="button"
                 onClick={handleAddSchedule}
                 aria-label="Add new schedule"
-                className="w-16 h-16 rounded-full bg-[#2a4e3f] text-white flex items-center justify-center shadow-[0_8px_24px_rgba(42,78,63,0.45)] hover:bg-[#22423a] hover:shadow-[0_12px_32px_rgba(42,78,63,0.55)] hover:scale-105 active:scale-95 transition-all duration-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-[#2a4e3f]/40"
+                className="w-16 h-16 rounded-full bg-primary text-white flex items-center justify-center shadow-[0_8px_24px_rgba(42,78,63,0.45)] hover:bg-primaryHover hover:shadow-[0_12px_32px_rgba(42,78,63,0.55)] hover:scale-105 active:scale-95 transition-all duration-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/40"
               >
                 <Plus size={28} strokeWidth={2} />
               </button>

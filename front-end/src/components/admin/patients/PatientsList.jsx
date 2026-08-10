@@ -105,7 +105,7 @@ export default function PatientsList() {
             placeholder="Search by name or phone..."
             value={searchQuery}
             onChange={(e) => handleSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg bg-white text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#2D5A4C] transition-colors"
+            className="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg bg-white text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
           />
         </div>
       </div>
@@ -132,7 +132,7 @@ export default function PatientsList() {
                 displayedPatients.map((patient, idx) => (
                   <tr
                     key={patient.id}
-                    className={`border-b border-gray-50 last:border-0 transition-colors hover:bg-[#f0f7f4] ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}
+                    className={`border-b border-gray-50 last:border-0 transition-colors hover:bg-primaryGhost ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}
                   >
                     <td className="px-5 py-3.5 font-medium text-gray-800 whitespace-nowrap">{patient.fullName}</td>
                     <td className="px-5 py-3.5 text-gray-600 whitespace-nowrap">{patient.phoneNumber}</td>
@@ -160,7 +160,7 @@ export default function PatientsList() {
             <select
               value={itemsPerPage}
               onChange={(e) => handleItemsPerPage(e.target.value)}
-              className="text-sm border border-gray-200 rounded-lg px-2 py-1 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#2D5A4C] cursor-pointer"
+              className="text-sm border border-gray-200 rounded-lg px-2 py-1 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer"
             >
               {ROWS_OPTIONS.map((n) => <option key={n} value={n}>{n}</option>)}
             </select>
@@ -200,7 +200,7 @@ function PageBtn({ children, onClick, disabled, active, label }) {
       aria-current={active ? 'page' : undefined}
       className={`min-w-[32px] h-8 px-2 rounded-lg text-sm font-medium transition-colors select-none ${
         active
-          ? 'bg-[#2D5A4C] text-white'
+          ? 'bg-primary text-white'
           : 'text-gray-600 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed'
       }`}
     >

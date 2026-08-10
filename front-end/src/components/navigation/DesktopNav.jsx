@@ -10,7 +10,7 @@ const DesktopNav = ({ onNavigate }) => {
   ];
 
   return (
-    <nav className="hidden md:flex gap-8 items-center text-sm font-semibold text-[#3B3D3B] relative">
+    <nav className="hidden md:flex gap-8 items-center text-sm font-semibold text-textDark relative">
       {navItems.map((item, i) => (
         <button
           key={i}

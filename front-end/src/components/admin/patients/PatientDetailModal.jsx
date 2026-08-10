@@ -82,7 +82,7 @@ const PatientDetailModal = ({ patient, onClose }) => {
 
           {/* Header */}
           <div>
-            <h2 className="text-2xl font-bold text-[#2D5A4C]">{patient.fullName}</h2>
+            <h2 className="text-2xl font-bold text-primary">{patient.fullName}</h2>
             <p className="text-sm text-gray-400 mt-0.5">{patient.phoneNumber}</p>
           </div>
 
@@ -100,7 +100,7 @@ const PatientDetailModal = ({ patient, onClose }) => {
                 placeholder="Write a note..."
                 rows={4}
                 disabled={isSubmittingNote}
-                className="w-full resize-none rounded-lg border border-gray-200 p-2.5 text-sm text-gray-700 placeholder-gray-300 focus:outline-none focus:border-[#2D5A4C] transition-colors shrink-0 disabled:opacity-60 disabled:cursor-not-allowed"
+                className="w-full resize-none rounded-lg border border-gray-200 p-2.5 text-sm text-gray-700 placeholder-gray-300 focus:outline-none focus:border-primary transition-colors shrink-0 disabled:opacity-60 disabled:cursor-not-allowed"
               />
               
               {noteError && (
@@ -112,7 +112,7 @@ const PatientDetailModal = ({ patient, onClose }) => {
               <button
                 onClick={handleAddNote}
                 disabled={isSubmittingNote}
-                className="w-full bg-[#2A5C4D] hover:bg-[#234e41] text-white text-sm font-medium py-2 rounded-lg transition-colors shrink-0 disabled:opacity-60 disabled:cursor-not-allowed"
+                className="w-full bg-primary hover:bg-primaryHover text-white text-sm font-medium py-2 rounded-lg transition-colors shrink-0 disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {isSubmittingNote ? "Adding..." : "Add"}
               </button>

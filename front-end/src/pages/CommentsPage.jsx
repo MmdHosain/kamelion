@@ -57,7 +57,7 @@ const CommentsPage = ({ onBack }) => {
           >
             <div className="flex items-center gap-3 mb-3">
               <div className="w-11 h-11 rounded-full
-                              bg-gradient-to-br from-secondary to-[#f2dde3]
+                              bg-gradient-to-br from-secondary to-secondaryLight
                               text-primary
                               flex items-center justify-center font-bold">
                 {c.name[0]}
@@ -73,7 +73,7 @@ const CommentsPage = ({ onBack }) => {
               </div>
             </div>
 
-            <p className="text-sm leading-relaxed text-[#3B3D3B]">
+            <p className="text-sm leading-relaxed text-textDark">
               {c.text}
             </p>
 

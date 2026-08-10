@@ -152,10 +152,10 @@ export default function CustomDateRangePicker({ startDate, endDate, onChange }) 
   const cellStyle = (type) => {
     const base = 'w-8 h-8 flex items-center justify-center text-sm select-none cursor-pointer transition-colors duration-100 ';
     switch (type) {
-      case 'start':  return base + 'bg-[#2D5A4C] text-white rounded-full';
-      case 'end':    return base + 'bg-[#2D5A4C] text-white rounded-full';
-      case 'single': return base + 'bg-[#2D5A4C] text-white rounded-full';
-      case 'range':  return base + 'bg-[#D1EAE3] text-[#2D5A4C] rounded-none';
+      case 'start':  return base + 'bg-primary text-white rounded-full';
+      case 'end':    return base + 'bg-primary text-white rounded-full';
+      case 'single': return base + 'bg-primary text-white rounded-full';
+      case 'range':  return base + 'bg-primaryPale text-primary rounded-none';
       case 'normal': return base + 'text-gray-700 hover:bg-gray-100 rounded-full';
       default:       return base;
     }
@@ -163,8 +163,8 @@ export default function CustomDateRangePicker({ startDate, endDate, onChange }) 
 
   // Row wrapper: adds left/right rounded caps to range spans
   const rowWrapStyle = (type) => {
-    if (type === 'start') return 'bg-[#D1EAE3] rounded-l-full';
-    if (type === 'end')   return 'bg-[#D1EAE3] rounded-r-full';
+    if (type === 'start') return 'bg-primaryPale rounded-l-full';
+    if (type === 'end')   return 'bg-primaryPale rounded-r-full';
     return '';
   };
 
@@ -265,8 +265,8 @@ export default function CustomDateRangePicker({ startDate, endDate, onChange }) 
               disabled={!draftStart}
               className="
                 px-4 py-1.5 rounded-lg text-sm font-medium
-                bg-[#2D5A4C] text-white
-                hover:bg-[#234840] disabled:opacity-40
+                bg-primary text-white
+                hover:bg-primaryHover disabled:opacity-40
                 disabled:cursor-not-allowed transition-colors
               "
             >
@@ -293,8 +293,8 @@ function TriggerInput({ label, value, onClick, icon = false }) {
           w-full px-3 py-2 text-sm text-left
           border border-gray-200 rounded-lg bg-white
           text-gray-700 placeholder:text-gray-400
-          hover:border-[#2D5A4C] focus:outline-none
-          focus:ring-2 focus:ring-[#2D5A4C]
+          hover:border-primary focus:outline-none
+          focus:ring-2 focus:ring-primary
           transition-colors flex items-center justify-between
         "
       >

@@ -42,10 +42,10 @@ const AdminLogin = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#8FA9A3] px-4">
+    <div className="min-h-screen flex items-center justify-center bg-primaryMuted px-4">
       <div className="bg-white/40 p-4 sm:p-6 rounded-lg shadow-lg">
         <div className="w-full max-w-md rounded-md overflow-hidden shadow-md">
-          <div className="bg-[#2B2B2B] px-6 py-4">
+          <div className="bg-darkGray px-6 py-4">
             <h1 className="text-white text-lg font-semibold tracking-wide">
               login to administration
             </h1>
@@ -53,10 +53,10 @@ const AdminLogin = () => {
 
           <form
             onSubmit={handleLogin}
-            className="bg-[#F2F2F2] px-6 py-6 space-y-4"
+            className="bg-gray-100 px-6 py-6 space-y-4"
           >
             <div className="flex border border-gray-300 rounded-sm overflow-hidden bg-white">
-              <div className="flex items-center justify-center w-12 bg-[#E5E5E5] border-r border-gray-300">
+              <div className="flex items-center justify-center w-12 bg-gray-200 border-r border-gray-300">
                 <User size={18} className="text-gray-600" />
               </div>
               <input
@@ -70,7 +70,7 @@ const AdminLogin = () => {
             </div>
 
             <div className="flex border border-gray-300 rounded-sm overflow-hidden bg-white">
-              <div className="flex items-center justify-center w-12 bg-[#E5E5E5] border-r border-gray-300">
+              <div className="flex items-center justify-center w-12 bg-gray-200 border-r border-gray-300">
                 <Lock size={18} className="text-gray-600" />
               </div>
               <input
@@ -102,7 +102,7 @@ const AdminLogin = () => {
               <label className="flex items-center gap-2 text-sm text-gray-700">
                 <input
                   type="checkbox"
-                  className="w-4 h-4 accent-[#2B2B2B]"
+                  className="w-4 h-4 accent-darkGray"
                 />
                 remember me
               </label>
@@ -110,7 +110,7 @@ const AdminLogin = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="bg-[#2B2B2B] text-white text-sm px-6 py-2 rounded-sm hover:bg-black transition disabled:opacity-60"
+                className="bg-darkGray text-white text-sm px-6 py-2 rounded-sm hover:bg-black transition disabled:opacity-60"
               >
                 {loading ? 'Signing in...' : 'sign in'}
               </button>

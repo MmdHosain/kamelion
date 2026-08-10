@@ -207,7 +207,7 @@ export default function ReservationsList() {
 
   const inputCls = `
     w-full px-3 py-2 text-sm border border-gray-200 rounded-lg
-    focus:outline-none focus:ring-2 focus:ring-[#2D5A4C]
+    focus:outline-none focus:ring-2 focus:ring-primary
     placeholder:text-gray-400
   `;
 
@@ -222,13 +222,13 @@ export default function ReservationsList() {
               placeholder="Search..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-[#2D5A4C] placeholder:text-gray-400"
+              className="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-primary placeholder:text-gray-400"
             />
           </div>
 
           <button
             onClick={openModal}
-            className="flex items-center gap-2 px-5 py-2 bg-[#2D5A4C] hover:bg-[#234840] text-white text-sm font-medium rounded-lg transition-colors whitespace-nowrap"
+            className="flex items-center gap-2 px-5 py-2 bg-primary hover:bg-primaryHover text-white text-sm font-medium rounded-lg transition-colors whitespace-nowrap"
           >
             Add <Plus size={16} />
           </button>
@@ -323,7 +323,7 @@ export default function ReservationsList() {
                   onClick={() => setCurrentPage(item)}
                   className={`w-8 h-8 rounded-md text-sm font-medium border transition-colors ${
                     item === currentPage
-                      ? 'bg-[#2D5A4C] text-white border-[#2D5A4C]'
+                      ? 'bg-primary text-white border-primary'
                       : 'border-gray-200 hover:bg-gray-100 text-gray-600'
                   }`}
                   aria-current={item === currentPage ? 'page' : undefined}
@@ -356,7 +356,7 @@ export default function ReservationsList() {
             <select
               value={rowsPerPage}
               onChange={(e) => setRowsPerPage(Number(e.target.value))}
-              className="appearance-none pl-3 pr-8 py-2 text-sm border border-gray-200 rounded-lg bg-white text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#2D5A4C] cursor-pointer"
+              className="appearance-none pl-3 pr-8 py-2 text-sm border border-gray-200 rounded-lg bg-white text-gray-600 focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer"
             >
               {ROW_OPTIONS.map((n) => (
                 <option key={n} value={n}>show {n} rows</option>
@@ -461,7 +461,7 @@ export default function ReservationsList() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="px-5 py-2 text-sm font-medium text-white bg-[#2D5A4C] hover:bg-[#234840] rounded-lg disabled:opacity-70 disabled:cursor-not-allowed transition-colors"
+                className="px-5 py-2 text-sm font-medium text-white bg-primary hover:bg-primaryHover rounded-lg disabled:opacity-70 disabled:cursor-not-allowed transition-colors"
               >
                 {isSubmitting ? 'Adding...' : 'Add'}
               </button>

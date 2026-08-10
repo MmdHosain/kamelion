@@ -29,7 +29,7 @@ const HeroSection = () => {
             </a>
             <a
               href="https://web.whatsapp.com/send?phone=989212129902"
-              className="bg-secondary hover:bg-[#d9b2bb] text-primary font-medium text-[15px] md:text-[16px] px-6 md:px-8 py-3 rounded-md shadow-lg hover:shadow-xl transition-all border border-primary/10"
+              className="bg-secondary hover:bg-secondaryHover text-primary font-medium text-[15px] md:text-[16px] px-6 md:px-8 py-3 rounded-md shadow-lg hover:shadow-xl transition-all border border-primary/10"
             >
               ویزیت آنلاین
             </a>

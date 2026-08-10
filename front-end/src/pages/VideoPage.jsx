@@ -33,7 +33,7 @@ export default function VideoPage({ onBack }) {
 
         <button
           onClick={onBack}
-          className="flex items-center gap-1 text-primary hover:text-[#21463E] transition-all duration-300 font-medium hover:gap-2"
+          className="flex items-center gap-1 text-primary hover:text-primaryHover transition-all duration-300 font-medium hover:gap-2"
         >
           بازگشت
 

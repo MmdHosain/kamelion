@@ -37,7 +37,7 @@ export default function CommentsSlider({ comments = [] }) {
                        w-[330px] md:w-[420px] !h-auto"
           >
             <div className="flex items-center gap-4 mb-4">
-              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-secondary to-[#f2dde3] flex items-center justify-center text-xl font-bold text-primary">
+              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-secondary to-secondaryLight flex items-center justify-center text-xl font-bold text-primary">
                 {c.name[0]}
               </div>
               <div>
@@ -46,7 +46,7 @@ export default function CommentsSlider({ comments = [] }) {
               </div>
             </div>
 
-            <p className="text-md text-[#3B3D3B] leading-relaxed mb-8">{c.text}</p>
+            <p className="text-md text-textDark leading-relaxed mb-8">{c.text}</p>
           </SwiperSlide>
         ))}
       </Swiper>

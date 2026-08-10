@@ -85,7 +85,7 @@ const MessageRenderer = ({ message, onCtaAction }) => {
         <div
           className="
             animate-messageIn
-            bg-[#222]
+            bg-darkGray
             border border-white/10
             p-4
             rounded-2xl rounded-tl-none
@@ -114,7 +114,7 @@ const MessageRenderer = ({ message, onCtaAction }) => {
             className="
               w-full
               bg-primary
-              hover:bg-[#3a7464]
+              hover:bg-primaryHover
               text-white
               py-2
               rounded-lg

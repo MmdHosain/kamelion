@@ -160,7 +160,7 @@ export default function ExceptionsList() {
       className="
         flex items-center justify-center
         w-14 h-14 rounded-full
-        bg-[#2D5A4C] hover:bg-[#234840]
+        bg-primary hover:bg-primaryHover
         text-white shadow-lg hover:shadow-xl
         transition-all duration-200 shrink-0
       "
@@ -194,7 +194,7 @@ export default function ExceptionsList() {
           disabled={saving}
           className="
             flex items-center gap-2 px-4 py-2 rounded-xl
-            bg-[#2D5A4C] hover:bg-[#234840]
+            bg-primary hover:bg-primaryHover
             text-white text-sm font-medium shadow-md
             disabled:opacity-60 disabled:cursor-wait
             transition-all duration-200
@@ -255,7 +255,7 @@ export default function ExceptionsList() {
                   onChange={(e) => handleChange(ex.id, 'note', e.target.value)}
                   className="
                     w-full px-3 py-2 text-sm border border-gray-200 rounded-lg
-                    focus:outline-none focus:ring-2 focus:ring-[#2D5A4C]
+                    focus:outline-none focus:ring-2 focus:ring-primary
                     placeholder:text-gray-400 bg-white resize-none
                   "
                 />
