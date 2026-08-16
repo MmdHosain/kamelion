@@ -1,56 +1,36 @@
-// src/components/layout/Footer.jsx
 import React from 'react';
-import { CONTACT_DATA } from '../../data/contact'; // Ensure path is correct
+import { Link } from 'react-router-dom';
 
 const Footer = () => {
   return (
-    <footer className="bg-primary text-lightText py-10 pb-40">
-      <div className="container mx-auto px-4 grid md:grid-cols-4 gap-8 text-sm">
-        <div className="space-y-4">
-          <div className="font-bold text-xl text-secondary">دکتر نگار معشوری</div>
-          <p className="opacity-90">متخصص جراحی پستان و زیبایی سینه</p>
-          <div className="flex gap-3 pt-2">
-            {[...Array(5)].map((_, i) => (
-              <span key={i} className="text-secondary">★</span>
-            ))}
-          </div>
-        </div>
-        <div>
-          <h4 className="font-bold mb-3 text-secondary">دسترسی سریع</h4>
-          <ul className="space-y-2 opacity-90">
-            <li>صفحه اصلی</li>
-            <li>خدمات تخصصی</li>
-            <li>سوابق پزشکی</li>
-            <li>مقالات تخصصی</li>
-          </ul>
-        </div>
-        <div className="col-span-2">
-          <h4 className="font-bold mb-3 text-secondary">تماس</h4>
-          <p className="opacity-90 mb-3">{CONTACT_DATA.address}</p>
-          <div className="flex flex-col gap-1.5">
-            {CONTACT_DATA.phones.map((p, i) => (
-              <div key={i} className="flex items-center gap-2 opacity-90">
-                <span>📱</span>
-                <span>{p}</span>
-              </div>
-            ))}
-          </div>
-          <div className="mt-4 pt-4 border-t border-secondary/30 flex gap-4">
-            {/* Adjust these links as needed */}
-            <a href={`tel:${CONTACT_DATA.phones[0].replace(/[^0-9+]/g, '')}`} className="hover:text-secondary transition">
-               📞 {/* Or use a phone icon */}
-            </a>
-             <a href="mailto:info@drhamidahmadi.ir" className="hover:text-secondary transition">
-               📧 {/* Or use an email icon */}
-            </a>
-             <a href="#" className="hover:text-secondary transition"> {/* Replace # with actual map link if available */}
-               📍 {/* Or use a map icon */}
-            </a>
-          </div>
-        </div>
+    <footer
+      id="site-footer"
+      className="glass-panel !py-8 !mb-0 fade-section flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-textDark/70 font-medium border-t border-primary/20 !rounded-t-[32px] !rounded-b-none mt-16 shadow-lg"
+    >
+      <div className="flex items-center gap-2">
+        <svg
+          className="w-5 h-5 text-primary"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M8 9.5a4 4 0 1 0 8 0c0-2-1.5-4-2.5-4.5-1-.5-2.5-1-3-1s-2 .5-3 1-2.5 2.5-2.5 4.5z" />
+          <path d="M8 9.5c0 2 1.5 4.5 3 6.5l-3 6.5" />
+          <path d="M16 9.5c0 2-1.5 4.5-3 6.5l3 6.5" />
+        </svg>
+        <p>© ۱۴۰۳ دکتر نگار معشوری — متخصص جراحی پستان. تمامی حقوق محفوظ است.</p>
       </div>
-      <div className="container mx-auto px-4 mt-8 pt-8 border-t border-secondary/30 text-center text-xs opacity-80">
-        © {new Date().getFullYear()} کلیه حقوق محفوظ است. طراحی و توسعه با رعایت اصول پزشکی و اخلاق حرفه‌ای
+      <div className="flex gap-4">
+        <Link to="/faq" className="hover:text-primary transition-colors">
+          قوانین و مقررات
+        </Link>
+        <span>|</span>
+        <Link to="/faq" className="hover:text-primary transition-colors">
+          حریم خصوصی
+        </Link>
       </div>
     </footer>
   );

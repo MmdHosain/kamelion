@@ -1,40 +1,71 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { ADMIN_NAV_ITEMS } from './AdminNavConfig';
-import { Menu } from 'lucide-react';
+import { Shield, LogOut } from 'lucide-react';
+import { useAuth } from '../../hooks/useAuth';
 
-const AdminSidebar = ({ open, onToggle, onMenuClick }) => {
+const AdminSidebar = ({ open, onClose }) => {
+  const { logout } = useAuth();
+
   return (
-    <aside
-      className={`bg-primary text-white transition-all duration-300
-      ${open ? 'w-64' : 'w-20'} hidden md:flex flex-col`}
-    >
-      <button
-        onClick={onMenuClick}
-        className="p-2 rounded-lg hover:bg-primary/40 transition"
+    <>
+      {/* Mobile Backdrop */}
+      {open && (
+        <div
+          onClick={onClose}
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 md:hidden"
+        />
+      )}
+
+      <aside
+        className={`fixed md:static inset-y-0 right-0 z-50 w-72 bg-gradient-to-b from-primary to-primary-dark text-white flex flex-col transition-all duration-300 shadow-2xl md:shadow-none ${
+          open ? 'translate-x-0' : 'translate-x-full md:translate-x-0'
+        }`}
       >
-        Admin
-        <Menu size={22} className="text-secondary" />
-      </button>        
-      <nav className="flex-1 px-3 py-4 space-y-1">
-        {ADMIN_NAV_ITEMS.map(({ label, icon: Icon, path }) => (
-          <NavLink
-            key={path}
-            to={path}
-            end
-            className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2 rounded-lg transition
-               ${isActive
-                ? 'bg-secondary text-primary'
-                : 'hover:bg-white/10'}`
-            }
+        <div className="p-6 border-b border-white/15 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-2xl bg-white/20 flex items-center justify-center text-white shadow-inner">
+            <Shield className="w-6 h-6" />
+          </div>
+          <div>
+            <h2 className="font-black text-base text-white">پنل مدیریت</h2>
+            <p className="text-xs text-white/70 font-medium">دکتر نگار معشوری</p>
+          </div>
+        </div>
+
+        <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+          {ADMIN_NAV_ITEMS.map(({ label, icon: Icon, path }) => (
+            <NavLink
+              key={path}
+              to={path}
+              onClick={onClose}
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-4 py-3 rounded-2xl font-bold text-sm transition-all duration-200 ${
+                  isActive
+                    ? 'bg-white text-primary shadow-lg shadow-black/10 scale-102'
+                    : 'text-white/80 hover:bg-white/10 hover:text-white'
+                }`
+              }
+            >
+              <Icon size={20} />
+              <span>{label}</span>
+            </NavLink>
+          ))}
+        </nav>
+
+        <div className="p-4 border-t border-white/15">
+          <button
+            onClick={() => {
+              if (logout) logout();
+              window.location.href = '/';
+            }}
+            className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-white/10 hover:bg-red-500 hover:text-white text-white/90 text-sm font-bold transition-all shadow-sm"
           >
-            <Icon size={20} />
-            {open && <span className="text-sm">{label}</span>}
-          </NavLink>
-        ))}
-      </nav>
-    </aside>
+            <LogOut size={18} />
+            <span>خروج از حساب</span>
+          </button>
+        </div>
+      </aside>
+    </>
   );
 };
 
