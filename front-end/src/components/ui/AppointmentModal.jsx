@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { DayPicker } from 'react-day-picker';
 import 'react-day-picker/dist/style.css';
-import { X, Calendar, Clock, CheckCircle2, AlertCircle, Loader2, Sparkles, User, ShieldCheck } from 'lucide-react';
+import { X, Calendar, Clock, CheckCircle2, AlertCircle, Loader2, Sparkles, AlertTriangle } from 'lucide-react';
 import { getAvailableSlots, bookSlot } from '../../api/reservationService';
 import { useAuth } from '../../hooks/useAuth';
 import { getApiErrorMessage } from '../../utils/errorUtils';
@@ -93,31 +93,20 @@ export default function AppointmentModal({ open, onClose }) {
     setIsLoadingSlots(true);
     setErrors((prev) => ({ ...prev, date: '', booking: '' }));
     setSelectedTime(null);
+    setAvailableSlots([]);
 
     try {
       const apiDate = formatDateForApi(date);
       const response = await getAvailableSlots(apiDate);
       const slots = normalizeSlotsResponse(response);
       setAvailableSlots(slots);
-
-      if (slots.length === 0) {
-        setAvailableSlots([
-          { time: '09:30', status: 'available' },
-          { time: '11:00', status: 'available' },
-          { time: '15:30', status: 'available' },
-          { time: '17:00', status: 'available' },
-          { time: '18:15', status: 'available' },
-        ]);
-      }
-    } catch {
-      // Fallback slots for demo preview
-      setAvailableSlots([
-        { time: '09:30', status: 'available' },
-        { time: '11:00', status: 'available' },
-        { time: '15:30', status: 'available' },
-        { time: '17:00', status: 'available' },
-        { time: '18:15', status: 'available' },
-      ]);
+    } catch (err) {
+      console.error('Error fetching slots:', err);
+      setAvailableSlots([]);
+      setErrors((prev) => ({
+        ...prev,
+        date: getApiErrorMessage(err, 'خطا در دریافت زمان‌های خالی. لطفاً دوباره تلاش کنید.'),
+      }));
     } finally {
       setIsLoadingSlots(false);
     }
@@ -142,12 +131,17 @@ export default function AppointmentModal({ open, onClose }) {
       setTimeout(() => {
         onClose();
       }, 2500);
-    } catch {
-      // Success fallback
-      setBookingSuccess(true);
-      setTimeout(() => {
-        onClose();
-      }, 2500);
+    } catch (err) {
+      const errorMsg = getApiErrorMessage(
+        err,
+        'خطا در ثبت نوبت. لطفاً دوباره تلاش کنید یا ساعت دیگری را انتخاب نمایید.'
+      );
+      const friendlyMsg =
+        errorMsg === 'Selected time slot is not available.'
+          ? 'زمان انتخابی دیگر در دسترس نیست یا پر شده است.'
+          : errorMsg;
+
+      setErrors((prev) => ({ ...prev, booking: friendlyMsg }));
     } finally {
       setIsBooking(false);
     }
@@ -288,7 +282,14 @@ export default function AppointmentModal({ open, onClose }) {
                     </div>
                   )}
 
-                  {!isLoadingSlots && availableSlots.length > 0 && (
+                  {!isLoadingSlots && errors.date && (
+                    <div className="p-4 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2 my-4">
+                      <AlertCircle className="w-4 h-4 shrink-0 text-red-500" />
+                      <span>{errors.date}</span>
+                    </div>
+                  )}
+
+                  {!isLoadingSlots && !errors.date && availableSlots.length > 0 && (
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 max-h-52 overflow-y-auto chat-scroll p-1">
                       {availableSlots.map((slot, index) => {
                         const isAvailable = slot.status === 'available';
@@ -318,6 +319,20 @@ export default function AppointmentModal({ open, onClose }) {
                     </div>
                   )}
 
+                  {!isLoadingSlots && !errors.date && selectedDate && availableSlots.length === 0 && (
+                    <div className="flex flex-col items-center justify-center py-8 px-4 text-center bg-amber-500/5 rounded-2xl border border-amber-500/20 my-2">
+                      <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center mb-2">
+                        <AlertTriangle className="w-5 h-5" />
+                      </div>
+                      <p className="text-xs md:text-sm font-bold text-textDark mb-1">
+                        نوبت خالی برای این روز یافت نشد
+                      </p>
+                      <p className="text-[11px] md:text-xs text-textDark/65 max-w-xs leading-relaxed">
+                        برای تاریخ انتخاب‌شده برنامه ویزیت تعریف نشده یا تمامی نوبت‌ها تکمیل شده است. لطفاً روز کاری دیگری را انتخاب نمایید.
+                      </p>
+                    </div>
+                  )}
+
                   {!isLoadingSlots && !selectedDate && (
                     <div className="text-center text-textDark/55 py-12 text-xs md:text-sm font-medium leading-relaxed">
                       لطفاً از تقویم سمت راست، یک روز کاری را انتخاب نمایید تا زمان‌های آزاد نمایش داده شوند.
@@ -339,9 +354,9 @@ export default function AppointmentModal({ open, onClose }) {
                 )}
 
                 {errors.booking && (
-                  <p className="text-red-600 text-xs text-center flex items-center justify-center gap-1 mt-2 bg-red-50 p-2 rounded-xl border border-red-200">
-                    <AlertCircle className="w-3.5 h-3.5" />
-                    {errors.booking}
+                  <p className="text-red-600 text-xs text-center flex items-center justify-center gap-1 mt-2 bg-red-50 p-2.5 rounded-xl border border-red-200">
+                    <AlertCircle className="w-4 h-4 shrink-0" />
+                    <span>{errors.booking}</span>
                   </p>
                 )}
               </div>
