@@ -1,45 +1,32 @@
 // ScheduleCard.jsx
-
 import React, { useState } from 'react';
-import { Trash2, ChevronDown, ChevronUp, GripVertical } from 'lucide-react'; // ← DND: GripVertical for drag handle
+import { Trash2, ChevronDown, ChevronUp, GripVertical, Clock, Calendar } from 'lucide-react';
 
+const DAYS_MAP = [
+  { code: 'Sat', fa: 'شنبه' },
+  { code: 'Sun', fa: '۱شنبه' },
+  { code: 'Mon', fa: '۲شنبه' },
+  { code: 'Tue', fa: '۳شنبه' },
+  { code: 'Wed', fa: '۴شنبه' },
+  { code: 'Thu', fa: '۵شنبه' },
+  { code: 'Fri', fa: 'جمعه' },
+];
 
-// CONSTANTS
+const SLOT_OPTIONS = [15, 20, 30, 45, 60];
+const GAP_OPTIONS = [0, 5, 10, 15, 20];
 
-
-const DAYS        = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-const SLOT_OPTIONS = [10, 15, 20, 30, 45, 60];
-const GAP_OPTIONS  = [0, 5, 10, 15, 20, 30];
-
-
-// SCHEDULE CARD
-
-
-/**
- * Props:
- *   index        {number}    — ← DND: position in the schedules array
- *   schedule     {object}    — full schedule object from parent state
- *   onChange     {function}  — (updatedSchedule) => void
- *   onDelete     {function?} — () => void  (omit to hide trash icon)
- *   dragItem     {ref}       — ← DND: ref to track dragged item index
- *   dragOverItem {ref}       — ← DND: ref to track hovered item index
- *   handleSort   {function}  — ← DND: callback to reorder on drag end
- */
-const ScheduleCard = ({ 
-  index, 
-  schedule, 
-  onChange, 
-  onDelete, 
-  dragItem, 
-  dragOverItem, 
-  handleSort 
+const ScheduleCard = ({
+  index,
+  schedule,
+  onChange,
+  onDelete,
+  dragItem,
+  dragOverItem,
+  handleSort,
 }) => {
-
-  // ── Local UI state ─────────────────────────────────────────────────────────
   const [expanded, setExpanded] = useState(false);
-  const [isDragging, setIsDragging] = useState(false); // ← DND: track drag state for styling
+  const [isDragging, setIsDragging] = useState(false);
 
-  // ── Field helpers ──────────────────────────────────────────────────────────
   const update = (field, value) =>
     onChange({ ...schedule, [field]: value });
 
@@ -50,294 +37,211 @@ const ScheduleCard = ({
     update('selectedDays', next);
   };
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // ← DND: Native HTML5 Drag & Drop Event Handlers
-  // ─────────────────────────────────────────────────────────────────────────
-
   const handleDragStart = (e) => {
     dragItem.current = index;
     setIsDragging(true);
-    
-    // Optional: Set drag image (can be customized)
     e.dataTransfer.effectAllowed = 'move';
-    e.dataTransfer.setData('text/html', e.target.outerHTML);
   };
 
-  const handleDragEnd = (e) => {
+  const handleDragEnd = () => {
     setIsDragging(false);
-    handleSort(); // Parent function to reorder
+    handleSort();
   };
 
   const handleDragOver = (e) => {
-    e.preventDefault(); // ← CRUCIAL: allows drop to happen
+    e.preventDefault();
   };
 
-  const handleDragEnter = (e) => {
+  const handleDragEnter = () => {
     dragOverItem.current = index;
   };
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // RENDER
-  // ─────────────────────────────────────────────────────────────────────────
-
   return (
-    /*
-      ← DND: Native HTML5 Drag & Drop attributes
-      - draggable={true}       : makes the entire card draggable
-      - onDragStart            : fires when drag begins
-      - onDragEnd              : fires when drag ends (whether dropped or cancelled)
-      - onDragOver             : fires continuously while dragged item is over this card
-      - onDragEnter            : fires when dragged item first enters this card area
-      - Dynamic styling        : changes appearance during drag
-    */
     <div
       draggable={true}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
       onDragOver={handleDragOver}
       onDragEnter={handleDragEnter}
-      className={`
-        relative bg-white rounded-2xl shadow-sm
-        flex flex-col
-        transition-all duration-200
-        cursor-move
-        ${isDragging 
-          ? 'opacity-50 scale-105 shadow-2xl border-2 border-dashed border-primary rotate-2' 
-          : 'hover:shadow-md'
-        }
-      `}
+      className={`relative bg-white/90 backdrop-blur-md rounded-3xl border border-primary/20 p-4 shadow-sm flex flex-col transition-all duration-200 cursor-move ${
+        isDragging
+          ? 'opacity-50 scale-105 shadow-2xl border-2 border-dashed border-primary rotate-2'
+          : 'hover:shadow-md hover:border-primary/40'
+      }`}
     >
-
-      {/* ── Card Header ──────────────────────────────────────────────────── */}
-      <div className="flex items-center justify-between px-4 pt-4 pb-2 gap-2">
-
-        {/* Active toggle + name */}
+      {/* Card Header */}
+      <div className="flex items-center justify-between gap-2 pb-2">
         <div className="flex items-center gap-2 flex-1 min-w-0">
-          {/* Toggle */}
           <button
             type="button"
             onClick={(e) => {
-              e.stopPropagation(); // Prevent drag when clicking toggle
+              e.stopPropagation();
               update('isActive', !schedule.isActive);
             }}
-            className={`
-              relative w-9 h-5 rounded-full flex-shrink-0
-              transition-colors duration-200
-              ${schedule.isActive ? 'bg-primary' : 'bg-gray-200'}
-            `}
-            aria-label={schedule.isActive ? 'Deactivate schedule' : 'Activate schedule'}
+            className={`relative w-9 h-5 rounded-full flex-shrink-0 transition-colors duration-200 ${
+              schedule.isActive ? 'bg-primary' : 'bg-gray-200'
+            }`}
+            aria-label="Toggle active"
           >
-            <span className={`
-              absolute top-0.5 w-4 h-4 bg-white rounded-full shadow
-              transition-transform duration-200
-              ${schedule.isActive ? 'translate-x-4' : 'translate-x-0.5'}
-            `} />
+            <span
+              className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200 ${
+                schedule.isActive ? 'translate-x-4' : 'translate-x-0.5'
+              }`}
+            />
           </button>
 
-          {/* Patient / schedule name */}
           <input
             type="text"
             value={schedule.patientName}
             onChange={(e) => update('patientName', e.target.value)}
-            onClick={(e) => e.stopPropagation()} // Prevent drag when clicking input
-            placeholder="Schedule name…"
-            className="
-              flex-1 min-w-0 text-sm font-semibold text-gray-800
-              bg-transparent border-none outline-none
-              placeholder:text-gray-300
-              truncate
-            "
+            onClick={(e) => e.stopPropagation()}
+            placeholder="عنوان شیفت (مثلاً شیفت صبح)..."
+            className="flex-1 min-w-0 text-xs md:text-sm font-bold text-textDark bg-transparent border-none outline-none placeholder:text-textDark/40 truncate"
           />
         </div>
 
-        {/* Right-side icons */}
         <div className="flex items-center gap-1 flex-shrink-0">
-
-          {/* Trash */}
           {onDelete && (
             <button
               type="button"
               onClick={(e) => {
-                e.stopPropagation(); // Prevent drag when clicking delete
+                e.stopPropagation();
                 onDelete();
               }}
-              aria-label="Delete schedule"
-              className="
-                p-1.5 rounded-lg text-gray-300
-                hover:text-red-400 hover:bg-red-50
-                transition-colors duration-150
-              "
+              className="p-1.5 rounded-xl text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+              title="حذف این شیفت"
             >
               <Trash2 size={15} />
             </button>
           )}
 
-          {/*
-            ← DND: DRAG HANDLE (visual indicator)
-            While the entire card is draggable, this icon gives users
-            a clear visual cue that the card can be dragged.
-          */}
           <div
-            className="
-              p-1.5 rounded-lg text-gray-300
-              hover:text-primary hover:bg-primary/5
-              transition-colors duration-150
-              cursor-grab active:cursor-grabbing
-            "
-            title="Drag to reorder"
+            className="p-1.5 rounded-xl text-gray-400 hover:text-primary hover:bg-primary/5 transition-colors cursor-grab active:cursor-grabbing"
+            title="جابجایی ترتیب"
           >
             <GripVertical size={15} />
           </div>
 
-          {/* Expand / collapse */}
           <button
             type="button"
             onClick={(e) => {
-              e.stopPropagation(); // Prevent drag when clicking expand
+              e.stopPropagation();
               setExpanded((v) => !v);
             }}
-            aria-label={expanded ? 'Collapse' : 'Expand'}
-            className="
-              p-1.5 rounded-lg text-gray-300
-              hover:text-gray-500 hover:bg-gray-100
-              transition-colors duration-150
-            "
+            className="p-1.5 rounded-xl text-gray-400 hover:text-primary hover:bg-primary/5 transition-colors"
           >
             {expanded ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
           </button>
-
         </div>
       </div>
 
-      {/* ── Time summary (always visible) ──────────────────────────────────── */}
-      <div className="px-4 pb-3 flex items-center gap-2 text-xs text-gray-400 font-medium">
-        <span>{schedule.startTime}</span>
-        <span>→</span>
-        <span>{schedule.endTime}</span>
-        <span className="ml-auto">
+      {/* Time Summary */}
+      <div className="flex items-center justify-between text-xs text-textDark/70 font-bold border-t border-primary/10 pt-2.5">
+        <div className="flex items-center gap-1 font-mono text-primary">
+          <Clock size={13} />
+          <span>{schedule.startTime}</span>
+          <span>تا</span>
+          <span>{schedule.endTime}</span>
+        </div>
+        <span className="text-[11px] text-textDark/60 truncate max-w-[140px]">
           {schedule.selectedDays.length === 7
-            ? 'Every day'
+            ? 'همه روزها'
             : schedule.selectedDays.length === 0
-            ? 'No days'
-            : schedule.selectedDays.join(', ')
-          }
+            ? 'بدون روز انتخابی'
+            : schedule.selectedDays
+                .map((d) => DAYS_MAP.find((m) => m.code === d)?.fa || d)
+                .join('، ')}
         </span>
       </div>
 
-      {/* ── Expanded settings ──────────────────────────────────────────────── */}
+      {/* Expanded Settings */}
       {expanded && (
-        <div className="border-t border-gray-100 px-4 py-4 flex flex-col gap-4">
-
-          {/* Time range */}
-          <div className="flex gap-3">
-            <label className="flex-1 flex flex-col gap-1">
-              <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide">
-                Start
-              </span>
+        <div className="border-t border-primary/15 mt-3 pt-3 flex flex-col gap-3">
+          {/* Time Range */}
+          <div className="grid grid-cols-2 gap-2">
+            <label className="flex flex-col gap-1 text-[11px] font-bold text-textDark/70">
+              <span>ساعت شروع:</span>
               <input
                 type="time"
                 value={schedule.startTime}
                 onChange={(e) => update('startTime', e.target.value)}
-                onClick={(e) => e.stopPropagation()} // Prevent drag when clicking input
-                className="
-                  w-full text-sm text-gray-700 bg-gray-50
-                  border border-gray-200 rounded-lg px-2 py-1.5
-                  focus:outline-none focus:ring-2 focus:ring-primary/30
-                "
+                onClick={(e) => e.stopPropagation()}
+                className="w-full text-xs text-textDark bg-white border border-primary/20 rounded-xl px-2 py-1.5 focus:outline-none focus:border-primary font-mono"
               />
             </label>
-            <label className="flex-1 flex flex-col gap-1">
-              <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide">
-                End
-              </span>
+            <label className="flex flex-col gap-1 text-[11px] font-bold text-textDark/70">
+              <span>ساعت پایان:</span>
               <input
                 type="time"
                 value={schedule.endTime}
                 onChange={(e) => update('endTime', e.target.value)}
-                onClick={(e) => e.stopPropagation()} // Prevent drag when clicking input
-                className="
-                  w-full text-sm text-gray-700 bg-gray-50
-                  border border-gray-200 rounded-lg px-2 py-1.5
-                  focus:outline-none focus:ring-2 focus:ring-primary/30
-                "
+                onClick={(e) => e.stopPropagation()}
+                className="w-full text-xs text-textDark bg-white border border-primary/20 rounded-xl px-2 py-1.5 focus:outline-none focus:border-primary font-mono"
               />
             </label>
           </div>
 
-          {/* Slot + Gap duration */}
-          <div className="flex gap-3">
-            <label className="flex-1 flex flex-col gap-1">
-              <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide">
-                Slot (min)
-              </span>
+          {/* Durations */}
+          <div className="grid grid-cols-2 gap-2">
+            <label className="flex flex-col gap-1 text-[11px] font-bold text-textDark/70">
+              <span>مدت هر ویزیت:</span>
               <select
                 value={schedule.slotDuration}
                 onChange={(e) => update('slotDuration', Number(e.target.value))}
-                onClick={(e) => e.stopPropagation()} // Prevent drag when clicking select
-                className="
-                  w-full text-sm text-gray-700 bg-gray-50
-                  border border-gray-200 rounded-lg px-2 py-1.5
-                  focus:outline-none focus:ring-2 focus:ring-primary/30
-                "
+                onClick={(e) => e.stopPropagation()}
+                className="w-full text-xs text-textDark bg-white border border-primary/20 rounded-xl px-2 py-1.5 focus:outline-none focus:border-primary"
               >
-                {SLOT_OPTIONS.map((v) => (
-                  <option key={v} value={v}>{v} min</option>
+                {SLOT_OPTIONS.map((min) => (
+                  <option key={min} value={min}>
+                    {min} دقیقه
+                  </option>
                 ))}
               </select>
             </label>
-            <label className="flex-1 flex flex-col gap-1">
-              <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide">
-                Gap (min)
-              </span>
+
+            <label className="flex flex-col gap-1 text-[11px] font-bold text-textDark/70">
+              <span>فاصله استراحت:</span>
               <select
                 value={schedule.gapDuration}
                 onChange={(e) => update('gapDuration', Number(e.target.value))}
-                onClick={(e) => e.stopPropagation()} // Prevent drag when clicking select
-                className="
-                  w-full text-sm text-gray-700 bg-gray-50
-                  border border-gray-200 rounded-lg px-2 py-1.5
-                  focus:outline-none focus:ring-2 focus:ring-primary/30
-                "
+                onClick={(e) => e.stopPropagation()}
+                className="w-full text-xs text-textDark bg-white border border-primary/20 rounded-xl px-2 py-1.5 focus:outline-none focus:border-primary"
               >
-                {GAP_OPTIONS.map((v) => (
-                  <option key={v} value={v}>{v === 0 ? 'None' : `${v} min`}</option>
+                {GAP_OPTIONS.map((min) => (
+                  <option key={min} value={min}>
+                    {min} دقیقه
+                  </option>
                 ))}
               </select>
             </label>
           </div>
 
-          {/* Day picker */}
+          {/* Days Selection */}
           <div className="flex flex-col gap-1.5">
-            <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide">
-              Active Days
-            </span>
-            <div className="flex gap-1 flex-wrap">
-              {DAYS.map((day) => {
-                const active = schedule.selectedDays.includes(day);
+            <span className="text-[11px] font-bold text-textDark/70">روزهای فعال کاری:</span>
+            <div className="grid grid-cols-4 gap-1.5">
+              {DAYS_MAP.map((day) => {
+                const isSelected = schedule.selectedDays.includes(day.code);
                 return (
                   <button
-                    key={day}
+                    key={day.code}
                     type="button"
                     onClick={(e) => {
-                      e.stopPropagation(); // Prevent drag when clicking day buttons
-                      toggleDay(day);
+                      e.stopPropagation();
+                      toggleDay(day.code);
                     }}
-                    className={`
-                      px-2 py-1 rounded-lg text-xs font-semibold
-                      transition-all duration-150
-                      ${active
+                    className={`py-1.5 px-1 rounded-xl text-[10px] font-bold transition-all ${
+                      isSelected
                         ? 'bg-primary text-white shadow-sm'
-                        : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
-                      }
-                    `}
+                        : 'bg-white border border-primary/20 text-textDark/70 hover:border-primary'
+                    }`}
                   >
-                    {day}
+                    {day.fa}
                   </button>
                 );
               })}
             </div>
           </div>
-
         </div>
       )}
     </div>

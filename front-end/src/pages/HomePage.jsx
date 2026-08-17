@@ -8,7 +8,7 @@ import ContactHoursSection from '../components/sections/ContactHoursSection';
 
 const HomePage = ({ onOpenAppointment, onOpenChat }) => {
   return (
-    <main className="flex-grow flex flex-col items-center w-full pb-20">
+    <main className="flex-grow flex flex-col items-center w-full pt-20 sm:pt-24 md:pt-28 pb-20 overflow-x-hidden">
       {/* 1. Hero Section */}
       <HeroSection
         onOpenAppointment={onOpenAppointment}
