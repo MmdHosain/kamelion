@@ -16,7 +16,6 @@ import AboutPage from './pages/AboutPage';
 import ServicesPage from './pages/ServicesPage';
 import FaqPage from './pages/FaqPage';
 import ResourcesPage from './pages/ResourcesPage';
-import CommentsPage from './pages/CommentsPage';
 import VideoPage from './pages/VideoPage';
 
 import AdminPage from './pages/admin/AdminPage';
@@ -80,7 +79,6 @@ const App = () => {
           element={<FaqPage onOpenChat={() => setOpenChat(true)} />}
         />
         <Route path="/resources" element={<ResourcesPage />} />
-        <Route path="/comments" element={<CommentsPage />} />
         <Route path="/video" element={<VideoPage />} />
 
         <Route path="/admin/login" element={<AdminLogin />} />

@@ -122,15 +122,6 @@ const Header = ({ onOpenAppointment, onOpenChat }) => {
               </div>
             </div>
 
-            <Link
-              to="/comments"
-              className={`hover:text-primary transition-colors text-sm font-bold ${
-                location.pathname === '/comments' ? 'text-primary' : 'text-textDark/80'
-              }`}
-            >
-              نظرات مراجعین
-            </Link>
-
             <a
               href="#contact"
               className="text-textDark/80 hover:text-primary transition-colors text-sm font-bold"
@@ -199,13 +190,6 @@ const Header = ({ onOpenAppointment, onOpenChat }) => {
             className="text-textDark/90 hover:text-primary font-bold text-base border-b border-primary/10 pb-2.5 transition-colors"
           >
             مطالب آموزشی
-          </Link>
-          <Link
-            to="/comments"
-            onClick={handleNavClick}
-            className="text-textDark/90 hover:text-primary font-bold text-base border-b border-primary/10 pb-2.5 transition-colors"
-          >
-            نظرات مراجعین
           </Link>
           <a
             href="#contact"
