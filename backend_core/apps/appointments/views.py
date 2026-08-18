@@ -19,12 +19,6 @@ from .services import (
 
 from .models import Appointment
 from rest_framework.generics import ListAPIView
-
-
-class AdminAppointmentsView(ListAPIView):
-    queryset = Appointment.objects.all().order_by("-appointment_date")
-    serializer_class = AppointmentSerializer
-    pagination_class = AppointmentPagination
     
     
 class AvailableSlotsView(APIView):

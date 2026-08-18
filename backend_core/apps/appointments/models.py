@@ -62,36 +62,6 @@ class DoctorAvailability(models.Model):
         verbose_name_plural = "Doctor Availabilities"
         ordering = ["id"]
 
-    def clean(self):
-        """
-        Custom validation logic that runs before saving.
-
-        Ensures:
-        - end_time is after start_time
-        - visit_duration is valid
-        - visit duration does not exceed the total working window
-        """
-
-        if self.end_time <= self.start_time:
-            raise ValidationError("End time must be after start time.")
-
-        if self.visit_duration <= 0:
-            raise ValidationError("Visit duration must be positive.")
-
-        if self.time_gap < 0:
-            raise ValidationError("Time gap cannot be negative.")
-
-        # Calculate total working minutes for the day
-        total_minutes = (
-            datetime.datetime.combine(datetime.date.today(), self.end_time)
-            - datetime.datetime.combine(datetime.date.today(), self.start_time)
-        ).total_seconds() / 60
-
-        if self.visit_duration > total_minutes:
-            raise ValidationError(
-                "Visit duration cannot exceed total working time."
-            )
-
 
 class AvailabilityException(models.Model):
     """
