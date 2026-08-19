@@ -26,6 +26,7 @@ THIRD_PARTY_APPS = [
 LOCAL_APPS = [
     'apps.users',
     'apps.appointments',
+    'apps.comments',
     'apps.chat_gateway',
     'apps.common',
 ]
