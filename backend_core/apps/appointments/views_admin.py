@@ -14,8 +14,7 @@ from .serializers import (
     AvailabilityExceptionSerializer,
     AvailabilityExceptionBulkSerializer,
     AppointmentSerializer,
-    AdminAppointmentListSerializer,
-    AdminAppointmentCreateSerializer,
+
 )
 from .pagination import AppointmentPagination
 
