@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from .models import DoctorAvailability, AvailabilityException, Appointment
-from apps.users.models import User
+from rest_framework import serializers
+from .models import DoctorAvailability
+
 
 
 class SlotQuerySerializer(serializers.Serializer):
@@ -12,104 +14,6 @@ class BookAppointmentSerializer(serializers.Serializer):
     time = serializers.TimeField()
     reason = serializers.CharField(required=False, allow_blank=True)
 
-
-class AppointmentSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Appointment
-        fields = [
-            "id",
-            "appointment_date",
-            "appointment_time",
-            "status",
-            "reason",
-            "created_at",
-        ]
-
-class AdminAppointmentListSerializer(serializers.ModelSerializer):
-    phone_number = serializers.CharField(source="user.phone_number", read_only=True)
-    full_name = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Appointment
-        fields = [
-            "id",
-            "phone_number",
-            "full_name",
-            "appointment_date",
-            "appointment_time",
-            "status",
-            "reason",
-            "created_at",
-        ]
-
-    def get_full_name(self, obj):
-        user = obj.user
-
-        if hasattr(user, "get_full_name"):
-            full_name = user.get_full_name()
-            if full_name:
-                return full_name
-
-        first_name = getattr(user, "first_name", "") or ""
-        last_name = getattr(user, "last_name", "") or ""
-        full_name = f"{first_name} {last_name}".strip()
-
-        return full_name or user.phone_number
-
-
-class AdminAppointmentCreateSerializer(serializers.Serializer):
-    phone_number = serializers.CharField()
-    full_name = serializers.CharField(required=False, allow_blank=True)
-    appointment_date = serializers.DateField()
-    appointment_time = serializers.TimeField()
-    reason = serializers.CharField(required=False, allow_blank=True)
-    force_create_user = serializers.BooleanField(default=False, write_only=True)
-
-    def validate(self, attrs):
-        phone_number = attrs["phone_number"]
-        full_name = attrs.get("full_name")
-        force_create = attrs.get("force_create_user", False)
-
-        exists = Appointment.objects.filter(
-            appointment_date=attrs["appointment_date"],
-            appointment_time=attrs["appointment_time"],
-            status=Appointment.SCHEDULED,
-        ).exists()
-
-        if exists:
-            raise serializers.ValidationError({
-                "appointment_time": "This appointment slot is already booked."
-            })
-
-        user = User.objects.filter(phone_number=phone_number).first()
-
-        if not user:
-            if not force_create:
-                raise serializers.ValidationError({
-                    "user_exists": [False],
-                    "detail": ["No user exists with this phone number."],
-                })
-
-            user = User.objects.create_user(
-                phone_number=phone_number,
-                full_name=full_name,
-            )
-
-        attrs["user"] = user
-        return attrs
-
-
-    def create(self, validated_data):
-        validated_data.pop("force_create_user", None)
-
-        return Appointment.objects.create(
-            user=validated_data["user"],
-            appointment_date=validated_data["appointment_date"],
-            appointment_time=validated_data["appointment_time"],
-            reason=validated_data.get("reason", ""),
-            status=Appointment.SCHEDULED,
-        )
 
 class DoctorAvailabilitySerializer(serializers.ModelSerializer):
     class Meta:
@@ -183,6 +87,30 @@ class AvailabilityExceptionSerializer(serializers.ModelSerializer):
         model = AvailabilityException
         fields = "__all__"
 
+class AppointmentSerializer(serializers.ModelSerializer):
+    full_name = serializers.CharField(
+        source="user.full_name",
+        read_only=True
+    )
+
+    phone_number = serializers.CharField(
+        source="user.phone_number",
+        read_only=True
+    )
+
+    class Meta:
+        model = Appointment
+        fields = [
+            "id",
+            "full_name",
+            "phone_number",
+            "appointment_date",
+            "appointment_time",
+            "status",
+            "reason",
+            "created_at",
+            "updated_at",
+        ]
 class DoctorAvailabilityBulkSerializer(serializers.Serializer):
     schedules = serializers.ListField()
 

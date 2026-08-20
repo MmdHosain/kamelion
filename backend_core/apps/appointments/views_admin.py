@@ -6,7 +6,7 @@ from rest_framework.views import APIView
 from django.db import transaction
 from rest_framework.response import Response
 from rest_framework import status
-
+from django.db.models import Q, Case, When, Value, IntegerField
 from .models import DoctorAvailability, AvailabilityException, Appointment
 from .serializers import (
     DoctorAvailabilitySerializer,
@@ -20,6 +20,8 @@ from .serializers import (
 from .pagination import AppointmentPagination
 
 
+
+
 class AdminSlotViewSet(viewsets.ModelViewSet):
     queryset = DoctorAvailability.objects.all().order_by("id")
     serializer_class = DoctorAvailabilitySerializer
@@ -30,33 +32,43 @@ class AdminExceptionViewSet(viewsets.ModelViewSet):
     serializer_class = AvailabilityExceptionSerializer
     permission_classes = [IsAdminUser]
 
-# 3. Update this class to support POST
-class AdminAppointmentsView(ListCreateAPIView):
-    # Use select_related to optimize the join with User for phone/name
-    queryset = Appointment.objects.select_related("user").all().order_by("-appointment_date", "-appointment_time")
+class AdminAppointmentsView(ListAPIView):
+    serializer_class = AppointmentSerializer
     pagination_class = AppointmentPagination
     permission_classes = [IsAdminUser]
 
-    def get_serializer_class(self):
-        if self.request.method == "POST":
-            return AdminAppointmentCreateSerializer
-        return AdminAppointmentListSerializer
-
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        
-        # Save the appointment
-        appointment = serializer.save()
-        
-        # Return the response using the ListSerializer so the frontend gets 
-        # the phone_number and full_name immediately
-        response_serializer = AdminAppointmentListSerializer(appointment)
-        
-        return Response(
-            response_serializer.data,
-            status=status.HTTP_201_CREATED,
+    def get_queryset(self):
+        queryset = (
+            Appointment.objects
+            .select_related("user")
+            .all()
+            .order_by("-id")
         )
+        
+        search = self.request.query_params.get("search")
+
+        if search:
+            search = search.strip()
+            terms = search.split()
+
+            for term in terms:
+                queryset = queryset.filter(
+                    Q(user__full_name__icontains=term) |
+                    Q(user__phone_number__icontains=term)
+                )
+
+            queryset = queryset.annotate(
+                rank=Case(
+                    When(user__full_name__iexact=search, then=Value(3)),
+                    When(user__phone_number__iexact=search, then=Value(3)),
+                    When(user__full_name__icontains=search, then=Value(2)),
+                    When(user__phone_number__icontains=search, then=Value(2)),
+                    default=Value(0),
+                    output_field=IntegerField(),
+                )
+            ).order_by("-rank", "-id")
+
+        return queryset
 
 class AdminSlotBulkSaveView(APIView):
     permission_classes = [IsAdminUser]

@@ -18,3 +18,4 @@ urlpatterns = [
     path("", include(router.urls)),
     path("appointments/", AdminAppointmentsView.as_view(), name="admin-appointments"),
 ]
+

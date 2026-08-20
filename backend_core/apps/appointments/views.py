@@ -21,36 +21,8 @@ from .services import (
 )
 
 from .models import Appointment
-from rest_framework.generics import ListCreateAPIView
-
-
-class AdminAppointmentsView(ListCreateAPIView):
-    queryset = Appointment.objects.select_related("user").all().order_by(
-        "-appointment_date",
-        "-appointment_time",
-    )
-    pagination_class = AppointmentPagination
-    permission_classes = [IsAuthenticated]
-
-    def get_serializer_class(self):
-        if self.request.method == "POST":
-            return AdminAppointmentCreateSerializer
-
-        return AdminAppointmentListSerializer
-
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
-        appointment = serializer.save()
-
-        response_serializer = AdminAppointmentListSerializer(appointment)
-
-        return Response(
-            response_serializer.data,
-            status=status.HTTP_201_CREATED,
-        )
-
+from rest_framework.generics import ListAPIView
+    
     
 class AvailableSlotsView(APIView):
     authentication_classes = []
