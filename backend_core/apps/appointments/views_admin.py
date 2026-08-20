@@ -13,7 +13,9 @@ from .serializers import (
     AvailabilityExceptionSerializer,
     AvailabilityExceptionBulkSerializer,
     AppointmentSerializer,
+    AdminBookAppointmentSerializer,
 )
+from .services import admin_book_appointment
 from .pagination import AppointmentPagination
 
 
@@ -66,6 +68,41 @@ class AdminAppointmentsView(ListAPIView):
             ).order_by("-rank", "-id")
 
         return queryset
+
+
+class AdminCreateAppointmentView(APIView):
+    """
+    Lets an admin book an appointment on behalf of a patient by
+    entering their full name and phone number directly (e.g. for a
+    walk-in or phone booking), rather than the patient booking it
+    themselves while logged in.
+
+    Goes through the same slot-availability check as the patient
+    booking flow (via services.admin_book_appointment ->
+    book_appointment), so this cannot be used to double-book a slot
+    or schedule outside the doctor's configured availability.
+    """
+    permission_classes = [IsAdminUser]
+
+    def post(self, request):
+        serializer = AdminBookAppointmentSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        try:
+            appointment = admin_book_appointment(
+                full_name=serializer.validated_data["full_name"],
+                phone_number=serializer.validated_data["phone_number"],
+                date=serializer.validated_data["date"],
+                time=serializer.validated_data["time"],
+                reason=serializer.validated_data.get("reason", ""),
+            )
+        except ValueError as e:
+            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(
+            AppointmentSerializer(appointment).data,
+            status=status.HTTP_201_CREATED
+        )
 
 class AdminSlotBulkSaveView(APIView):
     permission_classes = [IsAdminUser]

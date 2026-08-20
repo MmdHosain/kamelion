@@ -4,6 +4,7 @@ from .views_admin import (
     AdminSlotViewSet,
     AdminExceptionViewSet,
     AdminAppointmentsView,
+    AdminCreateAppointmentView,
     AdminSlotBulkSaveView,
     AdminExceptionBulkSaveView,
 )
@@ -17,5 +18,5 @@ urlpatterns = [
     path("exceptions/bulk/", AdminExceptionBulkSaveView.as_view(), name="admin-exceptions-bulk"),
     path("", include(router.urls)),
     path("appointments/", AdminAppointmentsView.as_view()),
+    path("appointments/create/", AdminCreateAppointmentView.as_view()),
 ]
-

@@ -3,6 +3,8 @@ from datetime import datetime, timedelta
 from django.db import transaction
 from django.utils import timezone
 
+from apps.users.models import User
+
 from .models import (
     DoctorAvailability,
     AvailabilityException,
@@ -140,3 +142,33 @@ def cancel_appointment(appointment):
     appointment.save(update_fields=["status"])
 
     return appointment
+
+
+@transaction.atomic
+def admin_book_appointment(full_name: str, phone_number: str, date, time, reason=""):
+    """
+    Book an appointment on behalf of a patient, identified by name +
+    phone number (as entered by an admin) rather than a logged-in user.
+
+    Deliberately reuses book_appointment()'s slot check rather than
+    inserting directly, so an admin-created appointment is held to
+    the exact same availability rules as a patient-created one - it
+    cannot double-book a slot or ignore the doctor's schedule.
+
+    If no user exists yet for this phone number, one is created
+    (same get-or-create pattern used by the OTP login flow), so a
+    walk-in/phone booking naturally becomes that patient's account
+    the first time they log in with the same number.
+    """
+    phone_number = phone_number.strip()
+    full_name = full_name.strip()
+
+    user, created = User.objects.get_or_create(
+        phone_number=phone_number
+    )
+
+    if created or not user.full_name:
+        user.full_name = full_name
+        user.save(update_fields=["full_name"])
+
+    return book_appointment(user, date, time, reason)
