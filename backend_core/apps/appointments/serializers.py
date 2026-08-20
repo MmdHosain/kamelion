@@ -15,6 +15,30 @@ class BookAppointmentSerializer(serializers.Serializer):
     reason = serializers.CharField(required=False, allow_blank=True)
 
 
+class AdminBookAppointmentSerializer(serializers.Serializer):
+    """
+    Input for an admin booking an appointment on behalf of a patient,
+    identified by full name + phone number rather than a JWT.
+    """
+    full_name = serializers.CharField(max_length=100)
+    phone_number = serializers.CharField(max_length=15)
+    date = serializers.DateField()
+    time = serializers.TimeField()
+    reason = serializers.CharField(required=False, allow_blank=True)
+
+    def validate_full_name(self, value):
+        value = value.strip()
+        if not value:
+            raise serializers.ValidationError("Full name cannot be empty.")
+        return value
+
+    def validate_phone_number(self, value):
+        value = value.strip()
+        if not value:
+            raise serializers.ValidationError("Phone number cannot be empty.")
+        return value
+
+
 class DoctorAvailabilitySerializer(serializers.ModelSerializer):
     class Meta:
         model = DoctorAvailability
@@ -88,10 +112,7 @@ class AvailabilityExceptionSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 class AppointmentSerializer(serializers.ModelSerializer):
-    full_name = serializers.CharField(
-        source="user.full_name",
-        read_only=True
-    )
+    full_name = serializers.SerializerMethodField()
 
     phone_number = serializers.CharField(
         source="user.phone_number",
@@ -111,6 +132,12 @@ class AppointmentSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
+
+    def get_full_name(self, obj):
+        # Fall back to phone number so the admin table never shows
+        # a blank name - most commonly hit for users who logged in
+        # before full_name started being captured during OTP verify.
+        return obj.user.full_name or obj.user.phone_number
 class DoctorAvailabilityBulkSerializer(serializers.Serializer):
     schedules = serializers.ListField()
 
@@ -185,4 +212,3 @@ class AvailabilityExceptionBulkSerializer(serializers.Serializer):
                 )
 
         return exceptions
-

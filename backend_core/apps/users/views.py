@@ -49,8 +49,15 @@ class VerifyOTPView(APIView):
         phone_number = serializer.validated_data["phone_number"]
         code = serializer.validated_data["code"]
 
+        # accept either "full_name" or "name" from the client -
+        # the frontend currently sends "name"
+        full_name = (
+            serializer.validated_data.get("full_name")
+            or request.data.get("name")
+        )
+
         try:
-            user = verify_otp(phone_number, code)
+            user = verify_otp(phone_number, code, full_name=full_name)
 
         except ValueError as e:
             return Response(
@@ -62,8 +69,36 @@ class VerifyOTPView(APIView):
 
         return Response({
             "access": str(refresh.access_token),
-            "refresh": str(refresh)
+            "refresh": str(refresh),
+            "user": {
+                "id": user.id,
+                "phone_number": user.phone_number,
+                "full_name": user.full_name,
+                "role": "admin" if user.is_staff else "patient"
+            }
         })
+
+
+class CurrentUserView(APIView):
+    """
+    Returns the currently authenticated user, resolved from the
+    JWT access token. Used by the frontend on page load/refresh to
+    restore session state without requiring a fresh login.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+
+        return Response({
+            "id": user.id,
+            "phone_number": user.phone_number,
+            "full_name": user.full_name,
+            "is_staff": user.is_staff,
+            "is_superuser": user.is_superuser,
+            "role": "admin" if user.is_staff else "patient"
+        })
+
 class AdminLoginView(APIView):
     authentication_classes = []
     permission_classes = []
@@ -111,4 +146,3 @@ class AdminLoginView(APIView):
                 "role": "admin"
             }
         }, status=status.HTTP_200_OK)
-

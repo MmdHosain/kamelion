@@ -49,7 +49,7 @@ def request_otp(phone_number: str):
 
 
 @transaction.atomic
-def verify_otp(phone_number: str, code: str):
+def verify_otp(phone_number: str, code: str, full_name: str = None):
     """
     Validate OTP and return authenticated user.
 
@@ -58,6 +58,9 @@ def verify_otp(phone_number: str, code: str):
     2. Check expiration
     3. Mark as used
     4. Create user if first login
+    5. Persist full_name if provided and not already set,
+       so a returning user's existing name is never overwritten
+       by a blank/different value sent on a later login.
     """
 
     phone_number = phone_number.strip()
@@ -80,8 +83,12 @@ def verify_otp(phone_number: str, code: str):
     otp.save(update_fields=["is_used"])
 
     # get or create user
-    user, _ = User.objects.get_or_create(
+    user, created = User.objects.get_or_create(
         phone_number=phone_number
     )
+
+    if full_name and (created or not user.full_name):
+        user.full_name = full_name.strip()
+        user.save(update_fields=["full_name"])
 
     return user
