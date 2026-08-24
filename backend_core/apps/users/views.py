@@ -3,12 +3,13 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 
 from .serializers import (
     RequestOTPSerializer,
     VerifyOTPSerializer,
     AdminLoginSerializer,
+    RefreshTokenSerializer,
 )
 from .services import request_otp, verify_otp
 from .selectors import get_patient_profile
@@ -145,4 +146,44 @@ class AdminLoginView(APIView):
                 "full_name": user.full_name,
                 "role": "admin"
             }
+        }, status=status.HTTP_200_OK)
+
+
+class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        raw_refresh = request.data.get("refreshToken") or request.data.get("refresh")
+        if raw_refresh:
+            try:
+                RefreshToken(raw_refresh).blacklist()
+            except TokenError:
+                # Already invalid/expired/blacklisted - logout still succeeds
+                pass
+
+        return Response({"message": "Logged out"}, status=status.HTTP_200_OK)
+
+
+class RefreshTokenView(APIView):
+    authentication_classes = []
+    permission_classes = []
+
+    def post(self, request):
+        serializer = RefreshTokenSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        raw_refresh = serializer.validated_data["refreshToken"]
+
+        try:
+            refresh = RefreshToken(raw_refresh)
+        except TokenError as e:
+            return Response({"detail": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
+
+        new_access = str(refresh.access_token)
+
+        # SIMPLE_JWT['ROTATE_REFRESH_TOKENS'] is not enabled in settings.py,
+        # so the same refresh token is valid until its own expiry and is
+        # simply echoed back rather than rotated.
+        return Response({
+            "accessToken": new_access,
+            "refreshToken": raw_refresh,
         }, status=status.HTTP_200_OK)

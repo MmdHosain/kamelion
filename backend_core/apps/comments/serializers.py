@@ -1,81 +1,52 @@
 from rest_framework import serializers
 
-from .models import Comment
+from .models import Review
 
 
-class CreateCommentSerializer(serializers.Serializer):
+class ReviewSerializer(serializers.ModelSerializer):
     """
-    Input for a user submitting a new comment.
-    Only the text is accepted - status/user are set server-side.
+    Endpoints #24/#25: GET/POST /api/reviews/ (public).
+    Matches frontend-api-evaluation.md's documented shape exactly:
+    [{id, name, email, text, rating, created_at, approved}]
     """
-    text = serializers.CharField(
-        max_length=2000,
-        allow_blank=False,
-        trim_whitespace=True
-    )
+    class Meta:
+        model = Review
+        fields = ["id", "name", "email", "text", "rating", "created_at", "approved"]
+        read_only_fields = ["id", "created_at", "approved"]
+        extra_kwargs = {
+            "rating": {"required": True, "allow_null": False},
+        }
+
+    def validate_rating(self, value):
+        if not (1 <= value <= 5):
+            raise serializers.ValidationError("Rating must be between 1 and 5.")
+        return value
+
+    def validate_name(self, value):
+        value = value.strip()
+        if not value:
+            raise serializers.ValidationError("Name cannot be empty.")
+        return value
 
     def validate_text(self, value):
-        if not value.strip():
-            raise serializers.ValidationError("Comment text cannot be empty.")
-        return value.strip()
+        value = value.strip()
+        if not value:
+            raise serializers.ValidationError("Review text cannot be empty.")
+        return value
 
 
-class CommentSerializer(serializers.ModelSerializer):
+class AdminReviewSerializer(serializers.ModelSerializer):
     """
-    Public/own-comment representation.
-    Used both for the public approved-comments feed and for a user's
-    own comment list (where status is useful so they can see it's
-    still pending).
+    Endpoint #26: GET /api/admin/reviews/ - includes pending/unapproved.
     """
-    full_name = serializers.CharField(
-        source="user.full_name",
-        read_only=True
-    )
-
     class Meta:
-        model = Comment
-        fields = [
-            "id",
-            "full_name",
-            "text",
-            "status",
-            "created_at",
-        ]
+        model = Review
+        fields = ["id", "name", "email", "text", "rating", "created_at", "updated_at", "approved"]
         read_only_fields = fields
 
 
-class AdminCommentSerializer(serializers.ModelSerializer):
+class ReviewApprovalSerializer(serializers.Serializer):
     """
-    Full representation for admin moderation views - includes the
-    author's contact info and review metadata.
+    Endpoint #27: PATCH /api/admin/reviews/<id>/ - Payload: {"approved": true/false}
     """
-    full_name = serializers.CharField(
-        source="user.full_name",
-        read_only=True
-    )
-
-    phone_number = serializers.CharField(
-        source="user.phone_number",
-        read_only=True
-    )
-
-    reviewed_by_name = serializers.CharField(
-        source="reviewed_by.full_name",
-        read_only=True,
-        default=None
-    )
-
-    class Meta:
-        model = Comment
-        fields = [
-            "id",
-            "full_name",
-            "phone_number",
-            "text",
-            "status",
-            "reviewed_by_name",
-            "reviewed_at",
-            "created_at",
-            "updated_at",
-        ]
-        read_only_fields = fields
+    approved = serializers.BooleanField()

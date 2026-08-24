@@ -4,6 +4,7 @@ from .views_admin import (
     AdminSlotViewSet,
     AdminExceptionViewSet,
     AdminAppointmentsView,
+    AdminAppointmentDetailView,
     AdminCreateAppointmentView,
     AdminSlotBulkSaveView,
     AdminExceptionBulkSaveView,
@@ -19,4 +20,5 @@ urlpatterns = [
     path("", include(router.urls)),
     path("appointments/", AdminAppointmentsView.as_view()),
     path("appointments/create/", AdminCreateAppointmentView.as_view()),
+    path("appointments/<int:pk>/", AdminAppointmentDetailView.as_view()),
 ]

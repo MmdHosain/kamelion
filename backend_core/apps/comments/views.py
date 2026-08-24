@@ -1,62 +1,34 @@
 from rest_framework.views import APIView
-from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 
-from .pagination import CommentPagination
-from .serializers import CreateCommentSerializer, CommentSerializer
-from .services import create_comment
-from .selectors import get_approved_comments, get_comments_for_user
+from .serializers import ReviewSerializer
+from .models import Review
 
 
-class CommentListView(ListAPIView):
+class ReviewListCreateView(APIView):
     """
-    Public feed of comments - approved only.
-    No authentication required to read.
+    GET  /api/reviews/ - Public. Returns a plain array (not DRF-paginated)
+                          of only approved reviews, per the documented
+                          shape: [{id, name, email, text, rating,
+                          created_at, approved}].
+    POST /api/reviews/ - Public (no auth). Payload: {name, email, text, rating}.
+                          New reviews start pending and need admin sign-off
+                          before they appear in the public GET.
     """
     authentication_classes = []
     permission_classes = []
 
-    serializer_class = CommentSerializer
-    pagination_class = CommentPagination
-
-    def get_queryset(self):
-        return get_approved_comments()
-
-
-class CreateCommentView(APIView):
-    """
-    Submit a new comment. Requires authentication.
-    The comment is created as PENDING and is not shown on the public
-    feed until an admin approves it.
-    """
-    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        reviews = Review.objects.filter(status=Review.APPROVED)
+        serializer = ReviewSerializer(reviews, many=True)
+        return Response(serializer.data)
 
     def post(self, request):
-        serializer = CreateCommentSerializer(data=request.data)
+        serializer = ReviewSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        comment = create_comment(
-            user=request.user,
-            text=serializer.validated_data["text"]
-        )
+        user = request.user if request.user and request.user.is_authenticated else None
+        review = serializer.save(user=user, status=Review.PENDING)
 
-        return Response(
-            CommentSerializer(comment).data,
-            status=status.HTTP_201_CREATED
-        )
-
-
-class MyCommentsView(ListAPIView):
-    """
-    The current user's own comments, regardless of moderation status,
-    so they can see whether something they posted is still pending
-    or was rejected.
-    """
-    permission_classes = [IsAuthenticated]
-    serializer_class = CommentSerializer
-    pagination_class = CommentPagination
-
-    def get_queryset(self):
-        return get_comments_for_user(self.request.user)
+        return Response(ReviewSerializer(review).data, status=status.HTTP_201_CREATED)
