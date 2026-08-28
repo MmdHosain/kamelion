@@ -1,90 +1,57 @@
 from rest_framework.views import APIView
-from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 from rest_framework import status
+from django.utils import timezone
 
-from .models import Comment
-from .pagination import CommentPagination
-from .serializers import AdminCommentSerializer
-from .selectors import get_all_comments
-from .services import approve_comment, reject_comment
+from .models import Review
+from .serializers import AdminReviewSerializer, ReviewApprovalSerializer
 
 
-class AdminCommentListView(ListAPIView):
+class AdminReviewListView(APIView):
     """
-    List every comment for moderation, newest first.
-    Optional ?status=pending|approved|rejected to filter the queue.
-    """
-    serializer_class = AdminCommentSerializer
-    pagination_class = CommentPagination
-    permission_classes = [IsAdminUser]
-
-    def get_queryset(self):
-        status_filter = self.request.query_params.get("status")
-        return get_all_comments(status=status_filter)
-
-
-class AdminCommentApproveView(APIView):
-    """
-    Approve a pending comment so it appears on the public feed.
+    GET /api/admin/reviews/ - Admin.
+    Returns all reviews, including pending/unapproved ones, as a plain
+    array (matches the public endpoint's un-paginated shape).
     """
     permission_classes = [IsAdminUser]
 
-    def post(self, request, pk):
-        try:
-            comment = Comment.objects.get(pk=pk)
-        except Comment.DoesNotExist:
-            return Response(
-                {"detail": "Comment not found"},
-                status=status.HTTP_404_NOT_FOUND
-            )
-
-        try:
-            comment = approve_comment(comment, request.user)
-        except ValueError as e:
-            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-        return Response(AdminCommentSerializer(comment).data)
+    def get(self, request):
+        reviews = Review.objects.all()
+        return Response(AdminReviewSerializer(reviews, many=True).data)
 
 
-class AdminCommentRejectView(APIView):
+class AdminReviewApprovalView(APIView):
     """
-    Reject a comment so it will never show up on the public feed.
+    PATCH /api/admin/reviews/<id>/ - Payload: {"approved": true/false}
     """
     permission_classes = [IsAdminUser]
 
-    def post(self, request, pk):
+    def patch(self, request, pk):
         try:
-            comment = Comment.objects.get(pk=pk)
-        except Comment.DoesNotExist:
-            return Response(
-                {"detail": "Comment not found"},
-                status=status.HTTP_404_NOT_FOUND
-            )
+            review = Review.objects.get(pk=pk)
+        except Review.DoesNotExist:
+            return Response({"detail": "Review not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        try:
-            comment = reject_comment(comment, request.user)
-        except ValueError as e:
-            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        serializer = ReviewApprovalSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
-        return Response(AdminCommentSerializer(comment).data)
+        review.status = Review.APPROVED if serializer.validated_data["approved"] else Review.REJECTED
+        review.reviewed_by = request.user
+        review.reviewed_at = timezone.now()
+        review.save(update_fields=["status", "reviewed_by", "reviewed_at", "updated_at"])
 
-
-class AdminCommentDeleteView(APIView):
-    """
-    Permanently delete a comment (e.g. spam) regardless of its status.
-    """
-    permission_classes = [IsAdminUser]
+        return Response(AdminReviewSerializer(review).data)
 
     def delete(self, request, pk):
+        """
+        DELETE /api/admin/reviews/<id>/ - handled on the
+        same view since both share the <id>/ path.
+        """
         try:
-            comment = Comment.objects.get(pk=pk)
-        except Comment.DoesNotExist:
-            return Response(
-                {"detail": "Comment not found"},
-                status=status.HTTP_404_NOT_FOUND
-            )
+            review = Review.objects.get(pk=pk)
+        except Review.DoesNotExist:
+            return Response({"detail": "Review not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        comment.delete()
+        review.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)

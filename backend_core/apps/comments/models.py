@@ -2,8 +2,7 @@ from django.conf import settings
 from django.db import models
 
 
-class Comment(models.Model):
-    # Moderation status values
+class Review(models.Model):
     PENDING = "pending"
     APPROVED = "approved"
     REJECTED = "rejected"
@@ -14,36 +13,35 @@ class Comment(models.Model):
         (REJECTED, "Rejected"),
     ]
 
-    # Author of the comment - must be an authenticated user
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="comments"
-    )
-
-    # Comment body
+    name = models.CharField(max_length=100)
+    email = models.EmailField(blank=True, default="")
     text = models.TextField(max_length=2000)
 
-    # Moderation state - every comment starts out pending
-    status = models.CharField(
-        max_length=20,
-        choices=STATUS_CHOICES,
-        default=PENDING
+    # Required (1-5) - reviews always have a rating; there's no more
+    # ratingless "comment" variant, so this is no longer nullable.
+    rating = models.PositiveSmallIntegerField()
+
+    # Optional link if the reviewer happened to be logged in - not
+    # required, since public submission doesn't need an account.
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="reviews",
     )
 
-    # Admin who approved/rejected this comment (if any)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=PENDING)
+
     reviewed_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name="reviewed_comments"
+        related_name="reviewed_reviews",
     )
-
-    # When the comment was reviewed (approved or rejected)
     reviewed_at = models.DateTimeField(null=True, blank=True)
 
-    # Audit timestamps
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -51,9 +49,11 @@ class Comment(models.Model):
         ordering = ["-created_at"]
         indexes = [
             models.Index(fields=["status"]),
-            models.Index(fields=["status", "created_at"]),
-            models.Index(fields=["user"]),
         ]
 
     def __str__(self):
-        return f"Comment #{self.pk} by {self.user_id} ({self.status})"
+        return f"Review #{self.pk} by {self.name} ({self.rating}\u2605, {self.status})"
+
+    @property
+    def approved(self):
+        return self.status == self.APPROVED

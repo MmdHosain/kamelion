@@ -142,6 +142,32 @@ class PatientProfile(models.Model):
         return f"Profile for {self.user.phone_number}"
 
 
+class PatientNote(models.Model):
+    """
+    A clinical note an admin/doctor attaches to a patient's record.
+    """
+    patient = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="clinical_notes",
+    )
+    author = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="authored_notes",
+    )
+    text = models.TextField(max_length=4000)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"Note for {self.patient.phone_number} @ {self.created_at:%Y-%m-%d}"
+
+
 class OTPRequest(models.Model):
     """
     Stores OTP codes sent to users for login verification.
