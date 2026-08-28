@@ -1,10 +1,31 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ChevronDown, LogIn, LogOut, Menu, X, Sparkles, Shield, User } from 'lucide-react';
+import {
+  ChevronDown,
+  LogIn,
+  LogOut,
+  Menu,
+  X,
+  Sparkles,
+  Shield,
+  User,
+  Film,
+  Stethoscope,
+  BookOpen,
+  HelpCircle,
+  Phone,
+  Home,
+  UserCheck,
+  Scissors,
+  HeartPulse,
+} from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 
 const Header = ({ onOpenAppointment, onOpenChat }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mobileServicesOpen, setMobileServicesOpen] = useState(false);
+  const [mobileResourcesOpen, setMobileResourcesOpen] = useState(false);
+
   const location = useLocation();
   const { isAuthenticated, user, logout } = useAuth();
 
@@ -92,16 +113,18 @@ const Header = ({ onOpenAppointment, onOpenChat }) => {
               <Link
                 to="/resources"
                 className={`hover:text-primary transition-colors text-sm font-bold flex items-center gap-1 ${
-                  location.pathname === '/resources' || location.pathname === '/faq' ? 'text-primary' : 'text-textDark/80'
+                  ['/resources', '/faq', '/video', '/videos'].includes(location.pathname)
+                    ? 'text-primary'
+                    : 'text-textDark/80'
                 }`}
               >
                 راهنما و منابع
                 <ChevronDown className="w-3.5 h-3.5 transition-transform group-hover:rotate-180" />
               </Link>
-              <div className="hidden group-hover:block absolute top-full right-0 bg-white/95 backdrop-blur-xl border border-primary/20 min-w-[200px] rounded-2xl py-2 mt-2 shadow-2xl transition-all before:content-[''] before:absolute before:-top-3 before:left-0 before:right-0 before:h-3">
+              <div className="hidden group-hover:block absolute top-full right-0 bg-white/95 backdrop-blur-xl border border-primary/20 min-w-[210px] rounded-2xl py-2 mt-2 shadow-2xl transition-all before:content-[''] before:absolute before:-top-3 before:left-0 before:right-0 before:h-3">
                 <button
                   onClick={() => onOpenChat && onOpenChat()}
-                  className="w-full text-right px-5 py-2.5 text-sm text-textDark/85 hover:text-primary hover:bg-bgLight/50 transition-colors flex justify-between items-center font-medium"
+                  className="w-full text-right px-5 py-2.5 text-sm text-textDark/85 hover:text-primary hover:bg-bgLight/50 transition-colors flex justify-between items-center font-medium cursor-pointer"
                 >
                   <span className="flex items-center gap-1.5">
                     <Sparkles className="w-3.5 h-3.5 text-primary" />
@@ -112,16 +135,22 @@ const Header = ({ onOpenAppointment, onOpenChat }) => {
                   </span>
                 </button>
                 <Link
-                  to="/faq"
+                  to="/video"
                   className="block px-5 py-2.5 text-sm text-textDark/85 hover:text-primary hover:bg-bgLight/50 transition-colors font-medium"
                 >
-                  سوالات متداول
+                  ویدیوهای آموزشی
                 </Link>
                 <Link
                   to="/resources"
                   className="block px-5 py-2.5 text-sm text-textDark/85 hover:text-primary hover:bg-bgLight/50 transition-colors font-medium"
                 >
                   مطالب آموزشی و مقالات
+                </Link>
+                <Link
+                  to="/faq"
+                  className="block px-5 py-2.5 text-sm text-textDark/85 hover:text-primary hover:bg-bgLight/50 transition-colors font-medium"
+                >
+                  سوالات متداول
                 </Link>
               </div>
             </div>
@@ -174,7 +203,7 @@ const Header = ({ onOpenAppointment, onOpenChat }) => {
 
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden text-textDark/80 hover:text-primary p-1.5 rounded-xl hover:bg-white/50 transition-colors"
+            className="lg:hidden text-textDark/80 hover:text-primary p-1.5 rounded-xl hover:bg-white/50 transition-colors cursor-pointer"
             aria-label="Toggle Menu"
           >
             {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -182,58 +211,176 @@ const Header = ({ onOpenAppointment, onOpenChat }) => {
         </div>
       </header>
 
-      {/* Mobile Navigation Drawer */}
+      {/* Mobile Navigation Backdrop */}
+      {mobileMenuOpen && (
+        <div
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 lg:hidden animate-fadeSlide"
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
+
+      {/* Mobile Navigation Drawer with Expandable Dropdowns */}
       {mobileMenuOpen && (
         <nav
           id="mobile-nav"
-          className="fixed top-[70px] left-4 right-4 z-50 bg-gradient-to-br from-bgLight/95 to-bgDark/95 backdrop-blur-2xl border border-primary/25 rounded-3xl p-6 flex flex-col gap-4 shadow-2xl animate-fadeSlide lg:hidden"
+          className="fixed top-[68px] left-3 right-3 max-h-[85vh] overflow-y-auto chat-scroll z-50 bg-gradient-to-br from-bgLight/98 via-white/98 to-bgDark/98 backdrop-blur-2xl border border-primary/25 rounded-3xl p-5 flex flex-col gap-3 shadow-2xl animate-fadeSlide lg:hidden"
         >
+          {/* خانه */}
           <Link
             to="/"
             onClick={handleNavClick}
-            className="text-textDark/90 hover:text-primary font-bold text-base border-b border-primary/10 pb-2.5 transition-colors"
+            className={`flex items-center gap-2.5 font-bold text-sm py-2.5 px-3 rounded-2xl transition-all ${
+              location.pathname === '/'
+                ? 'bg-primary text-white shadow-sm'
+                : 'text-textDark/90 hover:bg-primary/10 hover:text-primary'
+            }`}
           >
-            خانه
+            <Home size={17} />
+            <span>خانه</span>
           </Link>
+
+          {/* آشنایی با پزشک */}
           <Link
             to="/about"
             onClick={handleNavClick}
-            className="text-textDark/90 hover:text-primary font-bold text-base border-b border-primary/10 pb-2.5 transition-colors"
+            className={`flex items-center gap-2.5 font-bold text-sm py-2.5 px-3 rounded-2xl transition-all ${
+              location.pathname === '/about'
+                ? 'bg-primary text-white shadow-sm'
+                : 'text-textDark/90 hover:bg-primary/10 hover:text-primary'
+            }`}
           >
-            آشنایی با پزشک
+            <UserCheck size={17} />
+            <span>آشنایی با پزشک</span>
           </Link>
-          <Link
-            to="/services"
-            onClick={handleNavClick}
-            className="text-textDark/90 hover:text-primary font-bold text-base border-b border-primary/10 pb-2.5 transition-colors"
-          >
-            خدمات درمانی و زیبایی
-          </Link>
-          <Link
-            to="/faq"
-            onClick={handleNavClick}
-            className="text-textDark/90 hover:text-primary font-bold text-base border-b border-primary/10 pb-2.5 transition-colors"
-          >
-            سوالات متداول
-          </Link>
-          <Link
-            to="/resources"
-            onClick={handleNavClick}
-            className="text-textDark/90 hover:text-primary font-bold text-base border-b border-primary/10 pb-2.5 transition-colors"
-          >
-            مطالب آموزشی
-          </Link>
+
+          {/* خدمات (Accordion Dropdown) */}
+          <div className="rounded-2xl border border-primary/15 overflow-hidden bg-white/60">
+            <button
+              type="button"
+              onClick={() => setMobileServicesOpen(!mobileServicesOpen)}
+              className="w-full flex items-center justify-between font-bold text-sm py-2.5 px-3 text-textDark hover:bg-primary/5 transition-colors cursor-pointer"
+            >
+              <span className="flex items-center gap-2.5 text-primary-dark">
+                <Stethoscope size={17} className="text-primary" />
+                <span>خدمات درمانی و زیبایی</span>
+              </span>
+              <ChevronDown
+                size={16}
+                className={`text-primary transition-transform duration-300 ${
+                  mobileServicesOpen ? 'rotate-180' : ''
+                }`}
+              />
+            </button>
+
+            {mobileServicesOpen && (
+              <div className="flex flex-col gap-1 py-2 px-2.5 border-t border-primary/10 bg-primary/5 animate-fadeSlide">
+                <Link
+                  to="/services"
+                  onClick={handleNavClick}
+                  className="flex items-center justify-between text-xs font-bold py-2 px-3 rounded-xl text-textDark hover:bg-white hover:text-primary transition-all"
+                >
+                  <span>همه خدمات کلینیک</span>
+                </Link>
+                <Link
+                  to="/services#beauty"
+                  onClick={handleNavClick}
+                  className="flex items-center gap-2 text-xs font-medium py-2 px-3 rounded-xl text-textDark/80 hover:bg-white hover:text-primary transition-all"
+                >
+                  <Scissors size={14} className="text-primary/70" />
+                  <span>جراحی‌های زیبایی پستان (ماموپلاستی، پروتز، لیفت)</span>
+                </Link>
+                <Link
+                  to="/services#treatment"
+                  onClick={handleNavClick}
+                  className="flex items-center gap-2 text-xs font-medium py-2 px-3 rounded-xl text-textDark/80 hover:bg-white hover:text-primary transition-all"
+                >
+                  <HeartPulse size={14} className="text-primary/70" />
+                  <span>درمان بیماری‌ها و انکولوژی پستان</span>
+                </Link>
+              </div>
+            )}
+          </div>
+
+          {/* راهنما و منابع (Accordion Dropdown) */}
+          <div className="rounded-2xl border border-primary/15 overflow-hidden bg-white/60">
+            <button
+              type="button"
+              onClick={() => setMobileResourcesOpen(!mobileResourcesOpen)}
+              className="w-full flex items-center justify-between font-bold text-sm py-2.5 px-3 text-textDark hover:bg-primary/5 transition-colors cursor-pointer"
+            >
+              <span className="flex items-center gap-2.5 text-primary-dark">
+                <BookOpen size={17} className="text-primary" />
+                <span>راهنما و منابع</span>
+              </span>
+              <ChevronDown
+                size={16}
+                className={`text-primary transition-transform duration-300 ${
+                  mobileResourcesOpen ? 'rotate-180' : ''
+                }`}
+              />
+            </button>
+
+            {mobileResourcesOpen && (
+              <div className="flex flex-col gap-1 py-2 px-2.5 border-t border-primary/10 bg-primary/5 animate-fadeSlide">
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleNavClick();
+                    if (onOpenChat) onOpenChat();
+                  }}
+                  className="w-full flex items-center justify-between text-xs font-bold py-2 px-3 rounded-xl text-textDark hover:bg-white hover:text-primary transition-all cursor-pointer"
+                >
+                  <span className="flex items-center gap-2">
+                    <Sparkles size={14} className="text-primary" />
+                    <span>دستیار هوشمند تریاژ</span>
+                  </span>
+                  <span className="bg-primary text-white text-[10px] px-2 py-0.5 rounded-full font-bold">
+                    جدید
+                  </span>
+                </button>
+                <Link
+                  to="/video"
+                  onClick={handleNavClick}
+                  className="flex items-center gap-2 text-xs font-medium py-2 px-3 rounded-xl text-textDark/80 hover:bg-white hover:text-primary transition-all"
+                >
+                  <Film size={14} className="text-primary/70" />
+                  <span>ویدیوهای آموزشی و بالینی</span>
+                </Link>
+                <Link
+                  to="/resources"
+                  onClick={handleNavClick}
+                  className="flex items-center gap-2 text-xs font-medium py-2 px-3 rounded-xl text-textDark/80 hover:bg-white hover:text-primary transition-all"
+                >
+                  <BookOpen size={14} className="text-primary/70" />
+                  <span>مطالب آموزشی و مقالات</span>
+                </Link>
+                <Link
+                  to="/faq"
+                  onClick={handleNavClick}
+                  className="flex items-center gap-2 text-xs font-medium py-2 px-3 rounded-xl text-textDark/80 hover:bg-white hover:text-primary transition-all"
+                >
+                  <HelpCircle size={14} className="text-primary/70" />
+                  <span>سوالات متداول</span>
+                </Link>
+              </div>
+            )}
+          </div>
+
+          {/* ارتباط با ما */}
           <a
             href="#contact"
             onClick={handleNavClick}
-            className="text-textDark/90 hover:text-primary font-bold text-base border-b border-primary/10 pb-2.5 transition-colors"
+            className="flex items-center gap-2.5 font-bold text-sm py-2.5 px-3 rounded-2xl text-textDark/90 hover:bg-primary/10 hover:text-primary transition-all"
           >
-            ارتباط با ما
+            <Phone size={17} />
+            <span>ارتباط با ما</span>
           </a>
 
+          {/* Auth session in drawer */}
           {isAuthenticated && (
-            <div className="flex items-center justify-between border-t border-primary/15 pt-3">
-              <span className="text-xs font-bold text-textDark">
+            <div className="flex items-center justify-between border-t border-primary/15 pt-3 mt-1">
+              <span className="text-xs font-bold text-textDark flex items-center gap-1.5">
+                <User size={15} className="text-primary" />
                 {user?.full_name || user?.phone_number}
               </span>
               <button
@@ -241,21 +388,22 @@ const Header = ({ onOpenAppointment, onOpenChat }) => {
                   handleNavClick();
                   logout();
                 }}
-                className="text-xs font-bold text-red-600 bg-red-50 px-3 py-1.5 rounded-xl"
+                className="text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-xl cursor-pointer transition-colors"
               >
                 خروج از حساب
               </button>
             </div>
           )}
 
+          {/* CTA Book Online */}
           <button
             onClick={() => {
               handleNavClick();
               if (onOpenAppointment) onOpenAppointment();
             }}
-            className="bg-primary hover:bg-primary-dark text-white font-bold py-3 rounded-2xl transition-all shadow-md mt-1"
+            className="bg-primary hover:bg-primary-dark text-white font-bold py-3 px-4 rounded-2xl transition-all shadow-md shadow-primary/25 mt-2 flex items-center justify-center gap-2 cursor-pointer"
           >
-            درخواست نوبت آنلاین
+            <span>درخواست نوبت آنلاین</span>
           </button>
         </nav>
       )}
@@ -264,3 +412,4 @@ const Header = ({ onOpenAppointment, onOpenChat }) => {
 };
 
 export default Header;
+

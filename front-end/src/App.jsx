@@ -84,6 +84,7 @@ const App = () => {
         />
         <Route path="/resources" element={<ResourcesPage />} />
         <Route path="/video" element={<VideoPage />} />
+        <Route path="/videos" element={<VideoPage />} />
 
         <Route path="/admin/login" element={<AdminLogin />} />
 

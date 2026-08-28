@@ -1,19 +1,11 @@
 // src/components/ui/AppointmentModal.jsx
 import React, { useState, useEffect, useCallback } from 'react';
-import { DayPicker } from 'react-day-picker';
-import 'react-day-picker/dist/style.css';
 import { X, Calendar, Clock, CheckCircle2, AlertCircle, Loader2, Sparkles, AlertTriangle } from 'lucide-react';
+import JalaliCalendar from './JalaliCalendar';
 import { getAvailableSlots, bookSlot } from '../../api/reservationService';
 import { useAuth } from '../../hooks/useAuth';
 import { getApiErrorMessage } from '../../utils/errorUtils';
-
-const formatDateForApi = (date) => {
-  if (!date) return '';
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-};
+import { formatDateForApi, formatJalaliDisplay } from '../../utils/jalaliDateUtils';
 
 const normalizeSlotStatus = (status) => {
   if (!status) return 'available';
@@ -236,23 +228,20 @@ export default function AppointmentModal({ open, onClose }) {
             {/* 2-Columns Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               
-              {/* Column 1: Date Picker */}
+              {/* Column 1: Shamsi Date Picker */}
               <div className="bg-white/80 border border-primary/25 rounded-3xl p-4 sm:p-5 flex flex-col items-center shadow-sm">
                 <div className="w-full flex items-center justify-between border-b border-primary/15 pb-3 mb-4">
                   <span className="text-xs font-bold text-primary flex items-center gap-1.5">
                     <span className="w-5 h-5 rounded-full bg-primary text-white text-[10px] font-black flex items-center justify-center">۱</span>
-                    انتخاب روز مراجعه
+                    انتخاب روز مراجعه (تقویم شمسی)
                   </span>
                   <span className="text-[11px] text-textDark/50 font-medium">جمعه‌ها تعطیل است</span>
                 </div>
 
-                <DayPicker
-                  mode="single"
-                  selected={selectedDate}
+                <JalaliCalendar
+                  selectedDate={selectedDate}
                   onSelect={handleDayClick}
-                  disabled={isUnavailable}
-                  className="rdp-custom"
-                  numberOfMonths={1}
+                  isDateDisabled={isUnavailable}
                 />
               </div>
 
@@ -266,11 +255,7 @@ export default function AppointmentModal({ open, onClose }) {
                     </span>
                     {selectedDate && (
                       <span className="text-xs font-bold text-primary-dark bg-primary/10 px-2.5 py-1 rounded-lg">
-                        {selectedDate.toLocaleDateString('fa-IR', {
-                          weekday: 'short',
-                          day: 'numeric',
-                          month: 'short',
-                        })}
+                        {formatJalaliDisplay(selectedDate, true)}
                       </span>
                     )}
                   </div>
@@ -348,7 +333,7 @@ export default function AppointmentModal({ open, onClose }) {
                       زمان انتخابی شما:
                     </span>
                     <span className="font-black text-primary">
-                      ساعت {selectedTime} — {selectedDate.toLocaleDateString('fa-IR', { day: 'numeric', month: 'long' })}
+                      ساعت {selectedTime} — {formatJalaliDisplay(selectedDate, true)}
                     </span>
                   </div>
                 )}
@@ -391,3 +376,4 @@ export default function AppointmentModal({ open, onClose }) {
     </div>
   );
 }
+

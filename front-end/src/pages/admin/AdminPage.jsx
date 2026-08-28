@@ -7,6 +7,7 @@ import AppointmentsAvailability from './AppointmentsAvailability';
 import PatientsList from '../../components/admin/patients/PatientsList';
 import AdminSettings from './AdminSettings';
 import AdminComments from './AdminComments';
+import AdminVideos from './AdminVideos';
 import ReservedTimes from './ReservedTimes';
 import ChatProfiles from './ChatProfiles';
 
@@ -16,6 +17,7 @@ const AdminPage = () => {
       <Routes>
         <Route index element={<Navigate to="appointments" replace />} />
         <Route path="appointments" element={<AppointmentsAvailability />} /> 
+        <Route path="videos" element={<AdminVideos />} />
         <Route path="patients" element={<PatientsList />} />
         <Route path="comments" element={<AdminComments />} />
         <Route path="stats" element={<AdminDashboard />} />
@@ -28,3 +30,4 @@ const AdminPage = () => {
 };
 
 export default AdminPage;
+
