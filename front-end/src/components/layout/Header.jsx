@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ChevronDown, LogIn, Menu, X, Sparkles } from 'lucide-react';
+import { ChevronDown, LogIn, LogOut, Menu, X, Sparkles, Shield, User } from 'lucide-react';
+import { useAuth } from '../../hooks/useAuth';
 
 const Header = ({ onOpenAppointment, onOpenChat }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const { isAuthenticated, user, logout } = useAuth();
+
+  const isAdmin = user?.role === 'admin' || user?.is_staff === true || user?.is_superuser === true;
 
   const handleNavClick = () => {
     setMobileMenuOpen(false);
@@ -132,13 +136,41 @@ const Header = ({ onOpenAppointment, onOpenChat }) => {
         </div>
 
         <div className="flex items-center gap-3">
-          <Link
-            to="/admin/login"
-            className="flex items-center gap-2 bg-white/70 hover:bg-white border border-primary/20 text-primary text-xs md:text-sm font-bold py-2 px-4 md:px-5 rounded-full transition-all hover:-translate-y-0.5 shadow-sm"
-          >
-            <LogIn className="w-4 h-4" />
-            <span>ورود ادمین</span>
-          </Link>
+          {isAuthenticated ? (
+            <div className="flex items-center gap-2">
+              {isAdmin ? (
+                <Link
+                  to="/admin/appointments"
+                  className="flex items-center gap-1.5 bg-primary/10 hover:bg-primary hover:text-white border border-primary/30 text-primary text-xs md:text-sm font-bold py-2 px-3.5 md:px-4 rounded-full transition-all shadow-sm"
+                >
+                  <Shield className="w-4 h-4" />
+                  <span>پنل مدیریت</span>
+                </Link>
+              ) : (
+                <div className="flex items-center gap-1.5 bg-white/70 border border-primary/20 text-textDark text-xs font-bold py-1.5 px-3 rounded-full shadow-sm">
+                  <User className="w-3.5 h-3.5 text-primary" />
+                  <span>{user?.full_name || user?.phone_number || 'حساب کاربری'}</span>
+                </div>
+              )}
+
+              <button
+                onClick={logout}
+                title="خروج از حساب"
+                className="flex items-center gap-1 bg-red-50 hover:bg-red-500 hover:text-white text-red-600 border border-red-200 text-xs font-bold py-2 px-3 rounded-full transition-all cursor-pointer shadow-sm"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">خروج</span>
+              </button>
+            </div>
+          ) : (
+            <Link
+              to="/admin/login"
+              className="flex items-center gap-2 bg-white/70 hover:bg-white border border-primary/20 text-primary text-xs md:text-sm font-bold py-2 px-4 md:px-5 rounded-full transition-all hover:-translate-y-0.5 shadow-sm"
+            >
+              <LogIn className="w-4 h-4" />
+              <span>ورود ادمین</span>
+            </Link>
+          )}
 
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -198,6 +230,24 @@ const Header = ({ onOpenAppointment, onOpenChat }) => {
           >
             ارتباط با ما
           </a>
+
+          {isAuthenticated && (
+            <div className="flex items-center justify-between border-t border-primary/15 pt-3">
+              <span className="text-xs font-bold text-textDark">
+                {user?.full_name || user?.phone_number}
+              </span>
+              <button
+                onClick={() => {
+                  handleNavClick();
+                  logout();
+                }}
+                className="text-xs font-bold text-red-600 bg-red-50 px-3 py-1.5 rounded-xl"
+              >
+                خروج از حساب
+              </button>
+            </div>
+          )}
+
           <button
             onClick={() => {
               handleNavClick();

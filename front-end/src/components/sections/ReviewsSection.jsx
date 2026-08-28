@@ -13,14 +13,20 @@ import {
 import { useCommentsStore } from '../../store/commentsStore';
 
 const ReviewsSection = () => {
-  const { comments, addComment } = useCommentsStore();
+  const { comments, addComment, fetchPublicComments } = useCommentsStore();
   const [formData, setFormData] = useState({ name: '', email: '', text: '', rating: 5 });
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRating, setSelectedRating] = useState('all');
 
   const approvedComments = comments.filter((c) => c.approved !== false);
+
+  // Fetch live reviews from backend on mount
+  useEffect(() => {
+    fetchPublicComments();
+  }, [fetchPublicComments]);
 
   // Close modal on ESC key and prevent body scroll
   useEffect(() => {
@@ -43,17 +49,22 @@ const ReviewsSection = () => {
     };
   }, [isModalOpen]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.text.trim()) return;
+    if (!formData.text.trim() || isSubmitting) return;
 
-    addComment(formData);
-    setSubmitted(true);
-    setFormData({ name: '', email: '', text: '', rating: 5 });
+    setIsSubmitting(true);
+    try {
+      await addComment(formData);
+      setSubmitted(true);
+      setFormData({ name: '', email: '', text: '', rating: 5 });
 
-    setTimeout(() => {
-      setSubmitted(false);
-    }, 4000);
+      setTimeout(() => {
+        setSubmitted(false);
+      }, 4000);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Filtered comments for modal
@@ -207,10 +218,11 @@ const ReviewsSection = () => {
 
               <button
                 type="submit"
-                className="bg-primary hover:bg-primary-dark text-white font-bold py-3 px-8 rounded-full transition-all shadow-[0_8px_20px_-6px_rgba(231,84,128,0.6)] hover:shadow-[0_12px_24px_-6px_rgba(186,45,99,0.8)] hover:-translate-y-0.5 flex items-center gap-2 text-sm cursor-pointer"
+                disabled={isSubmitting}
+                className="bg-primary hover:bg-primary-dark text-white font-bold py-3 px-8 rounded-full transition-all shadow-[0_8px_20px_-6px_rgba(231,84,128,0.6)] hover:shadow-[0_12px_24px_-6px_rgba(186,45,99,0.8)] hover:-translate-y-0.5 flex items-center gap-2 text-sm cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 <Send className="w-4 h-4 ml-1" />
-                ارسال نظر
+                {isSubmitting ? 'در حال ثبت...' : 'ارسال نظر'}
               </button>
             </div>
           </>

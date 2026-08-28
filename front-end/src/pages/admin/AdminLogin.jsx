@@ -12,7 +12,7 @@ const AdminLogin = () => {
   const [password, setPassword] = useState('');
   const [localError, setLocalError] = useState('');
 
-  const from = location.state?.from?.pathname || '/admin';
+  const from = location.state?.from?.pathname || '/admin/appointments';
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -30,7 +30,7 @@ const AdminLogin = () => {
         return;
       }
 
-      navigate(from, { replace: true });
+      navigate(from === '/admin/login' ? '/admin/appointments' : from, { replace: true });
     } catch (err) {
       setLocalError(
         err?.response?.data?.detail ||

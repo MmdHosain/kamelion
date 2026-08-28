@@ -1,7 +1,8 @@
 // src/components/admin/patients/PatientsList.jsx
-import React, { useState, useMemo } from 'react';
-import { Search, Users, Eye, Phone, Calendar, ArrowUpDown, ChevronLeft, ChevronRight } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Search, Users, Eye, Phone, Calendar, ArrowUpDown, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import PatientDetailModal from './PatientDetailModal';
+import { adminApi } from '../../../api/admin';
 
 const mockPatients = [
   {
@@ -44,11 +45,44 @@ const formatDate = (iso) => {
 };
 
 export default function PatientsList() {
-  const [patients] = useState(mockPatients);
+  const [patients, setPatients] = useState(mockPatients);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [selectedPatient, setSelectedPatient] = useState(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    adminApi
+      .getPatients()
+      .then((data) => {
+        if (!isMounted) return;
+        if (Array.isArray(data) && data.length > 0) {
+          const formatted = data.map((p) => ({
+            id: String(p.id),
+            fullName: p.full_name || p.fullName || 'بیمار',
+            phoneNumber: p.phone_number || p.phoneNumber || '—',
+            lastAppointment: p.last_appointment || p.lastAppointment || null,
+            notes: Array.isArray(p.notes) ? p.notes : [],
+            aiProfile: p.ai_profile || p.aiProfile || {},
+            appointments: Array.isArray(p.appointments) ? p.appointments : [],
+          }));
+          setPatients(formatted);
+        }
+      })
+      .catch(() => {
+        // Keep mock fallback
+      })
+      .finally(() => {
+        if (isMounted) setIsLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const filteredPatients = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
@@ -78,6 +112,7 @@ export default function PatientsList() {
           <h1 className="text-xl md:text-2xl font-black text-primary flex items-center gap-2.5">
             <Users className="w-6 h-6" />
             لیست پرونده‌های بیماران
+            {isLoading && <Loader2 className="w-4 h-4 animate-spin text-primary" />}
           </h1>
           <p className="text-xs md:text-sm text-textDark/70 font-medium mt-0.5">
             مشاهده سوابق ویزیت، پرونده تریاژ و شرح حال بالینی بیماران

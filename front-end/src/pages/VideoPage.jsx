@@ -1,26 +1,61 @@
+import React, { useState, useEffect } from "react";
+import { videoService } from "../api/videoService";
+
+const DEFAULT_VIDEOS = [
+  {
+    id: 1,
+    type: "iframe",
+    src: "https://www.youtube.com/embed/VIDEO_ID",
+    title: "ویدیو معرفی خدمات",
+  },
+  {
+    id: 2,
+    type: "video",
+    src: "/videos/-3071497865228685730.mp4",
+    title: "خطرات ماموگرافی چیست؟",
+  },
+  {
+    id: 3,
+    type: "video",
+    src: "/videos/7537779331744502783.mp4",
+    title: "آیا افراد با سابقه سرطان پستان می‌توانند باردار شوند؟",
+  },
+  {
+    id: 4,
+    type: "video",
+    src: "/videos/-9054488578247146232.mp4",
+    title: "پروتز",
+  },
+];
+
 export default function VideoPage({ onBack }) {
-  const videos = [
-    {
-      type: "iframe",
-      src: "https://www.youtube.com/embed/VIDEO_ID",
-      title: "ویدیو معرفی خدمات",
-    },
-    {
-      type: "video",
-      src: "/videos/-3071497865228685730.mp4",
-      title: "خطرات ماموگرافی چیست؟",
-    },
-    {
-      type: "video",
-      src: "/videos/7537779331744502783.mp4",
-      title: "آیا افراد با سابقه سرطان پستان می‌توانند باردار شوند؟",
-    },
-    {
-      type: "video",
-      src: "/videos/-9054488578247146232.mp4",
-      title: "پروتز",
-    },
-  ];
+  const [videos, setVideos] = useState(DEFAULT_VIDEOS);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    videoService
+      .getVideos()
+      .then((data) => {
+        if (!isMounted) return;
+        if (Array.isArray(data) && data.length > 0) {
+          const formatted = data.map((v, i) => ({
+            id: v.id || i,
+            type: v.type || (v.src && v.src.includes('embed') ? 'iframe' : 'video'),
+            src: v.src || v.url || v.video_url || '',
+            title: v.title || 'ویدیو آموزشی',
+          }));
+          setVideos(formatted);
+        }
+      })
+      .catch(() => {
+        // Fallback to DEFAULT_VIDEOS
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   return (
     <div className="min-h-screen bg-lightText text-primary px-6 py-12 dir-rtl">

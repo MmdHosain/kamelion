@@ -33,9 +33,6 @@ export const useAuth = () => {
       let name = '';
       let type = 'login';
 
-      // پشتیبانی از امضای قدیمی:
-      // (phone, 'login')
-      // (phone, name, 'signup')
       if (args.length === 2) {
         [phone, type] = args;
       } else if (args.length === 3) {
@@ -55,12 +52,10 @@ export const useAuth = () => {
         otpSession: response?.otpSession || response?.otp_session || null,
       });
 
-      // برای AuthModal جدید
       if (typeof setAuthStep === 'function') {
         setAuthStep('otp');
       }
 
-      // برای سازگاری با state قدیمی
       if (typeof setOtpModalOpen === 'function') {
         setOtpModalOpen(true);
       }
@@ -87,15 +82,14 @@ export const useAuth = () => {
       const response = await authService.verifyOtp(
         tempAuthData.phone,
         code,
-        tempAuthData.type || 'login'
+        tempAuthData.type || 'login',
+        tempAuthData.name || null
       );
 
-      // اگر بک‌اند user را نداد، تلاش کن از /auth/me بگیری
       let resolvedUser = response.user;
 
       if (!resolvedUser && response.accessToken) {
         try {
-          // موقتاً token را ذخیره کن تا /me کار کند
           if (typeof useAuthStore.getState().setTokens === 'function') {
             useAuthStore.getState().setTokens(response.accessToken, response.refreshToken);
           }
@@ -122,7 +116,7 @@ export const useAuth = () => {
         user: resolvedUser,
       };
     } catch (err) {
-      setError(err?.response?.data?.message || 'کد تایید نامعتبر است');
+      setError(err?.response?.data?.error || err?.response?.data?.message || 'کد تایید نامعتبر است');
       throw err;
     } finally {
       setLoading(false);
@@ -134,7 +128,7 @@ export const useAuth = () => {
     try {
       await authService.logout();
     } finally {
-      await storeLogout();
+      storeLogout();
       setLoading(false);
     }
   };
@@ -170,10 +164,10 @@ export const useAuth = () => {
         user: resolvedUser,
       };
     } catch (err) {
-const msg =
-  err?.response?.data?.detail ||
-  err?.response?.data?.message ||
-  'Admin login failed';
+      const msg =
+        err?.response?.data?.detail ||
+        err?.response?.data?.message ||
+        'ورود با نام کاربری یا کلمه عبور وارد شده امکان‌پذیر نیست';
       setError(msg);
       throw err;
     } finally {

@@ -31,11 +31,15 @@ const App = () => {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin');
 
-  const { activeTheme } = useThemeStore();
+  const { activeTheme, fetchTheme } = useThemeStore();
   const [openAppointment, setOpenAppointment] = useState(false);
   const [openChat, setOpenChat] = useState(false);
 
-  // Initialize theme and scroll fade observer
+  // Sync theme with server on mount and apply to DOM
+  useEffect(() => {
+    fetchTheme();
+  }, [fetchTheme]);
+
   useEffect(() => {
     applyThemeToDom(activeTheme);
   }, [activeTheme]);

@@ -17,6 +17,7 @@ import {
   Minimize2,
   Maximize2
 } from 'lucide-react';
+import { chatService } from '../../api/chatService';
 
 const QUICK_PROMPTS = [
   { text: 'درد یا خونریزی شدید دارم', icon: AlertTriangle, isUrgent: true },
@@ -34,15 +35,17 @@ const ROTATING_PLACEHOLDERS = [
   'علت ترشحات یا تغییر شکل سینه...',
 ];
 
+const INITIAL_BOT_MESSAGES = [
+  {
+    id: 1,
+    sender: 'bot',
+    text: 'سلام! من دستیار هوشمند تریاژ مطب دکتر معشوری هستم. لطفاً دلیل مراجعه، علائم یا سوال خود را بنویسید تا شما را راهنمایی کنم.',
+    time: 'اکنون',
+  },
+];
+
 const FloatingChatWidget = ({ isOpen, onToggle, onOpenAppointment }) => {
-  const [messages, setMessages] = useState([
-    {
-      id: 1,
-      sender: 'bot',
-      text: 'سلام! من دستیار هوشمند تریاژ مطب دکتر معشوری هستم. لطفاً دلیل مراجعه، علائم یا سوال خود را بنویسید تا شما را راهنمایی کنم.',
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    },
-  ]);
+  const [messages, setMessages] = useState(INITIAL_BOT_MESSAGES);
   const [floatingInput, setFloatingInput] = useState('');
   const [modalInput, setModalInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -70,101 +73,133 @@ const FloatingChatWidget = ({ isOpen, onToggle, onOpenAppointment }) => {
     }
   }, [messages, isTyping, isOpen]);
 
-  const handleSendMessage = (textToSend) => {
-    const text = (textToSend || floatingInput || modalInput).trim();
-    if (!text) return;
+  const handleSendMessage = React.useCallback(
+    async (textToSend) => {
+      const text = (textToSend || floatingInput || modalInput).trim();
+      if (!text) return;
 
-    // Add user message
-    const userMsg = {
-      id: Date.now(),
-      sender: 'user',
-      text,
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    };
+      const currentTime = new Intl.DateTimeFormat('fa-IR', {
+        hour: '2-digit',
+        minute: '2-digit',
+      }).format(new Date());
 
-    setMessages((prev) => [...prev, userMsg]);
-    setFloatingInput('');
-    setModalInput('');
+      // Add user message
+      const userMsg = {
+        id: performance.now(),
+        sender: 'user',
+        text,
+        time: currentTime,
+      };
 
-    // Ensure modal opens immediately
-    if (!isOpen && onToggle) {
-      onToggle();
-    }
+      setMessages((prev) => [...prev, userMsg]);
+      setFloatingInput('');
+      setModalInput('');
 
-    setIsTyping(true);
-
-    setTimeout(() => {
-      setIsTyping(false);
-      const lower = text.toLowerCase();
-
-      if (
-        lower.includes('خونریزی') ||
-        lower.includes('درد شدید') ||
-        lower.includes('اورژانس') ||
-        lower.includes('عفونت حاد') ||
-        lower.includes('تب بالا') ||
-        lower.includes('ترشح خونی')
-      ) {
-        const emergencyCode = `EMG-${Math.floor(1000 + Math.random() * 9000)}`;
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: Date.now() + 1,
-            sender: 'bot',
-            text: 'بر اساس علائم وارد شده، وضعیت شما فوریتی و نیازمند بررسی سریع ارزیابی شد. لطفاً بدون اتلاف وقت با خط اورژانس مطب تماس گرفته و کد تریاژ زیر را اعلام فرمایید:',
-            isEmergency: true,
-            emergencyCode,
-            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          },
-        ]);
-      } else if (
-        lower.includes('توده') ||
-        lower.includes('سونوگرافی') ||
-        lower.includes('ماموگرافی') ||
-        lower.includes('درد') ||
-        lower.includes('چکاپ')
-      ) {
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: Date.now() + 1,
-            sender: 'bot',
-            text: 'بررسی ضایعات و توده‌های پستان نیازمند معاینه بالینی دقیق و مشاهده گرافی‌ها توسط سرکار خانم دکتر معشوری است. پیشنهاد می‌شود وقت ویزیت رزرو فرموده و تمامی مدارک قبلی را همراه داشته باشید.',
-            showBookingAction: true,
-            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          },
-        ]);
-      } else if (
-        lower.includes('پروتز') ||
-        lower.includes('لیفت') ||
-        lower.includes('ماموپلاستی') ||
-        lower.includes('زیبایی') ||
-        lower.includes('هزینه')
-      ) {
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: Date.now() + 1,
-            sender: 'bot',
-            text: 'در جراحی‌های زیبایی و ماموپلاستی، بررسی بافت سینه و تقارن در جلسه مشاوره اولیه حضوری انجام می‌پذیرد تا مناسب‌ترین متد جراحی تعیین شود.',
-            showBookingAction: true,
-            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          },
-        ]);
-      } else {
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: Date.now() + 1,
-            sender: 'bot',
-            text: 'پیام شما دریافت شد. در صورت نیاز به راهنمایی بیشتر می‌توانید با شماره تلفن مطب تماس گرفته یا نوبت حضوری دریافت فرمایید.',
-            showBookingAction: true,
-            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          },
-        ]);
+      // Ensure modal opens immediately
+      if (!isOpen && onToggle) {
+        onToggle();
       }
-    }, 1100);
-  };
+
+      setIsTyping(true);
+
+      try {
+        // 1. Attempt live API response
+        const apiResponse = await chatService.sendMessage(text);
+        if (apiResponse?.reply) {
+          setIsTyping(false);
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: performance.now() + 1,
+              sender: 'bot',
+              text: apiResponse.reply,
+              isEmergency: apiResponse.isEmergency,
+              emergencyCode: apiResponse.emergencyCode,
+              showBookingAction: apiResponse.showBookingAction,
+              time: currentTime,
+            },
+          ]);
+          return;
+        }
+      } catch {
+        // API call failed or offline — continue to local rule engine fallback
+      }
+
+      // 2. Local heuristic rule engine fallback
+      setTimeout(() => {
+        setIsTyping(false);
+        const lower = text.toLowerCase();
+
+        if (
+          lower.includes('خونریزی') ||
+          lower.includes('درد شدید') ||
+          lower.includes('اورژانس') ||
+          lower.includes('عفونت حاد') ||
+          lower.includes('تب بالا') ||
+          lower.includes('ترشح خونی')
+        ) {
+          const emergencyCode = `EMG-${Math.floor(1000 + Math.random() * 9000)}`;
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: performance.now() + 1,
+              sender: 'bot',
+              text: 'بر اساس علائم وارد شده، وضعیت شما فوریتی و نیازمند بررسی سریع ارزیابی شد. لطفاً بدون اتلاف وقت با خط اورژانس مطب تماس گرفته و کد تریاژ زیر را اعلام فرمایید:',
+              isEmergency: true,
+              emergencyCode,
+              time: currentTime,
+            },
+          ]);
+        } else if (
+          lower.includes('توده') ||
+          lower.includes('سونوگرافی') ||
+          lower.includes('ماموگرافی') ||
+          lower.includes('درد') ||
+          lower.includes('چکاپ')
+        ) {
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: performance.now() + 1,
+              sender: 'bot',
+              text: 'بررسی ضایعات و توده‌های پستان نیازمند معاینه بالینی دقیق و مشاهده گرافی‌ها توسط سرکار خانم دکتر معشوری است. پیشنهاد می‌شود وقت ویزیت رزرو فرموده و تمامی مدارک قبلی را همراه داشته باشید.',
+              showBookingAction: true,
+              time: currentTime,
+            },
+          ]);
+        } else if (
+          lower.includes('پروتز') ||
+          lower.includes('لیفت') ||
+          lower.includes('ماموپلاستی') ||
+          lower.includes('زیبایی') ||
+          lower.includes('هزینه')
+        ) {
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: performance.now() + 1,
+              sender: 'bot',
+              text: 'در جراحی‌های زیبایی و ماموپلاستی، بررسی بافت سینه و تقارن در جلسه مشاوره اولیه حضوری انجام می‌پذیرد تا مناسب‌ترین متد جراحی تعیین شود.',
+              showBookingAction: true,
+              time: currentTime,
+            },
+          ]);
+        } else {
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: performance.now() + 1,
+              sender: 'bot',
+              text: 'پیام شما دریافت شد. در صورت نیاز به راهنمایی بیشتر می‌توانید با شماره تلفن مطب تماس گرفته یا نوبت حضوری دریافت فرمایید.',
+              showBookingAction: true,
+              time: currentTime,
+            },
+          ]);
+        }
+      }, 800);
+    },
+    [floatingInput, modalInput, isOpen, onToggle]
+  );
 
   const copyCode = (code) => {
     navigator.clipboard.writeText(code);

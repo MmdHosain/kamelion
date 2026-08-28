@@ -1,9 +1,13 @@
-import React from 'react';
-import { MessageSquare, Star, Trash2, CheckCircle2, XCircle } from 'lucide-react';
+import React, { useEffect } from 'react';
+import { MessageSquare, Star, Trash2, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
 import { useCommentsStore } from '../../store/commentsStore';
 
 const AdminComments = () => {
-  const { comments, deleteComment, toggleApprove } = useCommentsStore();
+  const { comments, deleteComment, toggleApprove, fetchAdminComments, isLoading } = useCommentsStore();
+
+  useEffect(() => {
+    fetchAdminComments();
+  }, [fetchAdminComments]);
 
   return (
     <div className="space-y-6">
@@ -17,8 +21,9 @@ const AdminComments = () => {
             مشاهده، تایید و انتشار، یا حذف نظرات ثبت‌شده در سایت.
           </p>
         </div>
-        <div className="bg-primary/10 border border-primary/25 px-4 py-2 rounded-2xl text-primary font-bold text-sm">
-          تعداد کل: {comments.length} نظر
+        <div className="bg-primary/10 border border-primary/25 px-4 py-2 rounded-2xl text-primary font-bold text-sm flex items-center gap-2">
+          {isLoading && <Loader2 className="w-4 h-4 animate-spin text-primary" />}
+          <span>تعداد کل: {comments.length} نظر</span>
         </div>
       </div>
 

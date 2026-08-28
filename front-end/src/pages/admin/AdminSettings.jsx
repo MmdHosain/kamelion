@@ -1,20 +1,37 @@
-import React from 'react';
-import { Palette, CheckCircle2, Sparkles, Shield } from 'lucide-react';
+import React, { useState } from 'react';
+import { Palette, CheckCircle2, Sparkles, Shield, Loader2 } from 'lucide-react';
 import { useThemeStore, THEMES } from '../../store/themeStore';
 
 const AdminSettings = () => {
-  const { activeTheme, setTheme } = useThemeStore();
+  const { activeTheme, saveTheme, isLoading } = useThemeStore();
+  const [saveSuccess, setSaveSuccess] = useState(false);
+
+  const handleSelectTheme = async (key) => {
+    const ok = await saveTheme(key);
+    if (ok) {
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
+    }
+  };
 
   return (
     <div className="space-y-8">
-      <div className="border-b border-primary/20 pb-4">
-        <h1 className="text-2xl font-black text-primary flex items-center gap-2.5">
-          <Palette className="w-7 h-7" />
-          تنظیمات تم و ظاهر سراسری سایت
-        </h1>
-        <p className="text-sm text-textDark/70 mt-1 font-medium">
-          تم انتخاب‌شده در این بخش، بلافاصله برای تمامی کاربران و بازدیدکنندگان وب‌سایت اعمال خواهد شد.
-        </p>
+      <div className="border-b border-primary/20 pb-4 flex flex-col sm:flex-row justify-between sm:items-center gap-2">
+        <div>
+          <h1 className="text-2xl font-black text-primary flex items-center gap-2.5">
+            <Palette className="w-7 h-7" />
+            تنظیمات تم و ظاهر سراسری سایت
+          </h1>
+          <p className="text-sm text-textDark/70 mt-1 font-medium">
+            تم انتخاب‌شده در این بخش، بلافاصله برای تمامی کاربران و بازدیدکنندگان وب‌سایت اعمال خواهد شد.
+          </p>
+        </div>
+        {saveSuccess && (
+          <div className="bg-emerald-50 text-emerald-700 border border-emerald-200 px-4 py-2 rounded-2xl text-xs font-bold flex items-center gap-2 animate-fadeIn">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+            <span>تم سراسری در سرور با موفقیت ذخیره شد</span>
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -24,7 +41,7 @@ const AdminSettings = () => {
           return (
             <div
               key={key}
-              onClick={() => setTheme(key)}
+              onClick={() => handleSelectTheme(key)}
               className={`p-6 rounded-3xl border-2 transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between shadow-sm ${
                 isSelected
                   ? 'border-primary bg-primary/10 shadow-lg scale-102 ring-2 ring-primary/30'
@@ -71,13 +88,23 @@ const AdminSettings = () => {
 
               <button
                 type="button"
-                className={`mt-6 w-full py-2.5 rounded-xl font-bold text-xs transition-all ${
+                disabled={isLoading}
+                className={`mt-6 w-full py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 ${
                   isSelected
                     ? 'bg-primary text-white shadow-md'
                     : 'bg-white/80 text-primary border border-primary/20 hover:bg-primary hover:text-white'
                 }`}
               >
-                {isSelected ? 'تم فعال فعلی' : 'انتخاب و فعال‌سازی این تم'}
+                {isLoading && isSelected ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>در حال ذخیره...</span>
+                  </>
+                ) : isSelected ? (
+                  'تم فعال فعلی'
+                ) : (
+                  'انتخاب و فعال‌سازی این تم'
+                )}
               </button>
             </div>
           );

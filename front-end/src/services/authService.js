@@ -13,30 +13,27 @@ const normalizeAuthResponse = (data) => {
   };
 };
 
-const USE_REQUEST_OTP_ENDPOINT = true;
-
 const authService = {
   sendOtp: async (phone, type = 'login', name = null) => {
-      const endpoint = USE_REQUEST_OTP_ENDPOINT ? '/auth/request-otp' : '/auth/send-otp';
+    const response = await apiClient.post('/auth/request-otp', {
+      phone_number: phone,
+      type,
+      name,
+    });
 
-      const response = await apiClient.post(endpoint, {
-        phone_number: phone,
-        type,
-        name,
-      });
+    return response.data;
+  },
 
-      return response.data;
-    },
+  verifyOtp: async (phone, code, type = 'login', name = null) => {
+    const response = await apiClient.post('/auth/verify-otp', {
+      phone_number: phone,
+      code,
+      type,
+      full_name: name || undefined,
+    });
 
-  verifyOtp: async (phone, code, type = 'login') => {
-      const response = await apiClient.post('/auth/verify-otp', {
-        phone_number: phone,
-        code,
-        type,
-      });
-
-      return normalizeAuthResponse(response.data);
-    },
+    return normalizeAuthResponse(response.data);
+  },
 
   refreshToken: async (refreshToken) => {
     const response = await apiClient.post('/auth/refresh', {
@@ -55,8 +52,7 @@ const authService = {
     try {
       const response = await apiClient.post('/auth/logout');
       return response.data;
-    } catch (error) {
-      console.error('Logout API error:', error);
+    } catch {
       return null;
     }
   },

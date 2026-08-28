@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   LineChart,
   Line,
@@ -10,9 +10,10 @@ import {
   Pie,
   Cell
 } from 'recharts';
-import { TrendingUp, Users, Calendar, CheckCircle2, DollarSign, Activity } from 'lucide-react';
+import { TrendingUp, Users, Calendar, CheckCircle2, DollarSign, Activity, Loader2 } from 'lucide-react';
+import { adminApi } from '../../api/admin';
 
-const statisticsData = [
+const DEFAULT_STATISTICS_DATA = [
   { month: 'فروردین', value: 120 },
   { month: 'اردیبهشت', value: 185 },
   { month: 'خرداد', value: 160 },
@@ -21,27 +22,71 @@ const statisticsData = [
   { month: 'شهریور', value: 290 },
 ];
 
-const earningData = [
+const DEFAULT_EARNING_DATA = [
   { name: 'ویزیت‌های انجام شده', value: 78 },
   { name: 'در انتظار ویزیت', value: 22 },
 ];
 
-const calendarDays = Array.from({ length: 30 }, (_, i) => i + 1);
-const today = 12;
-const eventDay = 18;
-
 const AdminDashboard = () => {
+  const [stats, setStats] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    adminApi
+      .getDashboardStats()
+      .then((data) => {
+        if (!isMounted) return;
+        if (data) {
+          setStats(data);
+        }
+      })
+      .catch(() => {
+        // Fallback to default
+      })
+      .finally(() => {
+        if (isMounted) setIsLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const totalVisits = stats?.total_visits || stats?.totalVisits || 290;
+  const visitsGrowth = stats?.visits_growth || stats?.visitsGrowth || '۲۴٪ رشد نسبت به ماه قبل';
+  const onlineBookings = stats?.online_bookings || stats?.onlineBookings || 184;
+  const attendanceRate = stats?.attendance_rate || stats?.attendanceRate || '۹۴٪';
+  const triageChats = stats?.triage_chats || stats?.triageChats || 420;
+  const emergencyCodes = stats?.emergency_codes || stats?.emergencyCodes || 32;
+  const satisfactionRating = stats?.satisfaction_rating || stats?.satisfactionRating || '۴.۹ / ۵.۰';
+  const reviewsCount = stats?.reviews_count || stats?.reviewsCount || 120;
+
+  const chartData = stats?.monthly_trends || stats?.monthlyTrends || DEFAULT_STATISTICS_DATA;
+  const statusPieData = stats?.status_breakdown || stats?.statusBreakdown || DEFAULT_EARNING_DATA;
+  const completedPercentage = statusPieData[0]?.value || 78;
+  const pendingPercentage = statusPieData[1]?.value || (100 - completedPercentage);
+
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="border-b border-primary/15 pb-4">
-        <h1 className="text-xl md:text-2xl font-black text-primary flex items-center gap-2.5">
-          <Activity className="w-6 h-6" />
-          داشبورد آمار و گزارشات کلینیک
-        </h1>
-        <p className="text-xs md:text-sm text-textDark/70 font-medium mt-0.5">
-          نمای کلی مراجعات، ویزیت‌های موفق، بازدهی سیستم تریاژ و آمار ماهانه
-        </p>
+      <div className="border-b border-primary/15 pb-4 flex justify-between items-center">
+        <div>
+          <h1 className="text-xl md:text-2xl font-black text-primary flex items-center gap-2.5">
+            <Activity className="w-6 h-6" />
+            داشبورد آمار و گزارشات کلینیک
+          </h1>
+          <p className="text-xs md:text-sm text-textDark/70 font-medium mt-0.5">
+            نمای کلی مراجعات، ویزیت‌های موفق، بازدهی سیستم تریاژ و آمار ماهانه
+          </p>
+        </div>
+        {isLoading && (
+          <div className="flex items-center gap-2 text-primary text-xs font-bold bg-primary/10 px-3 py-1.5 rounded-xl">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            <span>در حال به‌روزرسانی آمار...</span>
+          </div>
+        )}
       </div>
 
       {/* Top Stat Cards */}
@@ -53,10 +98,10 @@ const AdminDashboard = () => {
               <Users size={18} />
             </div>
           </div>
-          <div className="text-2xl font-black text-primary mb-1">۲۹۰ بیمار</div>
+          <div className="text-2xl font-black text-primary mb-1">{typeof totalVisits === 'number' ? `${totalVisits} بیمار` : totalVisits}</div>
           <span className="text-[11px] font-bold text-emerald-600 flex items-center gap-1">
             <TrendingUp size={12} />
-            ۲۴٪ رشد نسبت به ماه قبل
+            {visitsGrowth}
           </span>
         </div>
 
@@ -67,10 +112,10 @@ const AdminDashboard = () => {
               <Calendar size={18} />
             </div>
           </div>
-          <div className="text-2xl font-black text-primary mb-1">۱۸۴ نوبت</div>
+          <div className="text-2xl font-black text-primary mb-1">{typeof onlineBookings === 'number' ? `${onlineBookings} نوبت` : onlineBookings}</div>
           <span className="text-[11px] font-bold text-emerald-600 flex items-center gap-1">
             <CheckCircle2 size={12} />
-            ۹۴٪ درصد حضور موفق
+            {attendanceRate} درصد حضور موفق
           </span>
         </div>
 
@@ -81,8 +126,8 @@ const AdminDashboard = () => {
               <Activity size={18} />
             </div>
           </div>
-          <div className="text-2xl font-black text-primary mb-1">۴۲۰ گفتگو</div>
-          <span className="text-[11px] font-bold text-primary">۳۲ کد اورژانس صادرشده</span>
+          <div className="text-2xl font-black text-primary mb-1">{typeof triageChats === 'number' ? `${triageChats} گفتگو` : triageChats}</div>
+          <span className="text-[11px] font-bold text-primary">{typeof emergencyCodes === 'number' ? `${emergencyCodes} کد اورژانس صادرشده` : emergencyCodes}</span>
         </div>
 
         <div className="bg-white/85 border border-primary/20 rounded-3xl p-5 shadow-sm">
@@ -92,8 +137,8 @@ const AdminDashboard = () => {
               <CheckCircle2 size={18} />
             </div>
           </div>
-          <div className="text-2xl font-black text-primary mb-1">۴.۹ / ۵.۰</div>
-          <span className="text-[11px] font-bold text-amber-500">بر اساس ۱۲۰ دیدگاه</span>
+          <div className="text-2xl font-black text-primary mb-1">{satisfactionRating}</div>
+          <span className="text-[11px] font-bold text-amber-500">بر اساس {reviewsCount} دیدگاه</span>
         </div>
       </div>
 
@@ -113,7 +158,7 @@ const AdminDashboard = () => {
 
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={statisticsData}>
+              <LineChart data={chartData}>
                 <XAxis dataKey="month" stroke="#4a2545" tick={{ fill: '#4a2545', fontSize: 12 }} />
                 <YAxis stroke="#4a2545" tick={{ fill: '#4a2545', fontSize: 12 }} />
                 <Tooltip
@@ -146,7 +191,7 @@ const AdminDashboard = () => {
           <div className="h-44 flex items-center justify-center relative">
             <PieChart width={160} height={160}>
               <Pie
-                data={earningData}
+                data={statusPieData}
                 innerRadius={55}
                 outerRadius={75}
                 dataKey="value"
@@ -156,7 +201,7 @@ const AdminDashboard = () => {
               </Pie>
             </PieChart>
             <div className="absolute text-xl font-black text-primary">
-              ۷۸٪
+              {completedPercentage}٪
             </div>
           </div>
 
@@ -166,14 +211,14 @@ const AdminDashboard = () => {
                 <span className="w-3 h-3 rounded-full bg-[#e75480]"></span>
                 ویزیت‌های تکمیل‌شده
               </span>
-              <span className="font-mono text-primary font-black">۷۸٪</span>
+              <span className="font-mono text-primary font-black">{completedPercentage}٪</span>
             </div>
             <div className="flex justify-between items-center pt-1">
               <span className="flex items-center gap-2">
                 <span className="w-3 h-3 rounded-full bg-[#f7d6e4]"></span>
                 در انتظار ویزیت
               </span>
-              <span className="font-mono text-textDark/60 font-black">۲۲٪</span>
+              <span className="font-mono text-textDark/60 font-black">{pendingPercentage}٪</span>
             </div>
           </div>
         </div>

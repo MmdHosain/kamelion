@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { settingsService } from '../api/settingsService';
 
 export const THEMES = {
   pink: {
@@ -45,13 +46,49 @@ export const applyThemeToDom = (themeKey) => {
   root.style.setProperty('--text-dark', theme.textDark);
 };
 
-export const useThemeStore = create((set) => ({
+export const useThemeStore = create((set, get) => ({
   activeTheme: getInitialTheme(),
+  isLoading: false,
+
+  fetchTheme: async () => {
+    try {
+      const serverTheme = await settingsService.getTheme();
+      if (serverTheme && THEMES[serverTheme]) {
+        localStorage.setItem('site_theme', serverTheme);
+        applyThemeToDom(serverTheme);
+        set({ activeTheme: serverTheme });
+        return serverTheme;
+      }
+    } catch {
+      // Keep local fallback
+    }
+    return get().activeTheme;
+  },
+
   setTheme: (themeKey) => {
     if (THEMES[themeKey]) {
       localStorage.setItem('site_theme', themeKey);
       applyThemeToDom(themeKey);
       set({ activeTheme: themeKey });
+    }
+  },
+
+  saveTheme: async (themeKey) => {
+    if (!THEMES[themeKey]) return false;
+    set({ isLoading: true });
+    // Apply optimistically locally
+    localStorage.setItem('site_theme', themeKey);
+    applyThemeToDom(themeKey);
+    set({ activeTheme: themeKey });
+
+    try {
+      await settingsService.saveTheme(themeKey);
+      set({ isLoading: false });
+      return true;
+    } catch {
+      // Backend may be offline or returned error; local state remains applied
+      set({ isLoading: false });
+      return false;
     }
   },
 }));

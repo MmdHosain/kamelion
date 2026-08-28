@@ -1,33 +1,77 @@
 import apiClient from '../lib/apiClient';
 
+const extractResults = (data) => {
+  if (Array.isArray(data)) return data;
+  if (Array.isArray(data?.results)) return data.results;
+  return [];
+};
+
 export const adminApi = {
   getDashboardStats: async () => {
-    const response = await apiClient.get('/admin/stats');
-    return response.data;
+    try {
+      const response = await apiClient.get('/admin/stats');
+      return response.data;
+    } catch {
+      return null;
+    }
   },
 
   getReservations: async (filters = {}) => {
-    const response = await apiClient.get('/admin/reservations', { params: filters });
+    const response = await apiClient.get('/admin/appointments/', { params: filters });
     return response.data;
   },
 
+  getReservedTimes: async () => {
+    let nextUrl = '/admin/appointments/';
+    const items = [];
+    while (nextUrl) {
+      const response = await apiClient.get(nextUrl);
+      const data = response.data;
+      items.push(...extractResults(data));
+      nextUrl = data?.next || null;
+    }
+    return items;
+  },
+
   updateReservation: async (id, data) => {
-    const response = await apiClient.put(`/admin/reservations/${id}`, data);
+    const response = await apiClient.put(`/admin/appointments/${id}/`, data);
     return response.data;
   },
 
   deleteReservation: async (id) => {
-    const response = await apiClient.delete(`/admin/reservations/${id}`);
+    const response = await apiClient.delete(`/admin/appointments/${id}/`);
     return response.data;
   },
 
   getChatProfiles: async () => {
-    const response = await apiClient.get('/admin/chat-profiles');
+    try {
+      const response = await apiClient.get('/admin/chat-profiles');
+      return extractResults(response.data);
+    } catch {
+      return [];
+    }
+  },
+
+  getPatients: async (params = {}) => {
+    try {
+      const response = await apiClient.get('/admin/patients/', { params });
+      return extractResults(response.data);
+    } catch {
+      return [];
+    }
+  },
+
+  getPatientDetail: async (patientId) => {
+    const response = await apiClient.get(`/admin/patients/${patientId}/`);
     return response.data;
   },
 
   addPatientNote: async (patientId, text) => {
-    const response = await apiClient.post(`/admin/patients/${patientId}/notes/`, { text });
+    const response = await apiClient.post(`/admin/patients/${patientId}/notes/`, {
+      text,
+      note: text,
+    });
     return response.data;
   },
 };
+

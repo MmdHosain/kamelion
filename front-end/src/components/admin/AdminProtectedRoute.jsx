@@ -5,17 +5,13 @@ const AdminProtectedRoute = () => {
   const location = useLocation();
   const { accessToken, isAuthenticated, user } = useAuthStore();
 
-  if (!accessToken || !isAuthenticated) {
-    return <Navigate to="/admin/login" replace state={{ from: location }} />;
-  }
-
   const isAdmin =
     user?.role === 'admin' ||
     user?.is_staff === true ||
     user?.is_superuser === true;
 
-  if (!isAdmin) {
-    return <Navigate to="/" replace />;
+  if (!accessToken || !isAuthenticated || !isAdmin) {
+    return <Navigate to="/admin/login" replace state={{ from: location }} />;
   }
 
   return <Outlet />;
