@@ -8,11 +8,8 @@ from .pagination import AppointmentPagination
 from .serializers import (
     SlotQuerySerializer,
     BookAppointmentSerializer,
-    AppointmentSerializer,
-    AdminAppointmentListSerializer,
-    AdminAppointmentCreateSerializer,
+    AppointmentSerializer
 )
-
 
 from .services import (
     get_available_slots,
