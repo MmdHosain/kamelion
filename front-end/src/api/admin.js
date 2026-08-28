@@ -25,4 +25,9 @@ export const adminApi = {
     const response = await apiClient.get('/admin/chat-profiles');
     return response.data;
   },
+
+  addPatientNote: async (patientId, text) => {
+    const response = await apiClient.post(`/admin/patients/${patientId}/notes/`, { text });
+    return response.data;
+  },
 };

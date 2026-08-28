@@ -2,34 +2,36 @@ import {
   LayoutDashboard,
   Users,
   Calendar,
-  FileText,
-  Settings
+  MessageSquare,
+  Palette,
+  Clock,
+  UserCheck
 } from 'lucide-react';
 
 export const ADMIN_NAV_ITEMS = [
   {
-    label: 'Appointments',
+    label: 'نوبت‌ها و زمان‌بندی',
     icon: Calendar,
     path: '/admin/appointments'
   },
   {
-    label: 'Patients',
+    label: 'بیماران',
     icon: Users,
     path: '/admin/patients'
   },
   {
-    label: 'Stats',
+    label: 'نظرات مراجعین',
+    icon: MessageSquare,
+    path: '/admin/comments'
+  },
+  {
+    label: 'آمار و گزارشات',
     icon: LayoutDashboard,
     path: '/admin/stats'
   },
   {
-    label: 'Reports',
-    icon: FileText,
-    path: '/admin/reports'
-  },
-  {
-    label: 'Settings',
-    icon: Settings,
+    label: 'تنظیمات تم سایت',
+    icon: Palette,
     path: '/admin/settings'
   }
 ];

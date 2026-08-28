@@ -24,14 +24,14 @@ const ChatProfiles = () => {
           className="bg-white border rounded-xl p-4 flex justify-between"
         >
           <div>
-            <div className="font-medium text-[#2F5D50]">
+            <div className="font-medium text-primary">
               {profile.name}
             </div>
-            <div className="text-sm text-[#6B6E6C]">
+            <div className="text-sm text-mutedText">
               Last message: {profile.lastMessage}
             </div>
           </div>
-          <div className="text-sm text-[#6B6E6C]">
+          <div className="text-sm text-mutedText">
             Messages: {profile.totalMessages}
           </div>
         </div>

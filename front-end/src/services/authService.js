@@ -17,26 +17,26 @@ const USE_REQUEST_OTP_ENDPOINT = true;
 
 const authService = {
   sendOtp: async (phone, type = 'login', name = null) => {
-    const endpoint = USE_REQUEST_OTP_ENDPOINT ? '/auth/request-otp' : '/auth/send-otp';
+      const endpoint = USE_REQUEST_OTP_ENDPOINT ? '/auth/request-otp' : '/auth/send-otp';
 
-    const response = await apiClient.post(endpoint, {
-      phone,
-      type,
-      name,
-    });
+      const response = await apiClient.post(endpoint, {
+        phone_number: phone,
+        type,
+        name,
+      });
 
-    return response.data;
-  },
+      return response.data;
+    },
 
   verifyOtp: async (phone, code, type = 'login') => {
-    const response = await apiClient.post('/auth/verify-otp', {
-      phone,
-      code,
-      type,
-    });
+      const response = await apiClient.post('/auth/verify-otp', {
+        phone_number: phone,
+        code,
+        type,
+      });
 
-    return normalizeAuthResponse(response.data);
-  },
+      return normalizeAuthResponse(response.data);
+    },
 
   refreshToken: async (refreshToken) => {
     const response = await apiClient.post('/auth/refresh', {
@@ -44,6 +44,11 @@ const authService = {
     });
 
     return normalizeAuthResponse(response.data);
+  },
+
+  getCurrentUser: async () => {
+    const response = await apiClient.get('/auth/me');
+    return response.data;
   },
 
   logout: async () => {

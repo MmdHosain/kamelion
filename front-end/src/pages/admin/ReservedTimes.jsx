@@ -23,10 +23,10 @@ const ReservedTimes = () => {
           key={slot.id}
           className="flex justify-between items-center bg-white border rounded-xl p-4"
         >
-          <div className="text-[#2F5D50] font-medium">
+          <div className="text-primary font-medium">
             {slot.date} — {slot.time}
           </div>
-          <div className="text-sm text-[#6B6E6C]">
+          <div className="text-sm text-mutedText">
             {slot.client}
           </div>
         </div>

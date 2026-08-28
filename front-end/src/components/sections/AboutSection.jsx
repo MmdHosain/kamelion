@@ -2,17 +2,17 @@ import React from 'react';
 
 const AboutSection = () => {
   return (
-    <section className="w-full bg-white py-20 border-t border-[#E6C5CC]/30">
+    <section className="w-full bg-white py-20 border-t border-secondary/30">
       <div className="container mx-auto px-4 grid md:grid-cols-2 gap-12 items-center">
         <div>
           <img
             src="/images/IMG_2923.jpeg"
             alt="دکتر نگار معشوری"
-            className="rounded-2xl shadow-xl w-full object-cover border-2 border-[#E6C5CC]/20"
+            className="rounded-2xl shadow-xl w-full object-cover border-2 border-secondary/20"
           />
         </div>
         <div>
-          <h2 className="text-3xl font-bold mb-5 text-[#2F5D50]">
+          <h2 className="text-3xl font-bold mb-5 text-primary">
             رویکرد درمانی دکتر نگار معشوری
           </h2>
           <p className="leading-relaxed mb-6">
@@ -33,7 +33,7 @@ const AboutSection = () => {
               "پیگیری دقیق پس از جراحی"
             ].map((item, i) => (
               <li key={i} className="flex items-start gap-3">
-                <span className="mt-2 w-2 h-2 bg-[#2F5D50] rounded-full flex-shrink-0"></span>
+                <span className="mt-2 w-2 h-2 bg-primary rounded-full flex-shrink-0"></span>
                 <span>{item}</span>
               </li>
             ))}

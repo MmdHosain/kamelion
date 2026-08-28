@@ -7,7 +7,7 @@ export default function SlotButton({ slot, selected, onSelect }) {
 
   const styles = {
     available:
-      'border border-[#2F5D50] text-[#2F5D50] hover:bg-[#2F5D50] hover:text-white',
+      'border border-primary text-primary hover:bg-primary hover:text-white',
     pending:
       'bg-gray-200 text-gray-400 cursor-not-allowed',
     reserved:
@@ -15,7 +15,7 @@ export default function SlotButton({ slot, selected, onSelect }) {
   };
 
   const selectedStyle =
-    'bg-[#2F5D50] text-white';
+    'bg-primary text-white';
 
   return (
     <button

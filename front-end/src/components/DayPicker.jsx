@@ -8,12 +8,12 @@ export default function DayPicker({ days, activeDay, onSelect }) {
           onClick={() => onSelect(d.key)}
           className={`min-w-[120px] p-4 rounded-xl border text-center cursor-pointer transition
             ${activeDay === d.key
-              ? "border-[#2F5D50] bg-[#2F5D50]/5"
-              : "border-gray-200 hover:border-[#2F5D50]/40"}
+              ? "border-primary bg-primary/5"
+              : "border-gray-200 hover:border-primary/40"}
           `}
         >
           <div className="text-sm text-gray-500">{d.label}</div>
-          <div className="font-semibold text-[#2F5D50]">{d.display}</div>
+          <div className="font-semibold text-primary">{d.display}</div>
         </div>
       ))}
     </div>

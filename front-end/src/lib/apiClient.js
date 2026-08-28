@@ -1,9 +1,13 @@
 import axios from 'axios';
 import useAuthStore from '../store/authStore';
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api';
+const envUrl = import.meta.env.VITE_API_URL;
 
-console.log('API BASE_URL:', BASE_URL);
+if (!envUrl) {
+  console.warn("⚠️ WARNING: VITE_API_URL environment variable is missing. Falling back to http://127.0.0.1:8000/api");
+}
+
+const BASE_URL = envUrl || 'http://127.0.0.1:8000/api';
 
 const apiClient = axios.create({
   baseURL: BASE_URL,

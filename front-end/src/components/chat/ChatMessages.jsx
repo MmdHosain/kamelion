@@ -7,8 +7,8 @@ const ChatMessages = ({ messages, onCtaAction, onOpenSignup, onSendMessage }) =>
 
   if (messages.length === 0) {
     return (
-      <div className="h-full flex flex-col items-center justify-center text-[#6B6E6C] text-sm">
-        <div className="bg-[#2F5D50]/10 p-4 rounded-2xl mb-3">
+      <div className="h-full flex flex-col items-center justify-center text-mutedText text-sm">
+        <div className="bg-primary/10 p-4 rounded-2xl mb-3">
           <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 16V8"/>
             <path d="M10 14 8 12"/>

@@ -1,11 +1,10 @@
 // src/App.jsx
-import React, { useState } from 'react';
-import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 
-/* Hooks */
-import { useChat } from './hooks/useChat';
-import { useScrollState } from './hooks/useScrollState';
-import { useAuth } from './hooks/useAuth';
+/* Hooks & Stores */
+import { useScrollFade } from './hooks/useScrollFade';
+import { useThemeStore, applyThemeToDom } from './store/themeStore';
 
 /* Layout */
 import Header from './components/layout/Header';
@@ -13,97 +12,74 @@ import Footer from './components/layout/Footer';
 
 /* Pages */
 import HomePage from './pages/HomePage';
+import AboutPage from './pages/AboutPage';
+import ServicesPage from './pages/ServicesPage';
+import FaqPage from './pages/FaqPage';
+import ResourcesPage from './pages/ResourcesPage';
 import VideoPage from './pages/VideoPage';
-import CommentsPage from './pages/CommentsPage';
+
 import AdminPage from './pages/admin/AdminPage';
 import AdminLogin from './pages/admin/AdminLogin';
-
 import AdminProtectedRoute from './components/admin/AdminProtectedRoute';
 
-/* Chat */
-import ChatContainer from './components/chat/ChatContainer';
-import ResumeButton from './components/chat/ResumeButton';
-import FixedChatInput from './components/ui/FixedChatInput';
-
-/* Modals */
+/* Chat & Modals */
+import FloatingChatWidget from './components/chat/FloatingChatWidget';
 import AppointmentModal from './components/ui/AppointmentModal';
 import AuthModal from './components/ui/AuthModal';
-import useAuthStore from './store/authStore';
-
-const openAuthModal = useAuthStore.getState().openAuthModal;
 
 const App = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-
   const isAdminRoute = location.pathname.startsWith('/admin');
 
-  const {
-    messages,
-    inputValue,
-    setInputValue,
-    heroInput,
-    setHeroInput,
-    chatState,
-    setChatState,
-    handleSendMessage,
-    handleHeroSubmit,
-    handleCtaAction,
-    playScenario,
-    isPlayingScenario
-  } = useChat();
-
-  const {
-    user,
-    accessToken,
-    authModalOpen,
-    handleAuthSubmit,
-    handleVerifyOtp,
-    logout
-  } = useAuth();
-
-  const { scrolled } = useScrollState();
+  const { activeTheme } = useThemeStore();
   const [openAppointment, setOpenAppointment] = useState(false);
+  const [openChat, setOpenChat] = useState(false);
 
+  // Initialize theme and scroll fade observer
+  useEffect(() => {
+    applyThemeToDom(activeTheme);
+  }, [activeTheme]);
 
-  const handleFixedInputSubmit = (textValue) => {
-    if (!textValue.trim()) return;
-    handleSendMessage(textValue);
-    setChatState('maximized');
-    setHeroInput('');
-  };
+  useScrollFade();
 
-  const handlePlayScenario = (scenarioMessages) => {
-    playScenario(scenarioMessages);
-    setChatState('maximized');
-  };
-
-  const handleCtaActionWrapper = (payload) => {
-
-    if (payload?.action === 'open_signup') openAuthModal();
-    if (payload?.action === 'open_login') openAuthModal();
-    if (payload?.action === 'open_appointment') setOpenAppointment(true);
-
-    handleCtaAction(payload, () => setSignupOpen(true));
-  };
-
-  const shouldShowFixedInput = chatState === 'minimized' && messages.length === 0;
-  const shouldShowResumeButton = chatState === 'minimized' && messages.length > 0;
+  // Scroll to top on route change
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
 
   return (
-    <div className="min-h-screen flex flex-col font-sans bg-[#FAFAF8] text-[#6B6E6C] dir-rtl">
+    <div className="min-h-screen flex flex-col font-sans relative">
+      {/* Top Scroll Progress Bar */}
+      <div id="progress"></div>
+
       {!isAdminRoute && (
         <Header
-          scrolled={scrolled}
-          onNavigate={navigate}
           onOpenAppointment={() => setOpenAppointment(true)}
+          onOpenChat={() => setOpenChat(true)}
         />
       )}
 
       <Routes>
-        <Route path="/" element={<HomePage />} />
+        <Route
+          path="/"
+          element={
+            <HomePage
+              onOpenAppointment={() => setOpenAppointment(true)}
+              onOpenChat={() => setOpenChat(true)}
+            />
+          }
+        />
+        <Route path="/about" element={<AboutPage />} />
+        <Route
+          path="/services"
+          element={<ServicesPage onOpenAppointment={() => setOpenAppointment(true)} />}
+        />
+        <Route
+          path="/faq"
+          element={<FaqPage onOpenChat={() => setOpenChat(true)} />}
+        />
+        <Route path="/resources" element={<ResourcesPage />} />
         <Route path="/video" element={<VideoPage />} />
-        <Route path="/comments" element={<CommentsPage />} />
 
         <Route path="/admin/login" element={<AdminLogin />} />
 
@@ -118,38 +94,24 @@ const App = () => {
 
       {!isAdminRoute && (
         <>
-          <FixedChatInput
-            isVisible={shouldShowFixedInput}
-            value={heroInput}
-            onChange={setHeroInput}
-            onSubmit={handleHeroSubmit}
-            onSubmitInput={handleFixedInputSubmit}
-            onPlayScenario={handlePlayScenario}
+          {/* Floating AI Triage FAB in Bottom-Center */}
+          <FloatingChatWidget
+            isOpen={openChat}
+            onToggle={() => setOpenChat(!openChat)}
+            onOpenAppointment={() => {
+              setOpenChat(false);
+              setOpenAppointment(true);
+            }}
           />
 
-          {shouldShowResumeButton && (
-            <ResumeButton onClick={() => setChatState('maximized')} />
-          )}
-
-          <ChatContainer
-            chatState={chatState}
-            messages={messages}
-            inputValue={inputValue}
-            setInputValue={setInputValue}
-            handleSendMessage={handleSendMessage}
-            handleCtaAction={handleCtaActionWrapper}
-            onOpenSignup={() => setSignupOpen(true)}
-            onMinimize={() => setChatState('minimized')}
-            handleFixedInputSubmit={handleFixedInputSubmit}
-          />
-
+          {/* Appointment Booking Modal */}
           <AppointmentModal
             open={openAppointment}
             onClose={() => setOpenAppointment(false)}
           />
 
+          {/* Auth Modal for Login/OTP if required */}
           <AuthModal />
-
         </>
       )}
     </div>
