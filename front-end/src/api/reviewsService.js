@@ -21,11 +21,12 @@ export const reviewsService = {
    * Endpoint: POST /reviews/ (Public)
    */
   submitReview: async (reviewData) => {
+    const trimmedName = reviewData.name?.trim();
     const payload = {
-      name: reviewData.name || 'کاربر گرامی',
-      email: reviewData.email || '',
-      text: reviewData.text,
-      rating: reviewData.rating || 5,
+      name: trimmedName || 'کاربر گرامی',
+      email: reviewData.email?.trim() || '',
+      text: reviewData.text?.trim() || '',
+      rating: Number(reviewData.rating) || 5,
     };
     const response = await apiClient.post('/reviews/', payload);
     return response.data;

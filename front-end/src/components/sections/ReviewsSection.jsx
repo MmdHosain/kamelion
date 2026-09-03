@@ -187,10 +187,9 @@ const ReviewsSection = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <input
             type="text"
-            placeholder="نام و نام خانوادگی"
+            placeholder="نام و نام خانوادگی (اختیاری)"
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            required
             className="bg-white/80 border border-primary/25 p-3.5 rounded-2xl text-textDark text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder-textDark/50 w-full"
           />
           <input
