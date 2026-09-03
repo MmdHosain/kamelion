@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import {
   MessageSquare,
   Star,
@@ -10,6 +11,7 @@ import {
   Clock,
   Filter,
   X,
+  AlertCircle,
 } from 'lucide-react';
 import { useCommentsStore } from '../../store/commentsStore';
 
@@ -27,9 +29,16 @@ const AdminComments = () => {
   const [activeFilter, setActiveFilter] = useState('all'); // 'all' | 'pending' | 'approved'
   const [searchQuery, setSearchQuery] = useState('');
   const [actionLoadingId, setActionLoadingId] = useState(null);
+  const [toast, setToast] = useState(null);
 
   const rawComments = adminComments?.length > 0 ? adminComments : comments;
   const loading = isAdminLoading || isLoading;
+
+  useEffect(() => {
+    if (!toast) return;
+    const timer = setTimeout(() => setToast(null), 4000);
+    return () => clearTimeout(timer);
+  }, [toast]);
 
   useEffect(() => {
     fetchAdminComments();
@@ -67,8 +76,21 @@ const AdminComments = () => {
 
   const handleToggle = async (id) => {
     setActionLoadingId(id);
+    const target = rawComments.find((c) => c.id === id);
+    const willApprove = target ? !target.approved : false;
     try {
       await toggleApprove(id);
+      setToast({
+        type: 'success',
+        message: willApprove
+          ? 'دیدگاه با موفقیت تایید و در سایت منتشر شد.'
+          : 'انتشار دیدگاه در سایت لغو گردید.',
+      });
+    } catch {
+      setToast({
+        type: 'error',
+        message: 'خطا در برقراری ارتباط با سرور. وضعیت دیدگاه تغییر نیافت.',
+      });
     } finally {
       setActionLoadingId(null);
     }
@@ -79,6 +101,15 @@ const AdminComments = () => {
       setActionLoadingId(id);
       try {
         await deleteComment(id);
+        setToast({
+          type: 'success',
+          message: 'دیدگاه با موفقیت حذف گردید.',
+        });
+      } catch {
+        setToast({
+          type: 'error',
+          message: 'خطا در حذف دیدگاه از سرور. دیدگاه بازگردانده شد.',
+        });
       } finally {
         setActionLoadingId(null);
       }
@@ -325,6 +356,41 @@ const AdminComments = () => {
           })}
         </div>
       )}
+      {/* ================= FLOATING TOAST NOTIFICATION (Portal to document.body) ================= */}
+      {toast &&
+        createPortal(
+          <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[1000] max-w-lg w-[92%] sm:w-auto animate-scaleUp pointer-events-auto">
+            <div
+              className={`p-4 sm:px-5 sm:py-3.5 rounded-2xl shadow-2xl backdrop-blur-xl border flex items-center gap-3.5 text-xs sm:text-sm font-medium ${
+                toast.type === 'success'
+                  ? 'bg-slate-900/95 border-emerald-500/50 text-emerald-300 shadow-[0_10px_35px_-5px_rgba(16,185,129,0.35)]'
+                  : 'bg-slate-900/95 border-rose-500/50 text-rose-300 shadow-[0_10px_35px_-5px_rgba(244,63,94,0.35)]'
+              }`}
+            >
+              {toast.type === 'success' ? (
+                <div className="w-7 h-7 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+                  <CheckCircle2 className="w-4 h-4" />
+                </div>
+              ) : (
+                <div className="w-7 h-7 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center shrink-0">
+                  <AlertCircle className="w-4 h-4" />
+                </div>
+              )}
+              <div className="flex-1 leading-relaxed text-white font-medium">
+                {toast.message}
+              </div>
+              <button
+                type="button"
+                onClick={() => setToast(null)}
+                className="text-white/50 hover:text-white p-1 transition-colors cursor-pointer mr-1 shrink-0"
+                aria-label="بستن"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </div>,
+          document.body
+        )}
     </div>
   );
 };

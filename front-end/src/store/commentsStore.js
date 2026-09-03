@@ -161,24 +161,30 @@ export const useCommentsStore = create((set, get) => ({
 
     try {
       await reviewsService.deleteReview(id);
-    } catch {
-      // Backend error - local remains deleted
+    } catch (err) {
+      // Rollback to previous state on server error
+      set({ adminComments: prevAdmin, comments: prevPublic });
+      localStorage.setItem('site_comments', JSON.stringify(prevPublic));
+      throw err;
     }
   },
 
   toggleApprove: async (id) => {
+    const prevAdmin = get().adminComments;
+    const prevPublic = get().comments;
+
     const current =
-      get().adminComments.find((c) => c.id === id) ||
-      get().comments.find((c) => c.id === id);
+      prevAdmin.find((c) => c.id === id) ||
+      prevPublic.find((c) => c.id === id);
 
     if (!current) return;
     const newStatus = !current.approved;
 
-    const updatedAdmin = get().adminComments.map((c) =>
+    const updatedAdmin = prevAdmin.map((c) =>
       c.id === id ? { ...c, approved: newStatus } : c
     );
 
-    let updatedPublic = get().comments;
+    let updatedPublic = prevPublic;
     if (newStatus) {
       // If now approved, add or update in public list
       const exists = updatedPublic.some((c) => c.id === id);
@@ -200,8 +206,11 @@ export const useCommentsStore = create((set, get) => ({
 
     try {
       await reviewsService.updateReviewApproval(id, newStatus);
-    } catch {
-      // Local state preserved
+    } catch (err) {
+      // Rollback to previous state on server error
+      set({ adminComments: prevAdmin, comments: prevPublic });
+      localStorage.setItem('site_comments', JSON.stringify(prevPublic));
+      throw err;
     }
   },
 }));
