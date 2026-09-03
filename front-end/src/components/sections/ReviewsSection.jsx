@@ -184,33 +184,6 @@ const ReviewsSection = () => {
           <h3>ثبت نظر و تجربه شما</h3>
         </div>
 
-        {toast && (
-          <div
-            className={`p-4 rounded-2xl flex items-center justify-between gap-3 text-xs md:text-sm font-medium transition-all ${
-              toast.type === 'success'
-                ? 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-800'
-                : 'bg-rose-500/15 border border-rose-500/30 text-rose-800'
-            }`}
-          >
-            <div className="flex items-center gap-2.5">
-              {toast.type === 'success' ? (
-                <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
-              ) : (
-                <AlertCircle className="w-5 h-5 text-rose-600 shrink-0" />
-              )}
-              <span className="leading-relaxed">{toast.message}</span>
-            </div>
-            <button
-              type="button"
-              onClick={() => setToast(null)}
-              className="opacity-70 hover:opacity-100 p-1 cursor-pointer shrink-0"
-              aria-label="بستن پیام"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-        )}
-
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <input
             type="text"
