@@ -84,18 +84,22 @@ const getStoredComments = () => {
 
 export const useCommentsStore = create((set, get) => ({
   comments: getStoredComments(),
+  adminComments: [],
   isLoading: false,
+  isAdminLoading: false,
   error: null,
 
   fetchPublicComments: async () => {
     set({ isLoading: true, error: null });
     try {
       const data = await reviewsService.getApprovedReviews();
-      if (Array.isArray(data) && data.length > 0) {
+      if (Array.isArray(data)) {
         const formatted = data.map(formatComment);
-        set({ comments: formatted, isLoading: false });
-        localStorage.setItem('site_comments', JSON.stringify(formatted));
-        return formatted;
+        // Fallback to initial mock if backend has no approved reviews yet
+        const finalComments = formatted.length > 0 ? formatted : INITIAL_COMMENTS;
+        set({ comments: finalComments, isLoading: false });
+        localStorage.setItem('site_comments', JSON.stringify(finalComments));
+        return finalComments;
       }
     } catch (err) {
       set({ error: err?.message || 'Failed to load comments', isLoading: false });
@@ -105,58 +109,55 @@ export const useCommentsStore = create((set, get) => ({
   },
 
   fetchAdminComments: async () => {
-    set({ isLoading: true, error: null });
+    set({ isAdminLoading: true, error: null });
     try {
       const data = await reviewsService.getAdminReviews();
-      if (Array.isArray(data) && data.length > 0) {
+      if (Array.isArray(data)) {
         const formatted = data.map(formatComment);
-        set({ comments: formatted, isLoading: false });
+        set({
+          adminComments: formatted,
+          comments: formatted,
+          isAdminLoading: false,
+        });
         return formatted;
       }
     } catch (err) {
-      set({ error: err?.message || 'Failed to load admin comments', isLoading: false });
+      set({ error: err?.message || 'Failed to load admin comments', isAdminLoading: false });
     }
-    set({ isLoading: false });
-    return get().comments;
+    set({ isAdminLoading: false });
+    return get().adminComments;
   },
 
   addComment: async (commentData) => {
-    const newComment = {
-      id: Date.now(),
-      name: commentData.name || 'کاربر گرامی',
-      email: commentData.email || '',
-      date: 'به‌تازگی',
-      avatar: (commentData.name || 'ک').charAt(0),
-      rating: Number(commentData.rating) || 5,
-      text: commentData.text,
-      approved: true,
-    };
+    // Send comment to backend.
+    // New comments are created with status=pending (approved=false) awaiting admin moderation.
+    // We intentionally DO NOT inject this optimistically into the public comments list
+    // to prevent the card from flashing on screen for a few frames before being filtered out.
+    const res = await reviewsService.submitReview(commentData);
 
-    // Optimistic store update
-    const updated = [newComment, ...get().comments];
-    localStorage.setItem('site_comments', JSON.stringify(updated));
-    set({ comments: updated });
-
-    try {
-      const res = await reviewsService.submitReview(commentData);
-      if (res?.id) {
-        const serverComment = formatComment(res);
-        const synced = get().comments.map((c) => (c.id === newComment.id ? serverComment : c));
-        localStorage.setItem('site_comments', JSON.stringify(synced));
-        set({ comments: synced });
+    if (res?.id) {
+      const formatted = formatComment(res);
+      const currentAdmin = get().adminComments;
+      if (Array.isArray(currentAdmin) && currentAdmin.length > 0) {
+        set({ adminComments: [formatted, ...currentAdmin] });
       }
-    } catch {
-      // Keep optimistic local copy
     }
 
-    return true;
+    return res || true;
   },
 
   deleteComment: async (id) => {
-    const previous = get().comments;
-    const updated = previous.filter((c) => c.id !== id);
-    localStorage.setItem('site_comments', JSON.stringify(updated));
-    set({ comments: updated });
+    const prevAdmin = get().adminComments;
+    const prevPublic = get().comments;
+
+    const updatedAdmin = prevAdmin.filter((c) => c.id !== id);
+    const updatedPublic = prevPublic.filter((c) => c.id !== id);
+
+    set({
+      adminComments: updatedAdmin,
+      comments: updatedPublic,
+    });
+    localStorage.setItem('site_comments', JSON.stringify(updatedPublic));
 
     try {
       await reviewsService.deleteReview(id);
@@ -166,14 +167,36 @@ export const useCommentsStore = create((set, get) => ({
   },
 
   toggleApprove: async (id) => {
-    const current = get().comments.find((c) => c.id === id);
-    const newStatus = current ? !current.approved : false;
+    const current =
+      get().adminComments.find((c) => c.id === id) ||
+      get().comments.find((c) => c.id === id);
 
-    const updated = get().comments.map((c) =>
+    if (!current) return;
+    const newStatus = !current.approved;
+
+    const updatedAdmin = get().adminComments.map((c) =>
       c.id === id ? { ...c, approved: newStatus } : c
     );
-    localStorage.setItem('site_comments', JSON.stringify(updated));
-    set({ comments: updated });
+
+    let updatedPublic = get().comments;
+    if (newStatus) {
+      // If now approved, add or update in public list
+      const exists = updatedPublic.some((c) => c.id === id);
+      if (exists) {
+        updatedPublic = updatedPublic.map((c) => (c.id === id ? { ...c, approved: true } : c));
+      } else {
+        updatedPublic = [{ ...current, approved: true }, ...updatedPublic];
+      }
+    } else {
+      // If unapproved/rejected, remove from public list
+      updatedPublic = updatedPublic.filter((c) => c.id !== id);
+    }
+
+    set({
+      adminComments: updatedAdmin,
+      comments: updatedPublic,
+    });
+    localStorage.setItem('site_comments', JSON.stringify(updatedPublic));
 
     try {
       await reviewsService.updateReviewApproval(id, newStatus);
