@@ -4,18 +4,20 @@ import {
   Star,
   Send,
   CheckCircle2,
+  AlertCircle,
   MessageSquareHeart,
   MessagesSquare,
   X,
   Search,
   MessageCircle,
+  Loader2,
 } from 'lucide-react';
 import { useCommentsStore } from '../../store/commentsStore';
 
 const ReviewsSection = () => {
   const { comments, addComment, fetchPublicComments } = useCommentsStore();
   const [formData, setFormData] = useState({ name: '', email: '', text: '', rating: 5 });
-  const [submitted, setSubmitted] = useState(false);
+  const [toast, setToast] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -27,6 +29,15 @@ const ReviewsSection = () => {
   useEffect(() => {
     fetchPublicComments();
   }, [fetchPublicComments]);
+
+  // Auto-dismiss toast after 6 seconds
+  useEffect(() => {
+    if (!toast) return;
+    const timer = setTimeout(() => {
+      setToast(null);
+    }, 6000);
+    return () => clearTimeout(timer);
+  }, [toast]);
 
   // Close modal on ESC key and prevent body scroll
   useEffect(() => {
@@ -56,12 +67,19 @@ const ReviewsSection = () => {
     setIsSubmitting(true);
     try {
       await addComment(formData);
-      setSubmitted(true);
       setFormData({ name: '', email: '', text: '', rating: 5 });
-
-      setTimeout(() => {
-        setSubmitted(false);
-      }, 4000);
+      setToast({
+        type: 'success',
+        message:
+          'نظر شما با موفقیت ثبت شد و پس از بررسی و تایید مدیریت در سایت نمایش داده خواهد شد. با تشکر از همراهی شما!',
+      });
+    } catch (err) {
+      setToast({
+        type: 'error',
+        message:
+          err?.response?.data?.detail ||
+          'متأسفانه در ثبت نظر مشکلی پیش آمد. لطفاً مجدداً تلاش نمایید.',
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -166,67 +184,66 @@ const ReviewsSection = () => {
           <h3>ثبت نظر و تجربه شما</h3>
         </div>
 
-        {submitted ? (
-          <div className="bg-emerald-500/15 border border-emerald-500/30 text-emerald-800 p-4 rounded-2xl flex items-center gap-3 font-bold text-sm">
-            <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
-            <span>نظر شما با موفقیت ثبت گردید و نمایش داده شد. با تشکر از همراهی شما!</span>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <input
+            type="text"
+            placeholder="نام و نام خانوادگی (اختیاری)"
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            className="bg-white/80 border border-primary/25 p-3.5 rounded-2xl text-textDark text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder-textDark/50 w-full"
+          />
+          <input
+            type="email"
+            placeholder="ایمیل یا شماره تماس (اختیاری)"
+            value={formData.email}
+            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            className="bg-white/80 border border-primary/25 p-3.5 rounded-2xl text-textDark text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder-textDark/50 w-full"
+          />
+        </div>
+
+        <textarea
+          placeholder="تجربه خود از برخورد، درمان و خدمات مطب را بنویسید..."
+          rows="3"
+          value={formData.text}
+          onChange={(e) => setFormData({ ...formData, text: e.target.value })}
+          required
+          className="bg-white/80 border border-primary/25 p-3.5 rounded-2xl text-textDark text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all resize-y placeholder-textDark/50"
+        ></textarea>
+
+        <div className="flex flex-wrap items-center justify-between gap-4 mt-2">
+          <div className="flex items-center gap-2 text-xs font-bold text-textDark/70">
+            <span>امتیاز شما:</span>
+            <div className="flex gap-1 text-amber-500 cursor-pointer">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <Star
+                  key={star}
+                  className={`w-5 h-5 ${
+                    formData.rating >= star ? 'fill-current' : 'text-gray-300'
+                  }`}
+                  onClick={() => setFormData({ ...formData, rating: star })}
+                />
+              ))}
+            </div>
           </div>
-        ) : (
-          <>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <input
-                type="text"
-                placeholder="نام و نام خانوادگی"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                required
-                className="bg-white/80 border border-primary/25 p-3.5 rounded-2xl text-textDark text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder-textDark/50 w-full"
-              />
-              <input
-                type="email"
-                placeholder="ایمیل یا شماره تماس (اختیاری)"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="bg-white/80 border border-primary/25 p-3.5 rounded-2xl text-textDark text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder-textDark/50 w-full"
-              />
-            </div>
 
-            <textarea
-              placeholder="تجربه خود از برخورد، درمان و خدمات مطب را بنویسید..."
-              rows="3"
-              value={formData.text}
-              onChange={(e) => setFormData({ ...formData, text: e.target.value })}
-              required
-              className="bg-white/80 border border-primary/25 p-3.5 rounded-2xl text-textDark text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all resize-y placeholder-textDark/50"
-            ></textarea>
-
-            <div className="flex flex-wrap items-center justify-between gap-4 mt-2">
-              <div className="flex items-center gap-2 text-xs font-bold text-textDark/70">
-                <span>امتیاز شما:</span>
-                <div className="flex gap-1 text-amber-500 cursor-pointer">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <Star
-                      key={star}
-                      className={`w-5 h-5 ${
-                        formData.rating >= star ? 'fill-current' : 'text-gray-300'
-                      }`}
-                      onClick={() => setFormData({ ...formData, rating: star })}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="bg-primary hover:bg-primary-dark text-white font-bold py-3 px-8 rounded-full transition-all shadow-[0_8px_20px_-6px_rgba(231,84,128,0.6)] hover:shadow-[0_12px_24px_-6px_rgba(186,45,99,0.8)] hover:-translate-y-0.5 flex items-center gap-2 text-sm cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
-              >
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="bg-primary hover:bg-primary-dark text-white font-bold py-3 px-8 rounded-full transition-all shadow-[0_8px_20px_-6px_rgba(231,84,128,0.6)] hover:shadow-[0_12px_24px_-6px_rgba(186,45,99,0.8)] hover:-translate-y-0.5 flex items-center gap-2 text-sm cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="w-4 h-4 ml-1 animate-spin" />
+                <span>در حال ثبت...</span>
+              </>
+            ) : (
+              <>
                 <Send className="w-4 h-4 ml-1" />
-                {isSubmitting ? 'در حال ثبت...' : 'ارسال نظر'}
-              </button>
-            </div>
-          </>
-        )}
+                <span>ارسال نظر</span>
+              </>
+            )}
+          </button>
+        </div>
       </form>
 
       {/* ================= ALL COMMENTS POPUP MODAL (Portal to document.body) ================= */}
@@ -405,6 +422,42 @@ const ReviewsSection = () => {
                   </button>
                 </div>
               </div>
+            </div>
+          </div>,
+          document.body
+        )}
+
+      {/* ================= FLOATING TOAST NOTIFICATION (Portal to document.body) ================= */}
+      {toast &&
+        createPortal(
+          <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[1000] max-w-lg w-[92%] sm:w-auto animate-scaleUp pointer-events-auto">
+            <div
+              className={`p-4 sm:px-5 sm:py-3.5 rounded-2xl shadow-2xl backdrop-blur-xl border flex items-center gap-3.5 text-xs sm:text-sm font-medium ${
+                toast.type === 'success'
+                  ? 'bg-slate-900/95 border-emerald-500/50 text-emerald-300 shadow-[0_10px_35px_-5px_rgba(16,185,129,0.35)]'
+                  : 'bg-slate-900/95 border-rose-500/50 text-rose-300 shadow-[0_10px_35px_-5px_rgba(244,63,94,0.35)]'
+              }`}
+            >
+              {toast.type === 'success' ? (
+                <div className="w-7 h-7 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+                  <CheckCircle2 className="w-4 h-4" />
+                </div>
+              ) : (
+                <div className="w-7 h-7 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center shrink-0">
+                  <AlertCircle className="w-4 h-4" />
+                </div>
+              )}
+              <div className="flex-1 leading-relaxed text-white font-medium">
+                {toast.message}
+              </div>
+              <button
+                type="button"
+                onClick={() => setToast(null)}
+                className="text-white/50 hover:text-white p-1 transition-colors cursor-pointer mr-1 shrink-0"
+                aria-label="بستن"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
           </div>,
           document.body
