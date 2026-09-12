@@ -8,16 +8,30 @@ from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 from .serializers import (
     RequestOTPSerializer,
     VerifyOTPSerializer,
+    CompleteRegistrationSerializer,
     AdminLoginSerializer,
     RefreshTokenSerializer,
 )
-from .services import request_otp, verify_otp
+from .services import request_otp, verify_otp, complete_registration
 from .selectors import get_patient_profile
+from .models import User
 from django.contrib.auth import authenticate
 
 
 
 class RequestOTPView(APIView):
+    """
+    Step 0 of login: the user just typed their phone number, before
+    any OTP is involved.
+
+    - If that phone number belongs to an admin (is_staff), no OTP is
+      sent at all - the response tells the frontend to show the
+      admin password screen instead, which then calls
+      /api/auth/admin/login with phone_number + password.
+    - Otherwise, this behaves as before: an OTP is generated and
+      "sent" (printed/logged for now), and the normal
+      verify-otp -> (complete-registration) flow continues.
+    """
 
     authentication_classes = []
     permission_classes = []
@@ -29,15 +43,63 @@ class RequestOTPView(APIView):
 
         phone_number = serializer.validated_data["phone_number"]
 
+        is_admin = User.objects.filter(
+            phone_number=phone_number,
+            is_staff=True
+        ).exists()
+
+        if is_admin:
+            # Don't send an OTP for admin numbers - they authenticate
+            # with a password instead.
+            return Response(
+                {"is_admin": True, "message": "Enter your password"},
+                status=status.HTTP_200_OK
+            )
+
         request_otp(phone_number)
 
         return Response(
-            {"message": "OTP sent"},
+            {"is_admin": False, "message": "OTP sent"},
             status=status.HTTP_200_OK
         )
 
 
+def _login_response(user):
+    """
+    Shared shape for a successful login - used by both VerifyOTPView
+    (returning users) and CompleteRegistrationView (first-time users
+    who just finished signup).
+    """
+    refresh = RefreshToken.for_user(user)
+
+    return Response({
+        "access": str(refresh.access_token),
+        "refresh": str(refresh),
+        "user": {
+            "id": user.id,
+            "phone_number": user.phone_number,
+            "full_name": user.full_name,
+            "national_id": user.national_id,
+            "role": "admin" if user.is_staff else "patient"
+        }
+    })
+
+
 class VerifyOTPView(APIView):
+    """
+    Step 1 of login: confirm the OTP code. This is a complete,
+    self-contained check - once the code is right, the phone number
+    is verified and the OTP is consumed, independent of anything
+    that follows.
+
+    Response is one of two shapes:
+    - Phone number already has an account -> logged straight in
+      (same shape as AdminLoginView: access/refresh/user).
+    - First time seeing this phone number -> {"registration_required":
+      true, "signup_token": "..."}. The frontend then collects
+      full_name + national_id and calls /auth/complete-registration
+      with that token.
+    """
 
     authentication_classes = []
     permission_classes = []
@@ -50,15 +112,8 @@ class VerifyOTPView(APIView):
         phone_number = serializer.validated_data["phone_number"]
         code = serializer.validated_data["code"]
 
-        # accept either "full_name" or "name" from the client -
-        # the frontend currently sends "name"
-        full_name = (
-            serializer.validated_data.get("full_name")
-            or request.data.get("name")
-        )
-
         try:
-            user = verify_otp(phone_number, code, full_name=full_name)
+            kind, value = verify_otp(phone_number, code)
 
         except ValueError as e:
             return Response(
@@ -66,18 +121,44 @@ class VerifyOTPView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        refresh = RefreshToken.for_user(user)
+        if kind == "user":
+            return _login_response(value)
 
+        # kind == "signup_token" - first time for this phone number
         return Response({
-            "access": str(refresh.access_token),
-            "refresh": str(refresh),
-            "user": {
-                "id": user.id,
-                "phone_number": user.phone_number,
-                "full_name": user.full_name,
-                "role": "admin" if user.is_staff else "patient"
-            }
-        })
+            "registration_required": True,
+            "signup_token": value,
+        }, status=status.HTTP_200_OK)
+
+
+class CompleteRegistrationView(APIView):
+    """
+    Step 2 of login, first-time patients only.
+    POST /api/auth/complete-registration - {signup_token, full_name, national_id}
+    """
+
+    authentication_classes = []
+    permission_classes = []
+
+    def post(self, request):
+
+        serializer = CompleteRegistrationSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        try:
+            user = complete_registration(
+                token=serializer.validated_data["signup_token"],
+                full_name=serializer.validated_data["full_name"],
+                national_id=serializer.validated_data["national_id"],
+            )
+
+        except ValueError as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        return _login_response(user)
 
 
 class CurrentUserView(APIView):
@@ -95,6 +176,7 @@ class CurrentUserView(APIView):
             "id": user.id,
             "phone_number": user.phone_number,
             "full_name": user.full_name,
+            "national_id": user.national_id,
             "is_staff": user.is_staff,
             "is_superuser": user.is_superuser,
             "role": "admin" if user.is_staff else "patient"
