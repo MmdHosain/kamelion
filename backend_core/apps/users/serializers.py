@@ -10,12 +10,16 @@ class RequestOTPSerializer(serializers.Serializer):
 class VerifyOTPSerializer(serializers.Serializer):
     phone_number = serializers.CharField(max_length=15)
     code = serializers.CharField(max_length=6)
-    full_name = serializers.CharField(
-        max_length=100,
-        required=False,
-        allow_blank=True,
-        allow_null=True
-    )
+
+
+class CompleteRegistrationSerializer(serializers.Serializer):
+    """
+    Second step for first-time patients only, after verify-otp comes
+    back with a signup_token instead of logging them straight in.
+    """
+    signup_token = serializers.CharField(max_length=64)
+    full_name = serializers.CharField(max_length=100)
+    national_id = serializers.CharField(max_length=20)
 
 
 class AdminLoginSerializer(serializers.Serializer):
@@ -69,3 +73,12 @@ class PatientDetailSerializer(serializers.Serializer):
     address = serializers.CharField(allow_null=True)
     appointments = serializers.ListField()
     notes = PatientNoteSerializer(many=True)
+
+
+class AdminPatientUpdateSerializer(serializers.Serializer):
+    """
+    PUT/PATCH /api/admin/patients/<id>/ - admin editing a patient's
+    own info. Both fields optional so the admin can send just one.
+    """
+    full_name = serializers.CharField(max_length=100, required=False, allow_blank=True)
+    national_id = serializers.CharField(max_length=20, required=False, allow_blank=True, allow_null=True)
