@@ -117,12 +117,14 @@ class Appointment(models.Model):
     """
 
     # Appointment status values
+    PENDING = "pending"
     SCHEDULED = "scheduled"
     CANCELLED_BY_USER = "cancelled_user"
     CANCELLED_BY_ADMIN = "cancelled_admin"
     VISITED = "visited"
 
     STATUS_CHOICES = [
+        (PENDING, "Pending"),
         (SCHEDULED, "Scheduled"),
         (CANCELLED_BY_USER, "Cancelled by User"),
         (CANCELLED_BY_ADMIN, "Cancelled by Admin"),
@@ -149,10 +151,13 @@ class Appointment(models.Model):
     )
 
     # Current appointment status
+    # New bookings start out pending - an admin must approve them
+    # (moving them to "scheduled") or disapprove them (moving them
+    # to "cancelled_admin") before they're confirmed.
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,
-        default=SCHEDULED
+        default=PENDING
     )
 
     # Automatically recorded timestamps
@@ -161,11 +166,14 @@ class Appointment(models.Model):
 
     class Meta:
 
-        # Prevent two scheduled appointments at the same time
+        # Prevent two pending-or-scheduled appointments at the same time.
+        # Pending appointments hold the slot just like scheduled ones do,
+        # so a slot is unavailable to everyone else as soon as it's
+        # requested - not only once an admin approves it.
         constraints = [
             models.UniqueConstraint(
                 fields=["appointment_date", "appointment_time"],
-                condition=models.Q(status="scheduled"),
+                condition=models.Q(status__in=["scheduled", "pending"]),
                 name="unique_scheduled_appointment_slot",
             )
 
@@ -194,7 +202,8 @@ class Appointment(models.Model):
     def is_active(self):
         """
         Convenience property used in code to check
-        whether the appointment is still active.
+        whether the appointment is still active (i.e. holding its
+        slot) - either awaiting admin review or already approved.
         """
-        return self.status == self.SCHEDULED
+        return self.status in (self.PENDING, self.SCHEDULED)
 

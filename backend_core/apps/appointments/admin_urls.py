@@ -6,6 +6,8 @@ from .views_admin import (
     AdminAppointmentsView,
     AdminAppointmentDetailView,
     AdminCreateAppointmentView,
+    AdminApproveAppointmentView,
+    AdminDisapproveAppointmentView,
     AdminSlotBulkSaveView,
     AdminExceptionBulkSaveView,
 )
@@ -21,4 +23,6 @@ urlpatterns = [
     path("appointments/", AdminAppointmentsView.as_view()),
     path("appointments/create/", AdminCreateAppointmentView.as_view()),
     path("appointments/<int:pk>/", AdminAppointmentDetailView.as_view()),
+    path("appointments/<int:pk>/approve/", AdminApproveAppointmentView.as_view()),
+    path("appointments/<int:pk>/disapprove/", AdminDisapproveAppointmentView.as_view()),
 ]
