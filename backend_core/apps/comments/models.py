@@ -13,7 +13,7 @@ class Review(models.Model):
         (REJECTED, "Rejected"),
     ]
 
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, blank=True, default="")
     email = models.EmailField(blank=True, default="")
     text = models.TextField(max_length=2000)
 
