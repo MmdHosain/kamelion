@@ -15,7 +15,7 @@ from .serializers import (
     AppointmentSerializer,
     AdminBookAppointmentSerializer,
 )
-from .services import admin_book_appointment
+from .services import admin_book_appointment, approve_appointment, disapprove_appointment
 from .pagination import AppointmentPagination
 
 
@@ -54,7 +54,13 @@ class AdminAppointmentsView(ListCreateAPIView):
             .all()
             .order_by("-id")
         )
-        
+
+        # e.g. GET /api/admin/appointments/?status=pending to pull up
+        # just the reservations awaiting approval.
+        status_param = self.request.query_params.get("status")
+        if status_param:
+            queryset = queryset.filter(status=status_param)
+
         search = self.request.query_params.get("search")
 
         if search:
@@ -152,6 +158,49 @@ class AdminCreateAppointmentView(APIView):
             AppointmentSerializer(appointment).data,
             status=status.HTTP_201_CREATED
         )
+
+class AdminApproveAppointmentView(APIView):
+    """
+    POST /api/admin/appointments/<id>/approve/
+    Confirms a pending appointment, moving it to "scheduled".
+    """
+    permission_classes = [IsAdminUser]
+
+    def post(self, request, pk):
+        try:
+            appointment = Appointment.objects.select_related("user").get(pk=pk)
+        except Appointment.DoesNotExist:
+            return Response({"detail": "Appointment not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            approve_appointment(appointment)
+        except ValueError as e:
+            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(AppointmentSerializer(appointment).data)
+
+
+class AdminDisapproveAppointmentView(APIView):
+    """
+    POST /api/admin/appointments/<id>/disapprove/
+    Rejects a pending appointment, moving it to "cancelled_admin"
+    and freeing up its slot.
+    """
+    permission_classes = [IsAdminUser]
+
+    def post(self, request, pk):
+        try:
+            appointment = Appointment.objects.select_related("user").get(pk=pk)
+        except Appointment.DoesNotExist:
+            return Response({"detail": "Appointment not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            disapprove_appointment(appointment)
+        except ValueError as e:
+            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(AppointmentSerializer(appointment).data)
+
 
 class AdminSlotBulkSaveView(APIView):
     permission_classes = [IsAdminUser]

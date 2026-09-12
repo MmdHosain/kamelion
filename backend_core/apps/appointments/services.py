@@ -94,9 +94,12 @@ def get_available_slots(date):
         return []
 
     # Step 3: remove booked slots
+    # A slot is unavailable once it's pending review too, not only once
+    # it's approved - otherwise two people could be pending on the same
+    # slot at once.
     booked = Appointment.objects.filter(
         appointment_date=date,
-        status=Appointment.SCHEDULED
+        status__in=[Appointment.PENDING, Appointment.SCHEDULED]
     ).values_list("appointment_time", flat=True)
 
     available = [slot for slot in slots if slot not in booked]
@@ -105,12 +108,17 @@ def get_available_slots(date):
 
 
 @transaction.atomic
-def book_appointment(user, date, time, reason=""):
+def book_appointment(user, date, time, reason="", status=Appointment.PENDING):
     """
     Book an appointment safely.
 
     Uses a database transaction to prevent race conditions
     where two users try to book the same slot simultaneously.
+
+    Defaults to PENDING - a patient's own booking needs admin
+    approval before it's confirmed. Callers that should skip that
+    review (e.g. an admin creating a walk-in booking) pass
+    status=Appointment.SCHEDULED explicitly.
     """
 
     # Check if slot exists
@@ -124,7 +132,7 @@ def book_appointment(user, date, time, reason=""):
         appointment_date=date,
         appointment_time=time,
         reason=reason,
-        status=Appointment.SCHEDULED
+        status=status
     )
 
     return appointment
@@ -132,13 +140,42 @@ def book_appointment(user, date, time, reason=""):
 
 def cancel_appointment(appointment):
     """
-    Cancel an existing appointment.
+    Cancel an existing appointment. A patient can cancel it while
+    it's still pending review or already approved/scheduled.
     """
 
-    if appointment.status != Appointment.SCHEDULED:
+    if appointment.status not in (Appointment.PENDING, Appointment.SCHEDULED):
         raise ValueError("Appointment cannot be cancelled.")
 
     appointment.status = Appointment.CANCELLED_BY_USER
+    appointment.save(update_fields=["status"])
+
+    return appointment
+
+
+def approve_appointment(appointment):
+    """
+    Admin approves a pending appointment, confirming its slot.
+    """
+
+    if appointment.status != Appointment.PENDING:
+        raise ValueError("Only pending appointments can be approved.")
+
+    appointment.status = Appointment.SCHEDULED
+    appointment.save(update_fields=["status"])
+
+    return appointment
+
+
+def disapprove_appointment(appointment):
+    """
+    Admin disapproves a pending appointment, freeing up its slot.
+    """
+
+    if appointment.status != Appointment.PENDING:
+        raise ValueError("Only pending appointments can be disapproved.")
+
+    appointment.status = Appointment.CANCELLED_BY_ADMIN
     appointment.save(update_fields=["status"])
 
     return appointment
@@ -159,6 +196,9 @@ def admin_book_appointment(full_name: str, phone_number: str, date, time, reason
     (same get-or-create pattern used by the OTP login flow), so a
     walk-in/phone booking naturally becomes that patient's account
     the first time they log in with the same number.
+
+    Booked directly as SCHEDULED (not PENDING) since the admin is
+    the one creating it - there's no separate approval step needed.
     """
     phone_number = phone_number.strip()
     full_name = full_name.strip()
@@ -171,4 +211,4 @@ def admin_book_appointment(full_name: str, phone_number: str, date, time, reason
         user.full_name = full_name
         user.save(update_fields=["full_name"])
 
-    return book_appointment(user, date, time, reason)
+    return book_appointment(user, date, time, reason, status=Appointment.SCHEDULED)
