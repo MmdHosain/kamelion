@@ -8,7 +8,7 @@
 # =========================
 # Python
 # =========================
-venv/
+backend_core/venv/
 .venv/
 __pycache__/
 *.py[cod]
@@ -59,3 +59,5 @@ coverage/
 # Logs
 # =========================
 *.log
+backend_core/venv/pyvenv.cfg
+/backend_core/venv
