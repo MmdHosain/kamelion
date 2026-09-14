@@ -10,7 +10,7 @@ const useAuthStore = create(
       isAuthenticated: false,
       authModalOpen: false,
       otpModalOpen: false,
-      authStep: 'info',
+      authStep: 'phone',
       tempAuthData: null,
 
       setTokens: (accessToken, refreshToken) => set({ accessToken, refreshToken }),
@@ -33,16 +33,17 @@ const useAuthStore = create(
         isAuthenticated: false,
         authModalOpen: false,
         otpModalOpen: false,
-        authStep: 'info',
+        authStep: 'phone',
         tempAuthData: null,
       }),
 
-      openAuthModal: () => set({ authModalOpen: true, authStep: 'info' }),
+      openAuthModal: () => set({ authModalOpen: true, authStep: 'phone' }),
 
       closeAuthModal: () => set({
         authModalOpen: false,
-        authStep: 'info',
+        authStep: 'phone',
         otpModalOpen: false,
+        tempAuthData: null,
       }),
 
       setAuthStep: (step) => set({ authStep: step }),

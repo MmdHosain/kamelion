@@ -27,7 +27,7 @@ const Header = ({ onOpenAppointment, onOpenChat }) => {
   const [mobileResourcesOpen, setMobileResourcesOpen] = useState(false);
 
   const location = useLocation();
-  const { isAuthenticated, user, logout } = useAuth();
+  const { isAuthenticated, user, logout, openAuthModal } = useAuth();
 
   const isAdmin = user?.role === 'admin' || user?.is_staff === true || user?.is_superuser === true;
 
@@ -192,13 +192,14 @@ const Header = ({ onOpenAppointment, onOpenChat }) => {
               </button>
             </div>
           ) : (
-            <Link
-              to="/admin/login"
-              className="flex items-center gap-2 bg-white/70 hover:bg-white border border-primary/20 text-primary text-xs md:text-sm font-bold py-2 px-4 md:px-5 rounded-full transition-all hover:-translate-y-0.5 shadow-sm"
+            <button
+              type="button"
+              onClick={openAuthModal}
+              className="flex items-center gap-2 bg-white/70 hover:bg-white border border-primary/20 text-primary text-xs md:text-sm font-bold py-2 px-4 md:px-5 rounded-full transition-all hover:-translate-y-0.5 shadow-sm cursor-pointer"
             >
               <LogIn className="w-4 h-4" />
-              <span>ورود ادمین</span>
-            </Link>
+              <span>ورود / ثبت‌نام</span>
+            </button>
           )}
 
           <button
@@ -377,22 +378,46 @@ const Header = ({ onOpenAppointment, onOpenChat }) => {
           </a>
 
           {/* Auth session in drawer */}
-          {isAuthenticated && (
-            <div className="flex items-center justify-between border-t border-primary/15 pt-3 mt-1">
-              <span className="text-xs font-bold text-textDark flex items-center gap-1.5">
-                <User size={15} className="text-primary" />
-                {user?.full_name || user?.phone_number}
-              </span>
-              <button
-                onClick={() => {
-                  handleNavClick();
-                  logout();
-                }}
-                className="text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-xl cursor-pointer transition-colors"
-              >
-                خروج از حساب
-              </button>
+          {isAuthenticated ? (
+            <div className="flex flex-col gap-2 border-t border-primary/15 pt-3 mt-1">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-textDark flex items-center gap-1.5">
+                  <User size={15} className="text-primary" />
+                  {user?.full_name || user?.phone_number}
+                </span>
+                <button
+                  onClick={() => {
+                    handleNavClick();
+                    logout();
+                  }}
+                  className="text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-xl cursor-pointer transition-colors"
+                >
+                  خروج از حساب
+                </button>
+              </div>
+              {isAdmin && (
+                <Link
+                  to="/admin/appointments"
+                  onClick={handleNavClick}
+                  className="flex items-center justify-center gap-2 text-xs font-bold bg-primary/10 text-primary hover:bg-primary hover:text-white py-2 px-3 rounded-xl transition-all"
+                >
+                  <Shield size={14} />
+                  <span>رفتن به پنل مدیریت</span>
+                </Link>
+              )}
             </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => {
+                handleNavClick();
+                openAuthModal();
+              }}
+              className="w-full bg-white/80 border border-primary/25 text-primary text-center font-bold py-2.5 rounded-2xl hover:bg-white transition-colors flex items-center justify-center gap-2 shadow-sm cursor-pointer mt-1"
+            >
+              <LogIn size={16} />
+              <span>ورود به حساب کاربری</span>
+            </button>
           )}
 
           {/* CTA Book Online */}
