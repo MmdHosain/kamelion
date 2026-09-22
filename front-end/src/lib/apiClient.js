@@ -4,10 +4,10 @@ import useAuthStore from '../store/authStore';
 const envUrl = import.meta.env.VITE_API_URL;
 
 if (!envUrl) {
-  console.warn("⚠️ WARNING: VITE_API_URL environment variable is missing. Falling back to http://127.0.0.1:8000/api");
+  console.warn("⚠️ WARNING: VITE_API_URL environment variable is missing. Falling back to /api");
 }
 
-const BASE_URL = envUrl || 'http://127.0.0.1:8000/api';
+const BASE_URL = envUrl || '/api';
 
 const apiClient = axios.create({
   baseURL: BASE_URL,
@@ -80,6 +80,7 @@ const isAuthEndpoint = (url = '') => {
     url.includes('/auth/request-otp') ||
     url.includes('/auth/send-otp') ||
     url.includes('/auth/verify-otp') ||
+    url.includes('/auth/complete-registration') ||
     url.includes('/auth/refresh')
   );
 };

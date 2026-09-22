@@ -28,7 +28,7 @@ const Header = ({ onOpenAppointment, onOpenChat, onOpenMyAppointments }) => {
   const [mobileResourcesOpen, setMobileResourcesOpen] = useState(false);
 
   const location = useLocation();
-  const { isAuthenticated, user, logout } = useAuth();
+  const { isAuthenticated, user, logout, openAuthModal } = useAuth();
 
   const isAdmin = user?.role === 'admin' || user?.is_staff === true || user?.is_superuser === true;
 
@@ -205,13 +205,14 @@ const Header = ({ onOpenAppointment, onOpenChat, onOpenMyAppointments }) => {
               </button>
             </div>
           ) : (
-            <Link
-              to="/admin/login"
-              className="flex items-center gap-2 bg-white/70 hover:bg-white border border-primary/20 text-primary text-xs md:text-sm font-bold py-2 px-4 md:px-5 rounded-full transition-all hover:-translate-y-0.5 shadow-sm"
+            <button
+              type="button"
+              onClick={openAuthModal}
+              className="flex items-center gap-2 bg-white/70 hover:bg-white border border-primary/20 text-primary text-xs md:text-sm font-bold py-2 px-4 md:px-5 rounded-full transition-all hover:-translate-y-0.5 shadow-sm cursor-pointer"
             >
               <LogIn className="w-4 h-4" />
-              <span>ورود ادمین</span>
-            </Link>
+              <span>ورود / ثبت‌نام</span>
+            </button>
           )}
 
           <button
@@ -390,7 +391,7 @@ const Header = ({ onOpenAppointment, onOpenChat, onOpenMyAppointments }) => {
           </a>
 
           {/* Auth session in drawer */}
-          {isAuthenticated && (
+          {isAuthenticated ? (
             <div className="flex flex-col gap-2.5 border-t border-primary/15 pt-3 mt-1">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-textDark flex items-center gap-1.5">
@@ -408,20 +409,43 @@ const Header = ({ onOpenAppointment, onOpenChat, onOpenMyAppointments }) => {
                 </button>
               </div>
 
-              {!isAdmin && onOpenMyAppointments && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    handleNavClick();
-                    onOpenMyAppointments();
-                  }}
-                  className="flex items-center justify-center gap-2 bg-primary/10 hover:bg-primary hover:text-white text-primary text-xs font-bold py-2.5 px-3 rounded-2xl transition-all cursor-pointer"
+              {isAdmin ? (
+                <Link
+                  to="/admin/appointments"
+                  onClick={handleNavClick}
+                  className="flex items-center justify-center gap-2 text-xs font-bold bg-primary/10 text-primary hover:bg-primary hover:text-white py-2.5 px-3 rounded-2xl transition-all"
                 >
-                  <Calendar size={15} />
-                  <span>نوبت‌های من (پیگیری و لغو)</span>
-                </button>
+                  <Shield size={14} />
+                  <span>رفتن به پنل مدیریت</span>
+                </Link>
+              ) : (
+                onOpenMyAppointments && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleNavClick();
+                      onOpenMyAppointments();
+                    }}
+                    className="flex items-center justify-center gap-2 bg-primary/10 hover:bg-primary hover:text-white text-primary text-xs font-bold py-2.5 px-3 rounded-2xl transition-all cursor-pointer"
+                  >
+                    <Calendar size={15} />
+                    <span>نوبت‌های من (پیگیری و لغو)</span>
+                  </button>
+                )
               )}
             </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => {
+                handleNavClick();
+                openAuthModal();
+              }}
+              className="w-full bg-white/80 border border-primary/25 text-primary text-center font-bold py-2.5 rounded-2xl hover:bg-white transition-colors flex items-center justify-center gap-2 shadow-sm cursor-pointer mt-1"
+            >
+              <LogIn size={16} />
+              <span>ورود به حساب کاربری</span>
+            </button>
           )}
 
           {/* CTA Book Online */}
