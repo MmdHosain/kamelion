@@ -18,13 +18,13 @@ const HeroSection = ({ onOpenAppointment, onOpenChat }) => {
       <div className="flex flex-col-reverse md:flex-row gap-8 md:gap-10 items-center justify-between">
         <div className="flex-1 min-w-[280px]">
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/70 border border-primary/25 text-primary-dark text-xs md:text-sm font-bold mb-5 backdrop-blur-md shadow-sm">
+          {/* <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/70 border border-primary/25 text-primary-dark text-xs md:text-sm font-bold mb-5 backdrop-blur-md shadow-sm">
             <span className="relative flex h-2.5 w-2.5">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary"></span>
             </span>
             پذیرش بیماران جدید
-          </div>
+          </div> */}
 
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-l from-primary to-primary-dark mb-3 tracking-tight">
             دکتر نگار معشوری
@@ -73,7 +73,7 @@ const HeroSection = ({ onOpenAppointment, onOpenChat }) => {
         {/* Doctor Avatar / Clinic Visual Box */}
         <div className="relative w-56 h-56 sm:w-64 sm:h-64 md:w-80 md:h-80 rounded-[2.5rem] border border-primary/25 flex justify-center items-center bg-gradient-to-br from-white/70 to-white/30 shrink-0 overflow-hidden shadow-2xl backdrop-blur-md group">
           <div className="absolute inset-0 bg-gradient-to-tr from-primary/15 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
-          
+
           <div className="absolute top-5 left-5 bg-white/90 border border-primary/20 shadow-md p-3 rounded-2xl backdrop-blur-md z-10">
             <RibbonLogo className="w-7 h-7 drop-shadow-[0_0_8px_rgba(231,84,128,0.4)]" />
           </div>
