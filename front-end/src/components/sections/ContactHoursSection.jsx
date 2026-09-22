@@ -1,5 +1,5 @@
 import React from 'react';
-import { MapPin, Phone, AlertCircle, Clock, CalendarDays } from 'lucide-react';
+import { MapPin, Phone, Clock, CalendarDays } from 'lucide-react';
 
 const ContactHoursSection = () => {
   return (
@@ -41,28 +41,6 @@ const ContactHoursSection = () => {
               </a>
             </div>
           </div>
-
-          {/* 24-Hour Emergency Box (Red Accent) */}
-          <div className="flex items-start gap-4 p-4 md:p-5 rounded-3xl bg-gradient-to-r from-red-500/15 via-red-500/10 to-transparent border border-red-500/30 hover:bg-red-500/20 transition-all shadow-sm">
-            <div className="bg-white/90 border border-red-200 p-3 rounded-2xl text-red-600 shrink-0 shadow-sm">
-              <AlertCircle className="w-6 h-6 animate-pulse" />
-            </div>
-            <div className="flex flex-col gap-1 mt-0.5">
-              <strong className="text-red-700 font-black text-base flex items-center gap-2">
-                شماره اورژانس ۲۴ ساعته (موارد حاد)
-              </strong>
-              <span className="text-xs text-textDark/70 mb-1">
-                ویژه بیماران عمل‌شده و موارد فوریتی خونریزی یا درد غیرقابل کنترل
-              </span>
-              <a
-                href="tel:09121234567"
-                className="text-red-600 hover:text-red-700 font-black text-lg tracking-wider transition-colors inline-block text-right"
-                dir="ltr"
-              >
-                0912 123 4567
-              </a>
-            </div>
-          </div>
         </div>
 
         {/* Working Hours Card */}
@@ -95,8 +73,8 @@ const ContactHoursSection = () => {
 
             <li className="flex justify-between items-center text-textDark/60 pt-1">
               <span className="font-medium">جمعه و ایام تعطیل رسمی</span>
-              <span className="text-xs font-bold text-red-600/80">
-                تعطیل (فقط خط اورژانس فعال است)
+              <span className="text-xs font-bold text-textDark/60">
+                تعطیل
               </span>
             </li>
           </ul>

@@ -1,5 +1,7 @@
 import React from 'react';
-import { Calendar, MessageSquare, PhoneCall, CheckCircle2, GraduationCap } from 'lucide-react';
+import { Calendar, MessageSquare, CheckCircle2, GraduationCap } from 'lucide-react';
+
+import RibbonLogo from '../ui/RibbonLogo';
 
 const HeroSection = ({ onOpenAppointment, onOpenChat }) => {
   const handleScrollToBooking = () => {
@@ -46,9 +48,8 @@ const HeroSection = ({ onOpenAppointment, onOpenChat }) => {
             </p>
           </div>
 
-          {/* 3-Button Action Area */}
+          {/* Action Area */}
           <div className="flex flex-col gap-3 max-w-lg">
-            {/* Row 1: نوبت دهی و مشاوره آنلاین */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <button
                 onClick={handleScrollToBooking}
@@ -66,15 +67,6 @@ const HeroSection = ({ onOpenAppointment, onOpenChat }) => {
                 مشاوره / تریاژ آنلاین
               </button>
             </div>
-
-            {/* Row 2: اورژانس ۲۴ ساعته (با تاکید و اهمیت بیشتر) */}
-            <a
-              href="tel:09121234567"
-              className="bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 text-white font-black py-3 px-6 rounded-2xl transition-all duration-300 shadow-lg shadow-red-500/25 hover:shadow-red-500/40 hover:-translate-y-0.5 flex items-center justify-center gap-2 text-sm md:text-base border border-red-400/40 no-underline"
-            >
-              <PhoneCall className="w-5 h-5 animate-bounce" />
-              <span>تماس فوری با اورژانس ۲۴ ساعته (موارد حاد)</span>
-            </a>
           </div>
         </div>
 
@@ -83,19 +75,7 @@ const HeroSection = ({ onOpenAppointment, onOpenChat }) => {
           <div className="absolute inset-0 bg-gradient-to-tr from-primary/15 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
           
           <div className="absolute top-5 left-5 bg-white/90 border border-primary/20 shadow-md p-3 rounded-2xl backdrop-blur-md z-10">
-            <svg
-              className="w-7 h-7 text-primary drop-shadow-[0_0_8px_rgba(231,84,128,0.4)]"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M8 9.5a4 4 0 1 0 8 0c0-2-1.5-4-2.5-4.5-1-.5-2.5-1-3-1s-2 .5-3 1-2.5 2.5-2.5 4.5z" />
-              <path d="M8 9.5c0 2 1.5 4.5 3 6.5l-3 6.5" />
-              <path d="M16 9.5c0 2-1.5 4.5-3 6.5l3 6.5" />
-            </svg>
+            <RibbonLogo className="w-7 h-7 drop-shadow-[0_0_8px_rgba(231,84,128,0.4)]" />
           </div>
 
           <div className="flex flex-col items-center justify-center p-6 text-center transform group-hover:scale-105 transition-transform duration-700">

@@ -22,6 +22,8 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 
+import RibbonLogo from '../ui/RibbonLogo';
+
 const Header = ({ onOpenAppointment, onOpenChat, onOpenMyAppointments }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileServicesOpen, setMobileServicesOpen] = useState(false);
@@ -45,21 +47,9 @@ const Header = ({ onOpenAppointment, onOpenChat, onOpenMyAppointments }) => {
         <div className="flex items-center">
           <Link
             to="/"
-            className="text-textDark text-xl md:text-2xl font-black tracking-tight no-underline flex items-center gap-2"
+            className="text-textDark text-xl md:text-2xl font-black tracking-tight no-underline flex items-center gap-2.5"
           >
-            <svg
-              className="w-7 h-7 md:w-8 md:h-8 text-primary"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M8 9.5a4 4 0 1 0 8 0c0-2-1.5-4-2.5-4.5-1-.5-2.5-1-3-1s-2 .5-3 1-2.5 2.5-2.5 4.5z" />
-              <path d="M8 9.5c0 2 1.5 4.5 3 6.5l-3 6.5" />
-              <path d="M16 9.5c0 2-1.5 4.5-3 6.5l3 6.5" />
-            </svg>
+            <RibbonLogo className="w-7 h-7 md:w-8 md:h-8" />
             <span>دکتر معشوری</span>
           </Link>
 

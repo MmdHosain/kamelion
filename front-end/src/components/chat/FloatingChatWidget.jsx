@@ -144,7 +144,7 @@ const FloatingChatWidget = ({ isOpen, onToggle, onOpenAppointment }) => {
             {
               id: performance.now() + 1,
               sender: 'bot',
-              text: 'بر اساس علائم وارد شده، وضعیت شما فوریتی و نیازمند بررسی سریع ارزیابی شد. لطفاً بدون اتلاف وقت با خط اورژانس مطب تماس گرفته و کد تریاژ زیر را اعلام فرمایید:',
+              text: 'بر اساس علائم وارد شده، وضعیت شما نیازمند بررسی دقیق توسط پزشک ارزیابی شد. لطفاً با شماره مطب تماس گرفته و کد تریاژ زیر را اعلام فرمایید:',
               isEmergency: true,
               emergencyCode,
               time: currentTime,
@@ -314,13 +314,6 @@ const FloatingChatWidget = ({ isOpen, onToggle, onOpenAppointment }) => {
               </div>
 
               <div className="flex items-center gap-2">
-                <a
-                  href="tel:09121234567"
-                  className="hidden sm:flex items-center gap-1.5 text-xs font-bold bg-red-500/10 border border-red-500/25 text-red-600 px-3 py-1.5 rounded-xl hover:bg-red-500 hover:text-white transition-all no-underline"
-                >
-                  <PhoneCall className="w-3.5 h-3.5" />
-                  اورژانس ۲۴ ساعته
-                </a>
                 <button
                   onClick={onToggle}
                   className="text-textDark/60 hover:text-primary transition-colors p-2 rounded-full hover:bg-white/80 cursor-pointer"
@@ -444,11 +437,11 @@ const FloatingChatWidget = ({ isOpen, onToggle, onOpenAppointment }) => {
                                 )}
                               </button>
                               <a
-                                href="tel:09121234567"
-                                className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2.5 rounded-xl transition-all text-xs md:text-sm font-bold flex items-center justify-center gap-1.5 shadow-md shadow-red-500/30 no-underline"
+                                href="tel:02112345678"
+                                className="flex-1 bg-primary hover:bg-primary-dark text-white py-2.5 rounded-xl transition-all text-xs md:text-sm font-bold flex items-center justify-center gap-1.5 shadow-md shadow-primary/20 no-underline"
                               >
                                 <PhoneCall className="w-4 h-4" />
-                                تماس فوری با مطب
+                                تماس با مطب
                               </a>
                             </div>
                           </div>
