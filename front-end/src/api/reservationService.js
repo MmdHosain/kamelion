@@ -36,16 +36,29 @@ export const reservationService = {
   },
 
   // ADMIN ENDPOINTS
-  getAdminReservations: async () => {
+  getAdminReservations: async (params = {}) => {
     let nextUrl = '/admin/appointments/';
     const items = [];
+    let isFirst = true;
+
     while (nextUrl) {
-      const response = await apiClient.get(nextUrl);
+      const response = await apiClient.get(nextUrl, isFirst && Object.keys(params).length ? { params } : undefined);
       const data = response.data;
       items.push(...extractResults(data));
       nextUrl = data?.next || null;
+      isFirst = false;
     }
     return items;
+  },
+
+  approveReservation: async (id) => {
+    const response = await apiClient.post(`/admin/appointments/${id}/approve/`);
+    return response.data;
+  },
+
+  disapproveReservation: async (id) => {
+    const response = await apiClient.post(`/admin/appointments/${id}/disapprove/`);
+    return response.data;
   },
 
   createAdminReservation: async (payload) => {
@@ -57,3 +70,9 @@ export const reservationService = {
 // Named exports
 export const getAvailableSlots = (date) => reservationService.getAvailableSlots(date);
 export const bookSlot = (date, time, reason) => reservationService.bookSlot(date, time, reason);
+export const getUserReservations = () => reservationService.getUserReservations();
+export const cancelReservation = (id) => reservationService.cancelReservation(id);
+export const approveReservation = (id) => reservationService.approveReservation(id);
+export const disapproveReservation = (id) => reservationService.disapproveReservation(id);
+export const getAdminReservations = (params) => reservationService.getAdminReservations(params);
+export const createAdminReservation = (payload) => reservationService.createAdminReservation(payload);

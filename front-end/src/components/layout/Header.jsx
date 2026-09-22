@@ -18,10 +18,11 @@ import {
   UserCheck,
   Scissors,
   HeartPulse,
+  Calendar,
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 
-const Header = ({ onOpenAppointment, onOpenChat }) => {
+const Header = ({ onOpenAppointment, onOpenChat, onOpenMyAppointments }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileServicesOpen, setMobileServicesOpen] = useState(false);
   const [mobileResourcesOpen, setMobileResourcesOpen] = useState(false);
@@ -176,10 +177,22 @@ const Header = ({ onOpenAppointment, onOpenChat }) => {
                   <span>پنل مدیریت</span>
                 </Link>
               ) : (
-                <div className="flex items-center gap-1.5 bg-white/70 border border-primary/20 text-textDark text-xs font-bold py-1.5 px-3 rounded-full shadow-sm">
-                  <User className="w-3.5 h-3.5 text-primary" />
-                  <span>{user?.full_name || user?.phone_number || 'حساب کاربری'}</span>
-                </div>
+                <>
+                  <button
+                    type="button"
+                    onClick={onOpenMyAppointments}
+                    title="مشاهده و لغو نوبت‌های من"
+                    className="flex items-center gap-1.5 bg-primary/10 hover:bg-primary hover:text-white border border-primary/30 text-primary text-xs font-bold py-2 px-3 md:px-3.5 rounded-full transition-all cursor-pointer shadow-sm"
+                  >
+                    <Calendar className="w-3.5 h-3.5" />
+                    <span className="hidden sm:inline">نوبت‌های من</span>
+                  </button>
+
+                  <div className="flex items-center gap-1.5 bg-white/70 border border-primary/20 text-textDark text-xs font-bold py-1.5 px-3 rounded-full shadow-sm">
+                    <User className="w-3.5 h-3.5 text-primary" />
+                    <span className="max-w-[120px] truncate">{user?.full_name || user?.phone_number || 'حساب کاربری'}</span>
+                  </div>
+                </>
               )}
 
               <button
@@ -378,20 +391,36 @@ const Header = ({ onOpenAppointment, onOpenChat }) => {
 
           {/* Auth session in drawer */}
           {isAuthenticated && (
-            <div className="flex items-center justify-between border-t border-primary/15 pt-3 mt-1">
-              <span className="text-xs font-bold text-textDark flex items-center gap-1.5">
-                <User size={15} className="text-primary" />
-                {user?.full_name || user?.phone_number}
-              </span>
-              <button
-                onClick={() => {
-                  handleNavClick();
-                  logout();
-                }}
-                className="text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-xl cursor-pointer transition-colors"
-              >
-                خروج از حساب
-              </button>
+            <div className="flex flex-col gap-2.5 border-t border-primary/15 pt-3 mt-1">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-textDark flex items-center gap-1.5">
+                  <User size={15} className="text-primary" />
+                  {user?.full_name || user?.phone_number}
+                </span>
+                <button
+                  onClick={() => {
+                    handleNavClick();
+                    logout();
+                  }}
+                  className="text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-xl cursor-pointer transition-colors"
+                >
+                  خروج از حساب
+                </button>
+              </div>
+
+              {!isAdmin && onOpenMyAppointments && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleNavClick();
+                    onOpenMyAppointments();
+                  }}
+                  className="flex items-center justify-center gap-2 bg-primary/10 hover:bg-primary hover:text-white text-primary text-xs font-bold py-2.5 px-3 rounded-2xl transition-all cursor-pointer"
+                >
+                  <Calendar size={15} />
+                  <span>نوبت‌های من (پیگیری و لغو)</span>
+                </button>
+              )}
             </div>
           )}
 

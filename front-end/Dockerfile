@@ -1,6 +1,6 @@
 
 # Build stage
-FROM node:20-alpine AS build
+FROM docker.arvancloud.ir/node:20-alpine AS build
 
 WORKDIR /app
 
@@ -10,10 +10,12 @@ RUN npm ci
 
 COPY . .
 
+ENV VITE_API_URL=/api
+
 RUN npm run build
 
 # Production stage
-FROM nginx:alpine
+FROM docker.arvancloud.ir/nginx:alpine
 
 COPY --from=build /app/dist /usr/share/nginx/html
 

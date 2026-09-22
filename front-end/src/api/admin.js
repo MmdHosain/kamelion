@@ -38,6 +38,16 @@ export const adminApi = {
     return response.data;
   },
 
+  approveReservation: async (id) => {
+    const response = await apiClient.post(`/admin/appointments/${id}/approve/`);
+    return response.data;
+  },
+
+  disapproveReservation: async (id) => {
+    const response = await apiClient.post(`/admin/appointments/${id}/disapprove/`);
+    return response.data;
+  },
+
   deleteReservation: async (id) => {
     const response = await apiClient.delete(`/admin/appointments/${id}/`);
     return response.data;

@@ -31,14 +31,14 @@
 | **FE-05** | احراز هویت و گارد دسترسی پنل ادمین (Admin Auth) | 2026-02-22 | **Feature 2, 2b, 15** | `POST /api/auth/admin/login` | ✅ تکمیل و متصل |
 | **FE-06** | مدیریت شیفت‌های هفتگی پزشک توسط ادمین (Shifts) | 2026-03-08 | **Feature 4** | `GET /api/admin/slots/`<br>`PUT /api/admin/slots/bulk/`<br>`POST/PUT/DELETE /api/admin/slots/<id>/` | ✅ تکمیل و متصل |
 | **FE-07** | مدیریت تعطیلات و استثنائات کلینیک (Exceptions) | 2026-03-13 | **Feature 5** | `GET /api/admin/exceptions/`<br>`PUT /api/admin/exceptions/bulk/`<br>`POST/DELETE /api/admin/exceptions/<id>/` | ✅ تکمیل و متصل |
-| **FE-08** | مدال و تقویم رزرو آنلاین نوبت بیمار (Booking Modal) | 2026-05-12 | **Feature 6, 7, 7b** | `GET /api/appointments/slots/?date=`<br>`POST /api/appointments/book/` | 🟡 متصل / نیازمند نمایش برچسب Pending |
-| **FE-09** | مدیریت و لیست نوبت‌های رزرو شده ادمین (Reservations) | 2026-03-11 | **Feature 7b, 10** | `GET /api/admin/appointments/`<br>`POST /api/admin/appointments/<id>/approve/`<br>`POST /api/admin/appointments/<id>/disapprove/`<br>`DELETE /api/admin/appointments/<id>/` | 🟡 لیست و سرچ متصل / دکمه‌های تأیید و رد Pending نیاز است |
+| **FE-08** | مدال و تقویم رزرو آنلاین نوبت بیمار (Booking Modal) | 2026-05-12 | **Feature 6, 7, 7b** | `GET /api/appointments/slots/?date=`<br>`POST /api/appointments/book/` | ✅ تکمیل و کاملاً متصل (پشتیبانی از Pending و فیلد reason) |
+| **FE-09** | مدیریت و لیست نوبت‌های رزرو شده ادمین (Reservations) | 2026-03-11 | **Feature 7b, 10** | `GET /api/admin/appointments/`<br>`POST /api/admin/appointments/<id>/approve/`<br>`POST /api/admin/appointments/<id>/disapprove/`<br>`DELETE /api/admin/appointments/<id>/` | ✅ تکمیل و کاملاً متصل (ستون وضعیت، دکمه‌های تایید/رد، تب‌های فیلتر) |
 | **FE-10** | پرونده الکترونیک و یادداشت‌های بیماران (Dossiers) | 2026-03-13 | **Feature 3b, 16** | `GET /api/admin/patients/`<br>`GET /api/admin/patients/<id>/`<br>`PUT/PATCH /api/admin/patients/<id>/`<br>`POST /api/admin/patients/<id>/notes/` | 🟡 متصل / فرم ویرایش کدملی در مدال نیاز است |
 | **FE-11** | ثبت نظرات مراجعین و پنل تایید ادمین (Reviews) | 2026-02-12 | **Feature 17** | `GET /api/reviews/`<br>`POST /api/reviews/`<br>`GET /api/admin/reviews/`<br>`PATCH /api/admin/reviews/<id>/`<br>`DELETE /api/admin/reviews/<id>/` | ✅ تکمیل و کاملاً متصل |
 | **FE-12** | گالری ویدیوهای آموزشی و مدیریت ویدیو ادمین (Videos) | 2026-08-28 | — | `GET /api/videos/`<br>`POST /api/admin/videos/`<br>`DELETE /api/admin/videos/<id>/` | ⚠️ آماده فرانت / نیازمند ایجاد مدل در بک‌اند |
 | **FE-13** | شخصی‌سازی تم و پالت رنگی سراسری (Themes) | 2026-08-28 | — | `GET /api/settings/theme`<br>`PUT /api/admin/settings/theme` | ⚠️ آماده فرانت / نیازمند مدل Settings در بک‌اند |
 | **FE-14** | داشبورد گزارشات تحلیلی و آمار کلینیک (Analytics) | 2026-02-22 | — | `GET /api/admin/stats` | ⚠️ آماده فرانت با Recharts / نیازمند سرویس آمار در بک‌اند |
-| **FE-15** | پنل کاربری بیمار برای مشاهده و لغو نوبت‌های خود | 2026-06-08 | **Feature 8, 9** | `GET /api/appointments/my/`<br>`POST /api/appointments/<id>/cancel/` | 🟡 سرویس‌ها آماده / فاقد صفحه اختصاصی در UI |
+| **FE-15** | پنل کاربری بیمار برای مشاهده و لغو نوبت‌های خود | 2026-06-08 | **Feature 8, 9** | `GET /api/appointments/my/`<br>`POST /api/appointments/<id>/cancel/` | ✅ تکمیل و کاملاً متصل (مدال MyAppointmentsModal و قابلیت لغو) |
 
 ---
 
@@ -375,7 +375,7 @@
 
 ### FE-08: مدال رزرو آنلاین نوبت و انتخاب اسلات‌های آزاد توسط بیمار
 - **دسته‌بندی:** Patient Portal / Booking
-- **وضعیت فعلی:** 🟡 متصل به بک‌اند / نیازمند همگام‌سازی بصری با استاتوس Pending
+- **وضعیت فعلی:** ✅ تکمیل و کاملاً متصل (Completed & Synchronized)
 - **تطابق با بک‌اند:** معادل **Feature 6**, **Feature 7**, **Feature 7b** در `feature-status-back-end.md`
 
 #### سیر تکاملی و تاریخچه کامیت‌ها (Commit Evolution & Fixes)
@@ -386,6 +386,9 @@
    - افزودن ماژول تقویم کاملاً شمسی `JalaliCalendar.jsx` و توابع تبدیل تقویم `jalaliDateUtils.js`.
    - نرمال‌سازی وضعیت ساعت‌ها (آزاد، پر شده، در انتظار).
    - افزودن فیلد دلیل مراجعه اختیاری (`reason`).
+5. **هماهنگ‌سازی با جریان Pending و تایید منشی (Workflow Upgrade):** (2026-09-22):
+   - دریافت وضعیت اولیه `pending` نوبت از بک‌اند و نمایش نشان اختصاصی وضعیت در کارت تایید.
+   - اضافه شدن اینپوت علت مراجعه و دکمه دسترسی مستقیم به «نوبت‌های من».
 
 #### فایل‌های درگیر در فرانت‌اند
 - کامپوننت‌ها: `src/components/ui/AppointmentModal.jsx`, `src/components/ui/JalaliCalendar.jsx`, `src/components/DayPicker.jsx`, `src/components/SlotButton.jsx`
@@ -430,15 +433,16 @@
 }
 ```
 
-#### تحلیل گپ و اقدامات مورد نیاز (Gaps & Action Items)
-- **تغییر اخیر بک‌اند:** در بک‌اند، نوبت رزرو شده توسط بیمار اکنون با وضعیت `status: "pending"` ایجاد می‌شود تا ادمین آن را تأیید کند.
-- **اقدام در فرانت‌اند:** پیام موفقیت در `AppointmentModal.jsx` باید تصریح کند که نوبت با موفقیت در صف «در انتظار تأیید کلینیک» ثبت گردید و اسلات تا زمان تصمیم‌گیری ادمین برای دیگران بسته است.
+#### تحلیل گپ و اقدامات انجام‌شده (Completed Actions)
+- **وضعیت Pending:** پیام موفقیت در `AppointmentModal.jsx` با نمایش نشان برجسته «در انتظار بررسی و تایید کلینیک» و راهنمای دقیق پیامک به‌روزرسانی شد.
+- **فیلد علت مراجعه:** اینپوت اختیاری `reason` در مدال اضافه شد و به بک‌اند ارسال می‌شود.
+- **دسترسی سریع به نوبت‌های من:** دکمه میان‌بر برای مشاهده مستقیم سوابق و پیگیری نوبت‌ها در کارت موفقیت تعبیه شد.
 
 ---
 
 ### FE-09: پنل مدیریت، جستجو و لیست نوبت‌های کلینیک (Admin Reservations)
 - **دسته‌بندی:** Admin Panel / Appointments
-- **وضعیت فعلی:** 🟡 لیست و ایجاد دستی متصل / نیازمند دکمه‌های تأیید و رد Pending
+- **وضعیت فعلی:** ✅ تکمیل و کاملاً متصل (Completed & Synchronized)
 - **تطابق با بک‌اند:** معادل **Feature 7b**, **Feature 10** در `feature-status-back-end.md`
 
 #### سیر تکاملی و تاریخچه کامیت‌ها (Commit Evolution & Fixes)
@@ -448,10 +452,14 @@
    - `4085944` (2026-03-13): افزودن استایل‌های مدال جزئیات نوبت.
 3. **اصلاح تداخلات مرج و هماهنگی (Fix):** `842e271` (2026-06-23) — *(fix(appointment): fixed reservation in admin panel and problems of merge)*.
 4. **بازنویسی عظیم با پشتیبانی تقویم شمسی و ثبت دستی (Major Refactor):** `b5776bd` (2026-08-28):
-   - ارتقای فایل `ReservationsList.jsx` به ۸۴۷ خط کد کامل با صفحه‌بندی متغیر (۱۰، ۲۵، ۵۰، ۱۰۰ ردیف).
+   - ارتقای فایل `ReservationsList.jsx` با صفحه‌بندی متغیر (۱۰، ۲۵، ۵۰، ۱۰۰ ردیف).
    - جستجوی بلادرنگ در نام و شماره تماس بیمار.
    - فرم مدال ثبت دستی نوبت توسط ادمین برای بیماران حضوری (`createAdminReservation`).
    - تبدیل و نمایش کلیه تاریخ‌های میلادی سرور به تاریخ شمسی با اعداد فارسی.
+5. **ارتقای کامل مدیریت وضعیت و اکشن‌های تایید/رد (Approval Flow):** (2026-09-22):
+   - اضافه شدن ستون اختصاصی «وضعیت» و نشان‌های ۵ گانه.
+   - اکشن‌های تایید نوبت (`approve`) و رد نوبت (`disapprove`) با بروزرسانی زنده بدون رفرش.
+   - اضافه شدن تب‌های فیلتر نوبت‌ها (همه، در انتظار تایید با شمارنده زنده، تایید شده، لغو شده).
 
 #### فایل‌های درگیر در فرانت‌اند
 - کامپوننت‌ها و صفحات: `src/components/admin/reservations/ReservationsList.jsx`, `src/pages/admin/ReservedTimes.jsx`
@@ -482,8 +490,9 @@
 - **بدنه درخواست:** `{ "full_name": "...", "phone_number": "...", "date": "YYYY-MM-DD", "time": "HH:MM:SS", "reason": "..." }`
 - **نکته:** نوبت‌های ثبت شده توسط ادمین مستقیماً با وضعیت `scheduled` ثبت می‌شوند و نیازی به تأیید مجدد ندارند.
 
-#### تحلیل گپ و اقدامات مورد نیاز (Gaps & Action Items)
-- در جدول فعلی `ReservationsList.jsx`، ستون وضعیت و دکمه‌های تأیید (`approve`) و رد (`disapprove`) وجود ندارند و تنها دکمه حذف (`Trash2`) تعبیه شده است. افزودن برچسب رنگی وضعیت نوبت‌ها و اکشن‌های تأیید/رد در جدول، ارتباط این ماژول را با بک‌اند ۱۰۰٪ کامل می‌کند.
+#### تحلیل گپ و اقدامات انجام‌شده (Completed Actions)
+- **ستون وضعیت و اکشن‌ها:** ستون وضعیت به همراه دکمه‌های تایید (`approve`) و رد نوبت (`disapprove`) برای نوبت‌های با وضعیت `pending` تعبیه و متصل شدند.
+- **تب‌های فیلتر:** امکان مشاهده اختصاصی نوبت‌های نیازمند تایید با شمارنده نوتیفیکیشن پیاده‌سازی شد.
 
 ---
 
@@ -655,16 +664,20 @@
 
 ### FE-15: پنل مراجعین برای مشاهده نوبت‌های شخصی و لغو نوبت (Patient Portal)
 - **دسته‌بندی:** Patient Portal / Self-Service
-- **وضعیت فعلی:** 🟡 توابع در لایه سرویس آماده است / صفحه UI اختصاصی پیاده نشده (Service Ready, UI Pending)
+- **وضعیت فعلی:** ✅ تکمیل و کاملاً متصل (Completed & Synchronized)
 - **تطابق با بک‌اند:** معادل **Feature 8**, **Feature 9** در `feature-status-back-end.md`
 
 #### سیر تکاملی و تاریخچه کامیت‌ها (Commit Evolution & Fixes)
 1. **پیاده‌سازی در سرویس API:** `f171a38` (2026-06-08) و `3bb1669` / `2884c37` (2026-08-28):
    - توابع `getUserReservations()` و `cancelReservation(id)` در `reservationService.js` پیاده‌سازی شدند.
+2. **پیاده‌سازی کامل رابط کاربری پورتال مراجعین (UI Implementation):** (2026-09-22):
+   - ایجاد مدال اختصاصی `MyAppointmentsModal.jsx` با نمایش لیست تفکیک‌شده نوبت‌ها، تاریخ شمسی، ساعت، علت مراجعه و بج‌های ۵ گانه وضعیت.
+   - تعبیه دکمه لغو نوبت برای نوبت‌های با وضعیت `pending` و `scheduled` همراه با دیالوگ تاییدیه و بازخورد آنی.
+   - اضافه شدن دکمه «نوبت‌های من» در هدر دسکتاپ و منوی دراور موبایل برای دسترسی سریع بیمار.
 
 #### فایل‌های درگیر در فرانت‌اند
-- سرویس: `src/api/reservationService.js`
-- رابط کاربری: فاقد صفحه مجزا در UI (مراجعین در حال حاضر نوبت خود را در پاپ‌آپ رزرو مشاهده و ثبت می‌کنند).
+- کامپوننت‌ها و چیدمان: `src/components/ui/MyAppointmentsModal.jsx`, `src/components/layout/Header.jsx`, `src/components/ui/AppointmentModal.jsx`, `src/App.jsx`
+- سرویس شبکه: `src/api/reservationService.js`
 
 #### مشخصات کامل قرارداد با بک‌اند (API Contract & Schemas)
 - **دریافت لیست نوبت‌های خود کاربر:**
@@ -674,20 +687,17 @@
 - **لغو نوبت توسط خود بیمار:**
   - **متد و آدرس:** `POST /api/appointments/<id>/cancel/`
   - **دسترسی:** `Bearer <token>` (`IsAuthenticated`)
-  - **منطق بک‌اند:** بیمار می‌تواند نوبت خود را در هر دو وضعیت `scheduled` **یا `pending`** لغو کند.
+  - **منطق بک‌اند:** بیمار می‌تواند نوبت خود را در هر دو وضعیت `scheduled` **یا `pending`** لغو کند. پس از لغو، اسلات زمانی نوبت بلافاصله برای دیگران آزاد می‌شود.
 
 ---
 
 ## ۴. جمع‌بندی وضعیت هماهنگی با تغییرات اخیر بک‌اند و اقدامات اولویت‌دار
 
-برای هماهنگی ۱۰۰٪ بین دو بخش، اقدامات زیر در پروژه‌های فرانت‌اند و بک‌اند پیشنهاد می‌گردد:
+پس از پیاده‌سازی کامل جریان تایید نوبت‌ها (Pending Approval Workflow) و پورتال مشاهده و لغو نوبت مراجعین، وضعیت هماهنگی با بک‌اند در بالاترین سطح قرار گرفته است:
 
-1. **ادغام شاخه `refactor/frontend/17-front-end-auth-flow` در شاخه اصلی `develop`:**
-   - با ادغام این شاخه، ثبت‌نام دو مرحله‌ای با `national_id` و تفکیک ورود ادمین با بک‌اند کاملاً همگام خواهد شد.
-2. **افزودن دکمه‌های تأیید (`approve`) و رد (`disapprove`) در جدول نوبت‌های ادمین (`ReservationsList.jsx`):**
-   - اندپوینت‌های `POST /api/admin/appointments/<id>/approve/` و `disapprove/` در بک‌اند آماده هستند و افزودن دو دکمه ساده به ردیف‌های دارای وضعیت `pending` چرخه رزرو را کامل می‌کند.
-3. **نمایش پیام وضعیت `pending` در مدال رزرو بیمار (`AppointmentModal.jsx`):**
-   - اصلاح متن موفقیت‌آمیز بودن رزرو جهت آگاهی بیمار از بررسی و تأیید منشی مطب.
+1. **سیستم رزرواسیون بیمار (FE-08) و مدیریت ادمین (FE-09):** ✅ کاملاً هماهنگ و متصل شد (نمایش استاتوس pending، اینپوت علت مراجعه، اکشن‌های approve و disapprove و فیلترهای وضعیت).
+2. **قابلیت مشاهده و لغو نوبت بیمار (FE-15):** ✅ با ایجاد کامپوننت `MyAppointmentsModal` و دکمه اختصاصی لغو در رابط کاربری پیاده و فعال شد.
+3. **ادغام شاخه `refactor/frontend/17-front-end-auth-flow` در شاخه اصلی `develop`:** ثبت‌نام دو مرحله‌ای با `national_id` و تفکیک ورود ادمین را در شاخه اصلی نهایی خواهد کرد.
 4. **پیاده‌سازی اندپوینت‌های تکمیلی در بک‌اند برای ماژول‌های آماده فرانت‌اند:**
    - ایجاد اندپوینت ذخیره تم کلینیک (`/api/settings/theme` و `/api/admin/settings/theme`).
    - ایجاد مدل و اندپوینت مدیریت ویدیوهای آموزشی (`/api/videos/` و `/api/admin/videos/`).

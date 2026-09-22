@@ -25,6 +25,7 @@ import AdminProtectedRoute from './components/admin/AdminProtectedRoute';
 /* Chat & Modals */
 import FloatingChatWidget from './components/chat/FloatingChatWidget';
 import AppointmentModal from './components/ui/AppointmentModal';
+import MyAppointmentsModal from './components/ui/MyAppointmentsModal';
 import AuthModal from './components/ui/AuthModal';
 
 const App = () => {
@@ -33,6 +34,7 @@ const App = () => {
 
   const { activeTheme, fetchTheme } = useThemeStore();
   const [openAppointment, setOpenAppointment] = useState(false);
+  const [openMyAppointments, setOpenMyAppointments] = useState(false);
   const [openChat, setOpenChat] = useState(false);
 
   // Sync theme with server on mount and apply to DOM
@@ -59,6 +61,7 @@ const App = () => {
       {!isAdminRoute && (
         <Header
           onOpenAppointment={() => setOpenAppointment(true)}
+          onOpenMyAppointments={() => setOpenMyAppointments(true)}
           onOpenChat={() => setOpenChat(true)}
         />
       )}
@@ -113,6 +116,20 @@ const App = () => {
           <AppointmentModal
             open={openAppointment}
             onClose={() => setOpenAppointment(false)}
+            onOpenMyAppointments={() => {
+              setOpenAppointment(false);
+              setOpenMyAppointments(true);
+            }}
+          />
+
+          {/* My Appointments (User Portal) Modal */}
+          <MyAppointmentsModal
+            open={openMyAppointments}
+            onClose={() => setOpenMyAppointments(false)}
+            onOpenNewBooking={() => {
+              setOpenMyAppointments(false);
+              setOpenAppointment(true);
+            }}
           />
 
           {/* Auth Modal for Login/OTP if required */}
