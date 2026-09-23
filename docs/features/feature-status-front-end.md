@@ -32,8 +32,8 @@
 | **FE-06** | مدیریت شیفت‌های هفتگی پزشک توسط ادمین (Shifts) | 2026-03-08 | **Feature 4** | `GET /api/admin/slots/`<br>`PUT /api/admin/slots/bulk/`<br>`POST/PUT/DELETE /api/admin/slots/<id>/` | ✅ تکمیل و متصل |
 | **FE-07** | مدیریت تعطیلات و استثنائات کلینیک (Exceptions) | 2026-03-13 | **Feature 5** | `GET /api/admin/exceptions/`<br>`PUT /api/admin/exceptions/bulk/`<br>`POST/DELETE /api/admin/exceptions/<id>/` | ✅ تکمیل و متصل |
 | **FE-08** | مدال و تقویم رزرو آنلاین نوبت بیمار (Booking Modal) | 2026-05-12 | **Feature 6, 7, 7b** | `GET /api/appointments/slots/?date=`<br>`POST /api/appointments/book/` | ✅ تکمیل و کاملاً متصل (پشتیبانی از Pending و فیلد reason) |
-| **FE-09** | مدیریت و لیست نوبت‌های رزرو شده ادمین (Reservations) | 2026-03-11 | **Feature 7b, 10** | `GET /api/admin/appointments/`<br>`POST /api/admin/appointments/<id>/approve/`<br>`POST /api/admin/appointments/<id>/disapprove/`<br>`DELETE /api/admin/appointments/<id>/` | ✅ تکمیل و کاملاً متصل (ستون وضعیت، دکمه‌های تایید/رد، تب‌های فیلتر) |
-| **FE-10** | پرونده الکترونیک و یادداشت‌های بیماران (Dossiers) | 2026-03-13 | **Feature 3b, 16** | `GET /api/admin/patients/`<br>`GET /api/admin/patients/<id>/`<br>`PUT/PATCH /api/admin/patients/<id>/`<br>`POST /api/admin/patients/<id>/notes/` | 🟡 متصل / فرم ویرایش کدملی در مدال نیاز است |
+| **FE-09** | مدیریت و لیست نوبت‌های رزرو شده ادمین (Reservations) | 2026-03-11 | **Feature 7b, 10** | `GET /api/admin/appointments/`<br>`POST /api/admin/appointments/<id>/approve/`<br>`POST /api/admin/appointments/<id>/disapprove/`<br>`DELETE /api/admin/appointments/<id>/` | ✅ تکمیل و کاملاً متصل (اکشن‌های سریع جدول، مدال جامع جزئیات نوبت AppointmentDetailModal، نمایش کامل دلیل مراجعه، اتصال به پرونده بیمار) |
+| **FE-10** | پرونده الکترونیک و یادداشت‌های بیماران (Dossiers) | 2026-03-13 | **Feature 3b, 16** | `GET /api/admin/patients/`<br>`GET /api/admin/patients/<id>/`<br>`PUT/PATCH /api/admin/patients/<id>/`<br>`POST /api/admin/patients/<id>/notes/` | ✅ تکمیل و متصل (مدال فارسی و راست‌چین PatientDetailModal، نمایش کدملی، سوابق نوبت‌های جلالی، یادداشت‌های بالینی پزشک و اتصال مستقیم از کارتابل نوبت‌ها) |
 | **FE-11** | ثبت نظرات مراجعین و پنل تایید ادمین (Reviews) | 2026-02-12 | **Feature 17** | `GET /api/reviews/`<br>`POST /api/reviews/`<br>`GET /api/admin/reviews/`<br>`PATCH /api/admin/reviews/<id>/`<br>`DELETE /api/admin/reviews/<id>/` | ✅ تکمیل و کاملاً متصل |
 | **FE-12** | گالری ویدیوهای آموزشی و مدیریت ویدیو ادمین (Videos) | 2026-08-28 | — | `GET /api/videos/`<br>`POST /api/admin/videos/`<br>`DELETE /api/admin/videos/<id>/` | ⚠️ آماده فرانت / نیازمند ایجاد مدل در بک‌اند |
 | **FE-13** | شخصی‌سازی تم و پالت رنگی سراسری (Themes) | 2026-08-28 | — | `GET /api/settings/theme`<br>`PUT /api/admin/settings/theme` | ⚠️ آماده فرانت / نیازمند مدل Settings در بک‌اند |
@@ -460,9 +460,14 @@
    - اضافه شدن ستون اختصاصی «وضعیت» و نشان‌های ۵ گانه.
    - اکشن‌های تایید نوبت (`approve`) و رد نوبت (`disapprove`) با بروزرسانی زنده بدون رفرش.
    - اضافه شدن تب‌های فیلتر نوبت‌ها (همه، در انتظار تایید با شمارنده زنده، تایید شده، لغو شده).
+6. **پیاده‌سازی پاپ‌آپ جامع نوبت، نمایش کامل دلیل مراجعه و اتصال به پرونده بیمار (Appointment Detail & Dossier Nav):** (2026-09-23):
+   - ایجاد کامپوننت ماژولار `AppointmentDetailModal.jsx` جهت نمایش کامل مشخصات نوبت با کلیک روی هر سطر جدول یا آیکون مشاهده.
+   - نمایش کامل و بدون بریدگی متن دلیل مراجعه بیمار (`reason`) در کادر اختصاصی پاپ‌آپ (در حالی که در جدول به صورت خلاصه‌شده با تولتیپ دیده می‌شود).
+   - حفظ هم‌زمان دکمه‌های اکشن سریع در ردیف جدول (آیکون‌های تایید و رد) و دکمه‌های اکشن درون پاپ‌آپ همراه با لودر وضعیت.
+   - قابلیت باز کردن مستقیم پرونده بیمار (`PatientDetailModal`) از درون پاپ‌آپ نوبت و دکمه بازگشت به نوبت.
 
 #### فایل‌های درگیر در فرانت‌اند
-- کامپوننت‌ها و صفحات: `src/components/admin/reservations/ReservationsList.jsx`, `src/pages/admin/ReservedTimes.jsx`
+- کامپوننت‌ها و صفحات: `src/components/admin/reservations/AppointmentDetailModal.jsx`, `src/components/admin/reservations/ReservationsList.jsx`, `src/pages/admin/ReservedTimes.jsx`, `src/components/admin/patients/PatientDetailModal.jsx`
 - سرویس‌ها: `src/api/reservationService.js`, `src/api/admin.js`
 
 #### مشخصات کامل قرارداد با بک‌اند (API Contract & Schemas)
@@ -493,12 +498,13 @@
 #### تحلیل گپ و اقدامات انجام‌شده (Completed Actions)
 - **ستون وضعیت و اکشن‌ها:** ستون وضعیت به همراه دکمه‌های تایید (`approve`) و رد نوبت (`disapprove`) برای نوبت‌های با وضعیت `pending` تعبیه و متصل شدند.
 - **تب‌های فیلتر:** امکان مشاهده اختصاصی نوبت‌های نیازمند تایید با شمارنده نوتیفیکیشن پیاده‌سازی شد.
+- **پاپ‌آپ جامع نوبت و نمایش کامل علت مراجعه:** پاپ‌آپ اختصاصی `AppointmentDetailModal` با قابلیت نمایش نامحدود متن دلیل مراجعه، امکان تایید و رد، و انتقال یکپارچه به پرونده بیمار پیاده‌سازی و تست شد.
 
 ---
 
 ### FE-10: پرونده الکترونیک و یادداشت‌های بیماران در پنل ادمین (Patient Dossiers)
 - **دسته‌بندی:** Admin Panel / Clinical Records
-- **وضعیت فعلی:** 🟡 متصل با فال‌بک / آماده افزودن فیلد کدملی
+- **وضعیت فعلی:** ✅ تکمیل و متصل (Completed & Synchronized)
 - **تطابق با بک‌اند:** معادل **Feature 3b**, **Feature 16** در `feature-status-back-end.md`
 
 #### سیر تکاملی و تاریخچه کامیت‌ها (Commit Evolution & Fixes)
@@ -507,6 +513,12 @@
    - اتصال به `adminApi.getPatients` و `adminApi.getPatientDetail`.
    - ایجاد مدال سه‌ستونه جامع `PatientDetailModal.jsx` شامل تاریخچه مراجعات، یادداشت‌های ویزیت و پروفایل درمانی با مکانیسم Fallback پایدار.
    - ثبت یادداشت پزشک با متد `adminApi.addPatientNote`.
+3. **فارسی‌سازی کامل، راست‌چین‌سازی RTL، نمایش کدملی و سوابق نوبت‌ها (RTL & Complete Dossier Integration):** (2026-09-23):
+   - بازنویسی کامل `PatientDetailModal.jsx` به زبان فارسی استاندارد و ساختار راست‌چین (RTL).
+   - نمایش کد ملی بیمار (`national_id`)، شماره تماس، تاریخ تولد و برچسب‌های بالینی.
+   - نمایش تاریخچه کامل نوبت‌های گذشته و آینده بیمار با تقویم شمسی جلالی و برچسب‌های فارسی وضعیت.
+   - استعلام زنده اطلاعات بیمار با شماره تماس (`getPatientByPhone`) هنگام فراخوانی از پاپ‌آپ نوبت.
+   - تعبیه دکمه بازگشت به نوبت (`onBackToAppointment`) جهت تجربه کاربری بدون وقفه برای پزشک.
 
 #### فایل‌های درگیر در فرانت‌اند
 - کامپوننت‌ها: `src/components/admin/patients/PatientsList.jsx`, `src/components/admin/patients/PatientDetailModal.jsx`
