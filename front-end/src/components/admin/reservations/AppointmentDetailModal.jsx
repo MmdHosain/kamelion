@@ -311,19 +311,23 @@ export default function AppointmentDetailModal({
         </div>
 
         {/* Reason for Visit (Full Text, No Cutoff) */}
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2 min-w-0">
           <label className="text-xs font-bold text-gray-700 flex items-center gap-1.5">
             <FileText size={15} className="text-primary" />
             متن کامل دلیل مراجعه بیمار
           </label>
-          <div className="p-4 bg-gray-50 rounded-2xl border border-gray-200/90 text-sm text-gray-800 leading-relaxed min-h-[90px] whitespace-pre-wrap select-text">
-            {appointment.reason && appointment.reason !== '-' ? (
-              appointment.reason
-            ) : (
-              <span className="text-gray-400 text-xs italic">
-                توضیحی توسط بیمار برای علت مراجعه ثبت نشده است.
-              </span>
-            )}
+          <div className="relative w-full">
+            <textarea
+              readOnly
+              rows={4}
+              value={
+                appointment.reason && appointment.reason !== '-'
+                  ? appointment.reason
+                  : ''
+              }
+              placeholder="توضیحی توسط بیمار برای علت مراجعه ثبت نشده است."
+              className="w-full max-h-[180px] min-h-[95px] p-3.5 bg-gray-50/80 rounded-2xl border border-gray-200/90 text-sm text-gray-800 leading-relaxed resize-none focus:outline-none focus:ring-2 focus:ring-primary/20 chat-scroll text-right select-text placeholder:text-gray-400 placeholder:text-xs placeholder:italic font-normal transition-all overflow-y-auto break-words"
+            />
           </div>
         </div>
 
