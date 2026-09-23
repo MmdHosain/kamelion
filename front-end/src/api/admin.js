@@ -43,7 +43,17 @@ export const adminApi = {
     return response.data;
   },
 
+  approveAppointment: async (id) => {
+    const response = await apiClient.post(`/admin/appointments/${id}/approve/`);
+    return response.data;
+  },
+
   disapproveReservation: async (id) => {
+    const response = await apiClient.post(`/admin/appointments/${id}/disapprove/`);
+    return response.data;
+  },
+
+  disapproveAppointment: async (id) => {
     const response = await apiClient.post(`/admin/appointments/${id}/disapprove/`);
     return response.data;
   },
@@ -51,6 +61,27 @@ export const adminApi = {
   deleteReservation: async (id) => {
     const response = await apiClient.delete(`/admin/appointments/${id}/`);
     return response.data;
+  },
+
+  getPatientByPhone: async (phoneNumber) => {
+    if (!phoneNumber) return null;
+    try {
+      const cleanPhone = String(phoneNumber).replace(/\s+/g, '');
+      const response = await apiClient.get('/admin/patients/', {
+        params: { search: cleanPhone },
+      });
+      const results = extractResults(response.data);
+      if (Array.isArray(results) && results.length > 0) {
+        // Find exact match or first result
+        const exact = results.find(
+          (p) => String(p.phone_number).replace(/\s+/g, '') === cleanPhone
+        );
+        return exact || results[0];
+      }
+      return null;
+    } catch {
+      return null;
+    }
   },
 
   getChatProfiles: async () => {

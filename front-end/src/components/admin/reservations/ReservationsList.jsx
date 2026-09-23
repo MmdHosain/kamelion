@@ -21,6 +21,7 @@ import {
   CheckCircle2,
   Check,
   Sparkles,
+  Eye,
 } from 'lucide-react';
 import { reservationService } from '../../../api/reservationService';
 import { adminApi } from '../../../api/admin';
@@ -31,6 +32,8 @@ import {
   formatJalaliDisplay,
   toPersianDigits,
 } from '../../../utils/jalaliDateUtils';
+import AppointmentDetailModal, { getStatusConfig } from './AppointmentDetailModal';
+import PatientDetailModal from '../patients/PatientDetailModal';
 
 const ROW_OPTIONS = [10, 25, 50, 100];
 const TABLE_HEADERS = [
@@ -98,6 +101,8 @@ const normalizeReservation = (item) => {
 
   return {
     id: item.id,
+    userId: item.user_id || item.userId || item.user?.id || null,
+    nationalId: item.national_id || item.nationalId || item.user?.national_id || null,
     phoneNumber:
       item.phone_number ||
       item.phoneNumber ||
@@ -111,6 +116,7 @@ const normalizeReservation = (item) => {
     time: (item.appointment_time || item.time || '').slice(0, 5),
     reason: item.reason || item.description || '-',
     status: item.status || 'scheduled',
+    createdAt: item.created_at || null,
   };
 };
 
@@ -140,6 +146,11 @@ export default function ReservationsList() {
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
 
+  // Active appointment detail modal state
+  const [activeAppointment, setActiveAppointment] = useState(null);
+  // Active patient dossier modal state
+  const [activePatient, setActivePatient] = useState(null);
+
   // Add Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalDate, setModalDate] = useState(null);
@@ -156,6 +167,38 @@ export default function ReservationsList() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
   const [submitSuccess, setSubmitSuccess] = useState(false);
+
+  const handleOpenAppointmentDetail = (appointment) => {
+    setActiveAppointment(appointment);
+  };
+
+  const handleViewPatientFromAppointment = (appointment) => {
+    setActiveAppointment(null);
+    setActivePatient({
+      id: appointment.userId,
+      fullName: appointment.fullName,
+      phoneNumber: appointment.phoneNumber,
+      nationalId: appointment.nationalId,
+      originAppointment: appointment,
+    });
+  };
+
+  const handleBackToAppointment = () => {
+    if (activePatient?.originAppointment) {
+      const origin = activePatient.originAppointment;
+      setActivePatient(null);
+      setActiveAppointment(origin);
+    }
+  };
+
+  const handleAppointmentStatusChange = (appointmentId, newStatus) => {
+    setReservations((prev) =>
+      prev.map((r) => (r.id === appointmentId ? { ...r, status: newStatus } : r))
+    );
+    setActiveAppointment((prev) =>
+      prev && prev.id === appointmentId ? { ...prev, status: newStatus } : prev
+    );
+  };
 
   // Fetch reservations on mount
   const loadReservations = useCallback(async () => {
@@ -506,90 +549,111 @@ export default function ReservationsList() {
                   </td>
                 </tr>
               ) : paginatedReservations.length > 0 ? (
-                paginatedReservations.map((r, idx) => (
-                  <tr
-                    key={r.id || idx}
-                    className={`border-b border-gray-100 transition-colors hover:bg-primary/5 ${
-                      idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/40'
-                    }`}
-                  >
-                    <td className="px-5 py-3.5 text-gray-700 font-mono text-xs font-bold dir-ltr text-right">
-                      {r.phoneNumber}
-                    </td>
-                    <td className="px-5 py-3.5 font-bold text-gray-900">{r.fullName}</td>
-                    <td className="px-5 py-3.5 text-primary font-medium">{r.displayDate}</td>
-                    <td className="px-5 py-3.5 text-gray-700 font-bold">
-                      <span className="bg-primary/10 text-primary-dark px-2 py-0.5 rounded-lg text-xs">
-                        ساعت {toPersianDigits(r.time)}
-                      </span>
-                    </td>
-                    <td className="px-5 py-3.5 text-gray-500 text-xs max-w-[180px] truncate">
-                      {r.reason}
-                    </td>
-                    <td className="px-5 py-3.5">
-                      {(() => {
-                        const cfg = STATUS_CONFIG[r.status] || {
-                          label: r.status,
-                          badgeClass: 'bg-gray-100 text-gray-700 border-gray-200',
-                          dotClass: 'bg-gray-400',
-                        };
-                        return (
-                          <span
-                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[11px] font-bold ${cfg.badgeClass}`}
-                          >
-                            <span className={`w-1.5 h-1.5 rounded-full ${cfg.dotClass}`} />
-                            {cfg.label}
-                          </span>
-                        );
-                      })()}
-                    </td>
-                    <td className="px-5 py-3.5 text-center">
-                      <div className="flex items-center justify-center gap-1">
-                        {actionLoadingId === r.id ? (
-                          <div className="p-2">
-                            <Loader2 size={16} className="text-primary animate-spin" />
-                          </div>
-                        ) : (
-                          <>
-                            {r.status === 'pending' && (
-                              <>
-                                <button
-                                  type="button"
-                                  onClick={() => handleApprove(r.id)}
-                                  className="inline-flex items-center justify-center p-2 rounded-xl text-emerald-600 hover:bg-emerald-50 transition-colors cursor-pointer"
-                                  title="تایید نوبت"
-                                  aria-label="تایید نوبت"
-                                >
-                                  <Check size={16} strokeWidth={2.5} />
-                                </button>
+                paginatedReservations.map((r, idx) => {
+                  const statusConf = getStatusConfig(r.status);
+                  const StatusIcon = statusConf.icon;
 
-                                <button
-                                  type="button"
-                                  onClick={() => handleDisapprove(r.id)}
-                                  className="inline-flex items-center justify-center p-2 rounded-xl text-rose-500 hover:bg-rose-50 transition-colors cursor-pointer"
-                                  title="رد نوبت و آزادسازی ساعت"
-                                  aria-label="رد نوبت"
-                                >
-                                  <X size={16} strokeWidth={2.5} />
-                                </button>
-                              </>
-                            )}
+                  return (
+                    <tr
+                      key={r.id || idx}
+                      onClick={() => handleOpenAppointmentDetail(r)}
+                      className={`border-b border-gray-100 transition-colors hover:bg-primary/5 cursor-pointer ${
+                        idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/40'
+                      }`}
+                      title="جهت مشاهده جزئیات کامل نوبت کلیک نمایید"
+                    >
+                      <td className="px-5 py-3.5 text-gray-700 font-mono text-xs font-bold dir-ltr text-right">
+                        {r.phoneNumber}
+                      </td>
+                      <td className="px-5 py-3.5 font-bold text-gray-900">{r.fullName}</td>
+                      <td className="px-5 py-3.5 text-primary font-medium">{r.displayDate}</td>
+                      <td className="px-5 py-3.5 text-gray-700 font-bold">
+                        <span className="bg-primary/10 text-primary-dark px-2 py-0.5 rounded-lg text-xs">
+                          ساعت {toPersianDigits(r.time)}
+                        </span>
+                      </td>
+                      <td className="px-5 py-3.5 text-gray-500 text-xs max-w-[180px] truncate" title="جهت مشاهده متن کامل کلیک نمایید">
+                        {r.reason}
+                      </td>
+                      <td className="px-5 py-3.5">
+                        <span
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[11px] font-bold ${statusConf.bg} ${statusConf.text} ${statusConf.border} whitespace-nowrap`}
+                        >
+                          <span className={`w-1.5 h-1.5 rounded-full ${statusConf.dot}`} />
+                          <StatusIcon size={12} />
+                          <span>{statusConf.label}</span>
+                        </span>
+                      </td>
+                      <td className="px-5 py-3.5 text-center">
+                        <div className="flex items-center justify-center gap-1">
+                          {actionLoadingId === r.id ? (
+                            <div className="p-2">
+                              <Loader2 size={16} className="text-primary animate-spin" />
+                            </div>
+                          ) : (
+                            <>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleOpenAppointmentDetail(r);
+                                }}
+                                className="inline-flex items-center justify-center p-2 rounded-xl text-primary hover:text-primary-dark hover:bg-primary/10 transition-colors cursor-pointer"
+                                title="مشاهده جزئیات کامل نوبت و پرونده بیمار"
+                                aria-label="مشاهده جزئیات کامل نوبت"
+                              >
+                                <Eye size={16} />
+                              </button>
 
-                            <button
-                              type="button"
-                              onClick={() => handleDelete(r.id)}
-                              className="inline-flex items-center justify-center p-2 rounded-xl text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
-                              title="حذف نوبت"
-                              aria-label="حذف نوبت"
-                            >
-                              <Trash2 size={16} />
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))
+                              {r.status === 'pending' && (
+                                <>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleApprove(r.id);
+                                    }}
+                                    className="inline-flex items-center justify-center p-2 rounded-xl text-emerald-600 hover:bg-emerald-50 transition-colors cursor-pointer"
+                                    title="تایید نوبت"
+                                    aria-label="تایید نوبت"
+                                  >
+                                    <Check size={16} strokeWidth={2.5} />
+                                  </button>
+
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDisapprove(r.id);
+                                    }}
+                                    className="inline-flex items-center justify-center p-2 rounded-xl text-rose-500 hover:bg-rose-50 transition-colors cursor-pointer"
+                                    title="رد نوبت و آزادسازی ساعت"
+                                    aria-label="رد نوبت"
+                                  >
+                                    <X size={16} strokeWidth={2.5} />
+                                  </button>
+                                </>
+                              )}
+
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDelete(r.id);
+                                }}
+                                className="inline-flex items-center justify-center p-2 rounded-xl text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+                                title="حذف نوبت"
+                                aria-label="حذف نوبت"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
               ) : (
                 <tr>
                   <td colSpan={7} className="px-5 py-16 text-center text-gray-400">
@@ -943,6 +1007,33 @@ export default function ReservationsList() {
             )}
           </div>
         </div>
+      )}
+
+      {/* Appointment Detail Modal */}
+      {activeAppointment && (
+        <AppointmentDetailModal
+          appointment={activeAppointment}
+          onClose={() => setActiveAppointment(null)}
+          onViewPatient={handleViewPatientFromAppointment}
+          onStatusChange={handleAppointmentStatusChange}
+          onDelete={(id) => {
+            setReservations((prev) => prev.filter((r) => r.id !== id));
+            setActiveAppointment(null);
+          }}
+        />
+      )}
+
+      {/* Patient Dossier Modal */}
+      {activePatient && (
+        <PatientDetailModal
+          patient={activePatient}
+          patientId={activePatient.id}
+          phoneNumber={activePatient.phoneNumber}
+          onClose={() => setActivePatient(null)}
+          onBackToAppointment={
+            activePatient.originAppointment ? handleBackToAppointment : undefined
+          }
+        />
       )}
     </>
   );
