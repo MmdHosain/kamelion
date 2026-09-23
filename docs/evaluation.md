@@ -33,6 +33,7 @@ Components like `AppointmentModal.jsx` and `PatientDetailModal.jsx` inject raw C
 
 ## 4. Recommendations for Refactoring
 
+
 1. **Update `tailwind.config.js`**:
    ```javascript
    module.exports = {
