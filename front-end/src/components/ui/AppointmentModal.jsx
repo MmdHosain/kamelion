@@ -1,11 +1,36 @@
 // src/components/ui/AppointmentModal.jsx
-import React, { useState, useEffect, useCallback } from 'react';
-import { X, Calendar, Clock, CheckCircle2, AlertCircle, Loader2, Sparkles, AlertTriangle } from 'lucide-react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import {
+  X,
+  Calendar,
+  Clock,
+  CheckCircle2,
+  AlertCircle,
+  Loader2,
+  Sparkles,
+  AlertTriangle,
+  FileText,
+} from 'lucide-react';
 import JalaliCalendar from './JalaliCalendar';
 import { getAvailableSlots, bookSlot } from '../../api/reservationService';
 import { useAuth } from '../../hooks/useAuth';
 import { getApiErrorMessage } from '../../utils/errorUtils';
-import { formatDateForApi, formatJalaliDisplay } from '../../utils/jalaliDateUtils';
+import {
+  formatDateForApi,
+  formatJalaliDisplay,
+  toPersianDigits,
+} from '../../utils/jalaliDateUtils';
+
+const QUICK_REASONS = [
+  'معاینه و چکاپ دوره‌ای',
+  'بررسی سونوگرافی یا ماموگرافی',
+  'لمس توده یا احساس درد',
+  'مشاوره جراحی زیبایی (ماموپلاستی / پروتز)',
+  'مراقبت و معاینه پس از جراحی',
+];
+
+const MAX_REASON_LENGTH = 300;
+const MIN_REASON_LENGTH = 5;
 
 const normalizeSlotStatus = (status) => {
   if (!status) return 'available';
@@ -68,6 +93,8 @@ export default function AppointmentModal({ open, onClose, onOpenMyAppointments }
   const [bookingSuccess, setBookingSuccess] = useState(false);
   const [bookedAppointment, setBookedAppointment] = useState(null);
 
+  const reasonInputRef = useRef(null);
+
   useEffect(() => {
     if (open) {
       setSelectedDate(null);
@@ -87,7 +114,7 @@ export default function AppointmentModal({ open, onClose, onOpenMyAppointments }
     if (!date) return;
 
     setIsLoadingSlots(true);
-    setErrors((prev) => ({ ...prev, date: '', booking: '' }));
+    setErrors((prev) => ({ ...prev, date: '', booking: '', time: '' }));
     setSelectedTime(null);
     setAvailableSlots([]);
 
@@ -114,19 +141,78 @@ export default function AppointmentModal({ open, onClose, onOpenMyAppointments }
     fetchSlots(day);
   };
 
+  const handleSlotSelect = (time) => {
+    setSelectedTime(time);
+    setErrors((prev) => ({ ...prev, time: '' }));
+    // Auto-focus reason input after choosing slot
+    setTimeout(() => {
+      reasonInputRef.current?.focus();
+    }, 150);
+  };
+
+  const handleReasonChange = (e) => {
+    const val = e.target.value;
+    setReason(val);
+    if (errors.reason && val.trim().length >= MIN_REASON_LENGTH) {
+      setErrors((prev) => ({ ...prev, reason: '' }));
+    }
+  };
+
+  const handleQuickReasonClick = (chipText) => {
+    setReason((prev) => {
+      const next = prev.trim() ? `${prev.trim()} — ${chipText}` : chipText;
+      return next.slice(0, MAX_REASON_LENGTH);
+    });
+    setErrors((prev) => ({ ...prev, reason: '' }));
+    reasonInputRef.current?.focus();
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!selectedDate) {
+      newErrors.date = 'لطفاً ابتدا روز مورد نظر خود را از تقویم انتخاب فرمایید.';
+    }
+
+    if (!selectedTime) {
+      newErrors.time = 'لطفاً یکی از ساعت‌های کاری خالی را برای ویزیت انتخاب نمایید.';
+    }
+
+    const trimmedReason = reason.trim();
+    if (!trimmedReason) {
+      newErrors.reason = 'ثبت علت مراجعه الزامی است. لطفاً دلیل ویزیت خود را بنویسید.';
+    } else if (trimmedReason.length < MIN_REASON_LENGTH) {
+      newErrors.reason = `علت مراجعه باید حداقل ${toPersianDigits(MIN_REASON_LENGTH)} کاراکتر باشد تا پزشک بتواند شرح حال اولیه را بررسی کند.`;
+    }
+
+    setErrors((prev) => ({ ...prev, ...newErrors }));
+    return Object.keys(newErrors).length === 0;
+  };
+
   const doBookAppointment = useCallback(async () => {
     if (!selectedDate || !selectedTime) return;
+
+    const trimmedReason = reason.trim();
+    if (!trimmedReason || trimmedReason.length < MIN_REASON_LENGTH) {
+      setErrors((prev) => ({
+        ...prev,
+        reason: 'ثبت علت مراجعه الزامی است (حداقل ۵ کاراکتر).',
+      }));
+      reasonInputRef.current?.focus();
+      return;
+    }
 
     setIsBooking(true);
     setErrors((prev) => ({ ...prev, booking: '' }));
 
     try {
       const apiDate = formatDateForApi(selectedDate);
-      const result = await bookSlot(apiDate, selectedTime, reason.trim());
+      const result = await bookSlot(apiDate, selectedTime, trimmedReason);
       setBookedAppointment({
         ...result,
         displayDate: formatJalaliDisplay(selectedDate, true),
         time: selectedTime,
+        reason: trimmedReason,
       });
       setBookingSuccess(true);
     } catch (err) {
@@ -152,15 +238,24 @@ export default function AppointmentModal({ open, onClose, onOpenMyAppointments }
       pendingBookingAfterAuth &&
       selectedDate &&
       selectedTime &&
+      reason.trim().length >= MIN_REASON_LENGTH &&
       !isBooking
     ) {
       setPendingBookingAfterAuth(false);
       doBookAppointment();
     }
-  }, [open, isAuthenticated, pendingBookingAfterAuth, selectedDate, selectedTime, isBooking, doBookAppointment]);
+  }, [open, isAuthenticated, pendingBookingAfterAuth, selectedDate, selectedTime, reason, isBooking, doBookAppointment]);
 
   const handleBookAppointment = () => {
-    if (!selectedDate || !selectedTime || isBooking) return;
+    if (isBooking) return;
+
+    const isValid = validateForm();
+    if (!isValid) {
+      if (!reason.trim() || reason.trim().length < MIN_REASON_LENGTH) {
+        reasonInputRef.current?.focus();
+      }
+      return;
+    }
 
     if (!isAuthenticated) {
       setPendingBookingAfterAuth(true);
@@ -246,8 +341,16 @@ export default function AppointmentModal({ open, onClose, onOpenMyAppointments }
                 </div>
                 <div className="flex justify-between items-center border-b border-gray-100 pb-2">
                   <span className="text-textDark/60">ساعت ویزیت:</span>
-                  <span className="text-primary font-black">ساعت {bookedAppointment.time}</span>
+                  <span className="text-primary font-black">ساعت {toPersianDigits(bookedAppointment.time)}</span>
                 </div>
+                {bookedAppointment.reason && (
+                  <div className="flex justify-between items-start border-b border-gray-100 pb-2 gap-2 text-right">
+                    <span className="text-textDark/60 shrink-0">علت مراجعه:</span>
+                    <span className="text-textDark font-medium leading-relaxed max-w-[220px]">
+                      {bookedAppointment.reason}
+                    </span>
+                  </div>
+                )}
                 {bookedAppointment.id && (
                   <div className="flex justify-between items-center">
                     <span className="text-textDark/60">کد رهگیری نوبت:</span>
@@ -303,13 +406,14 @@ export default function AppointmentModal({ open, onClose, onOpenMyAppointments }
                 />
               </div>
 
-              {/* Column 2: Available Slots & Summary */}
+              {/* Column 2: Available Slots & Appointment Reason */}
               <div className="bg-white border border-primary/15 rounded-3xl p-5 sm:p-6 flex flex-col justify-between shadow-xs">
-                <div>
-                  <div className="flex items-center justify-between border-b border-primary/15 pb-3 mb-4">
+                <div className="flex flex-col gap-4">
+                  {/* Step 2 Header */}
+                  <div className="flex items-center justify-between border-b border-primary/10 pb-3">
                     <span className="text-xs font-bold text-primary flex items-center gap-1.5">
                       <span className="w-5 h-5 rounded-full bg-primary text-white text-[10px] font-black flex items-center justify-center">۲</span>
-                      ساعت‌های ویزیت
+                      انتخاب ساعت ویزیت
                     </span>
                     {selectedDate && (
                       <span className="text-xs font-bold text-primary-dark bg-primary/10 px-2.5 py-1 rounded-lg">
@@ -326,45 +430,53 @@ export default function AppointmentModal({ open, onClose, onOpenMyAppointments }
                   )}
 
                   {!isLoadingSlots && errors.date && (
-                    <div className="p-4 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2 my-4">
+                    <div className="p-4 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2 my-2">
                       <AlertCircle className="w-4 h-4 shrink-0 text-red-500" />
                       <span>{errors.date}</span>
                     </div>
                   )}
 
                   {!isLoadingSlots && !errors.date && availableSlots.length > 0 && (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 max-h-52 overflow-y-auto chat-scroll p-1">
-                      {availableSlots.map((slot, index) => {
-                        const isAvailable = slot.status === 'available';
-                        const isSelected = selectedTime === slot.time;
+                    <div className="flex flex-col gap-2">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-40 overflow-y-auto chat-scroll p-1">
+                        {availableSlots.map((slot, index) => {
+                          const isAvailable = slot.status === 'available';
+                          const isSelected = selectedTime === slot.time;
 
-                        return (
-                          <button
-                            key={`${slot.time}-${index}`}
-                            type="button"
-                            onClick={() => setSelectedTime(slot.time)}
-                            disabled={!isAvailable || isBooking}
-                            className={`py-3 px-3 rounded-2xl border-2 text-center font-black text-sm transition-all duration-200 cursor-pointer ${
-                              isSelected
-                                ? 'bg-gradient-to-r from-primary to-primary-dark border-transparent text-white shadow-lg shadow-primary/35 scale-102 ring-2 ring-primary/30'
-                                : isAvailable
-                                ? 'bg-white border-primary/20 text-textDark hover:bg-primary/10 hover:border-primary'
-                                : 'bg-gray-100/70 border-gray-200 text-gray-400 cursor-not-allowed opacity-50'
-                            }`}
-                          >
-                            <div className="flex items-center justify-center gap-1">
-                              <Clock className={`w-3.5 h-3.5 ${isSelected ? 'text-white' : 'text-primary'}`} />
-                              <span>{slot.time}</span>
-                            </div>
-                          </button>
-                        );
-                      })}
+                          return (
+                            <button
+                              key={`${slot.time}-${index}`}
+                              type="button"
+                              onClick={() => handleSlotSelect(slot.time)}
+                              disabled={!isAvailable || isBooking}
+                              className={`py-2.5 px-3 rounded-2xl border-2 text-center font-black text-sm transition-all duration-200 cursor-pointer ${
+                                isSelected
+                                  ? 'bg-gradient-to-r from-primary to-primary-dark border-transparent text-white shadow-lg shadow-primary/35 scale-102 ring-2 ring-primary/30'
+                                  : isAvailable
+                                  ? 'bg-white border-primary/20 text-textDark hover:bg-primary/10 hover:border-primary'
+                                  : 'bg-gray-100/70 border-gray-200 text-gray-400 cursor-not-allowed opacity-50'
+                              }`}
+                            >
+                              <div className="flex items-center justify-center gap-1">
+                                <Clock className={`w-3.5 h-3.5 ${isSelected ? 'text-white' : 'text-primary'}`} />
+                                <span>{toPersianDigits(slot.time)}</span>
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                      {errors.time && (
+                        <p className="text-rose-600 text-xs font-bold flex items-center gap-1">
+                          <AlertCircle className="w-3.5 h-3.5" />
+                          <span>{errors.time}</span>
+                        </p>
+                      )}
                     </div>
                   )}
 
                   {!isLoadingSlots && !errors.date && selectedDate && availableSlots.length === 0 && (
-                    <div className="flex flex-col items-center justify-center py-8 px-4 text-center bg-amber-500/5 rounded-2xl border border-amber-500/20 my-2">
-                      <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center mb-2">
+                    <div className="flex flex-col items-center justify-center py-6 px-4 text-center bg-amber-500/5 rounded-2xl border border-amber-500/20 my-2">
+                      <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center mb-2">
                         <AlertTriangle className="w-5 h-5" />
                       </div>
                       <p className="text-xs md:text-sm font-bold text-textDark mb-1">
@@ -377,42 +489,95 @@ export default function AppointmentModal({ open, onClose, onOpenMyAppointments }
                   )}
 
                   {!isLoadingSlots && !selectedDate && (
-                    <div className="text-center text-textDark/55 py-12 text-xs md:text-sm font-medium leading-relaxed">
-                      لطفاً از تقویم سمت راست، یک روز کاری را انتخاب نمایید تا زمان‌های آزاد نمایش داده شوند.
+                    <div className="text-center text-textDark/55 py-8 text-xs md:text-sm font-medium leading-relaxed">
+                      لطفاً از تقویم سمت راست، ابتدا یک روز کاری را انتخاب نمایید تا زمان‌های آزاد نمایش داده شوند.
+                    </div>
+                  )}
+
+                  {/* Step 3: Mandatory Reason for Visit (Appears right after slot selection) */}
+                  {selectedDate && selectedTime && (
+                    <div className="pt-3 border-t border-primary/15 flex flex-col gap-3 animate-fadeSlide">
+                      {/* Selection Summary Pill */}
+                      <div className="p-3 rounded-2xl bg-gradient-to-r from-primary/10 via-primary/5 to-primary-dark/10 border border-primary/20 flex items-center justify-between text-xs font-bold text-textDark">
+                        <span className="flex items-center gap-1.5 text-primary-dark">
+                          <Sparkles className="w-4 h-4 text-primary" />
+                          زمان انتخابی شما:
+                        </span>
+                        <span className="font-black text-primary">
+                          ساعت {toPersianDigits(selectedTime)} — {formatJalaliDisplay(selectedDate, true)}
+                        </span>
+                      </div>
+
+                      {/* Form Field */}
+                      <div className="flex flex-col gap-1.5">
+                        <div className="flex items-center justify-between">
+                          <label
+                            htmlFor="appointment-reason"
+                            className="text-xs font-bold text-textDark flex items-center gap-1.5"
+                          >
+                            <span className="w-5 h-5 rounded-full bg-primary text-white text-[10px] font-black flex items-center justify-center">۳</span>
+                            <FileText className="w-3.5 h-3.5 text-primary" />
+                            <span>علت مراجعه به پزشک</span>
+                            <span className="text-rose-500 font-black" title="الزامی">*</span>
+                          </label>
+                          <span className={`text-[11px] font-mono font-bold ${
+                            reason.length >= MAX_REASON_LENGTH ? 'text-rose-500' : 'text-textDark/55'
+                          }`}>
+                            {toPersianDigits(reason.length)} / {toPersianDigits(MAX_REASON_LENGTH)} کاراکتر
+                          </span>
+                        </div>
+
+                        {/* Quick Selection Tags */}
+                        <div className="flex flex-wrap gap-1.5 my-0.5">
+                          {QUICK_REASONS.map((chipText) => (
+                            <button
+                              key={chipText}
+                              type="button"
+                              onClick={() => handleQuickReasonClick(chipText)}
+                              className="text-[11px] font-bold px-2.5 py-1 rounded-xl bg-primary/5 hover:bg-primary/15 text-primary-dark border border-primary/15 hover:border-primary/30 transition-all cursor-pointer"
+                            >
+                              + {chipText}
+                            </button>
+                          ))}
+                        </div>
+
+                        {/* Textarea Input */}
+                        <textarea
+                          id="appointment-reason"
+                          ref={reasonInputRef}
+                          rows={3}
+                          maxLength={MAX_REASON_LENGTH}
+                          value={reason}
+                          onChange={handleReasonChange}
+                          placeholder="علائم، شرح حال مختصر، نتایج ماموگرافی یا هدف از مراجعه را یادداشت فرمایید (حداقل ۵ کاراکتر)..."
+                          aria-required="true"
+                          aria-invalid={Boolean(errors.reason)}
+                          aria-describedby={errors.reason ? 'reason-error' : undefined}
+                          className={`w-full p-3 text-xs md:text-sm border rounded-2xl bg-white focus:outline-none focus:ring-2 transition-all font-medium resize-none shadow-xs ${
+                            errors.reason
+                              ? 'border-rose-400 bg-rose-50/20 focus:ring-rose-200 focus:border-rose-500 text-textDark'
+                              : 'border-primary/25 focus:border-primary focus:ring-primary/20 text-textDark placeholder:text-textDark/45'
+                          }`}
+                        />
+
+                        {/* Error Message */}
+                        {errors.reason && (
+                          <div
+                            id="reason-error"
+                            role="alert"
+                            className="flex items-center gap-1.5 text-rose-600 text-xs font-bold mt-1 bg-rose-50/80 px-2.5 py-1.5 rounded-xl border border-rose-200 animate-fadeSlide"
+                          >
+                            <AlertCircle className="w-4 h-4 shrink-0 text-rose-500" />
+                            <span>{errors.reason}</span>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>
 
-                {/* Selection Info Footer */}
-                {selectedDate && selectedTime && (
-                  <div className="mt-4 flex flex-col gap-3">
-                    <div className="p-3.5 rounded-2xl bg-gradient-to-r from-primary/15 to-primary-dark/15 border border-primary/25 flex items-center justify-between text-xs font-bold text-textDark">
-                      <span className="flex items-center gap-1.5 text-primary-dark">
-                        <Sparkles className="w-4 h-4 text-primary" />
-                        زمان انتخابی شما:
-                      </span>
-                      <span className="font-black text-primary">
-                        ساعت {selectedTime} — {formatJalaliDisplay(selectedDate, true)}
-                      </span>
-                    </div>
-
-                    <div>
-                      <label className="block text-[11px] font-bold text-textDark/70 mb-1">
-                        علت مراجعه یا توضیحات (اختیاری):
-                      </label>
-                      <input
-                        type="text"
-                        value={reason}
-                        onChange={(e) => setReason(e.target.value)}
-                        placeholder="مثلاً: معاینه دوره‌ای، چک‌آپ، درد یا مشکل خاص..."
-                        className="w-full px-3.5 py-2.5 text-xs border border-primary/25 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-primary/40 placeholder:text-gray-400 font-medium transition-all"
-                      />
-                    </div>
-                  </div>
-                )}
-
                 {errors.booking && (
-                  <p className="text-red-600 text-xs text-center flex items-center justify-center gap-1 mt-2 bg-red-50 p-2.5 rounded-xl border border-red-200">
+                  <p className="text-red-600 text-xs text-center flex items-center justify-center gap-1 mt-3 bg-red-50 p-2.5 rounded-xl border border-red-200">
                     <AlertCircle className="w-4 h-4 shrink-0" />
                     <span>{errors.booking}</span>
                   </p>
