@@ -191,23 +191,24 @@ export default function AppointmentModal({ open, onClose, onOpenMyAppointments }
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-fadeSlide">
-      <div className="w-full max-w-4xl max-h-[92vh] rounded-[2.5rem] bg-gradient-to-br from-bgLight/95 via-white/95 to-bgDark/95 backdrop-blur-2xl border border-primary/30 p-5 sm:p-8 flex flex-col shadow-2xl overflow-y-auto chat-scroll relative">
+    <div className="fixed inset-0 z-[100] bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 animate-fadeSlide">
+      <div className="w-full max-w-4xl max-h-[92vh] rounded-[2.5rem] bg-white/95 backdrop-blur-2xl border border-primary/20 p-5 sm:p-8 flex flex-col shadow-[0_25px_60px_-15px_rgba(231,84,128,0.2)] overflow-y-auto chat-scroll relative">
         
-        {/* Close Button */}
+        {/* Close Button ("X") - High Contrast & Vertically Aligned with Header */}
         <button
           type="button"
           onClick={onClose}
           disabled={isBooking}
-          className="absolute top-5 left-5 text-textDark/60 hover:text-primary transition p-2 rounded-full hover:bg-white/80 z-10 cursor-pointer"
-          aria-label="Close"
+          className="absolute top-5 left-5 sm:top-6 sm:left-6 w-10 h-10 rounded-2xl bg-white/90 hover:bg-white border border-primary/25 hover:border-primary text-textDark hover:text-primary shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-center z-20 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/40 active:scale-95 disabled:opacity-50"
+          aria-label="بستن پنجره"
+          title="بستن"
         >
-          <X className="w-6 h-6" />
+          <X size={20} strokeWidth={2.5} className="w-5 h-5 text-textDark hover:text-primary transition-colors" />
         </button>
 
         {/* Modal Header */}
         <div className="text-center mb-6">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-primary-dark text-white flex items-center justify-center mx-auto mb-3 shadow-lg shadow-primary/30">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-primary-dark text-white flex items-center justify-center mx-auto mb-3 shadow-lg shadow-primary/25">
             <Calendar className="w-6 h-6" />
           </div>
           <h2 className="text-2xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-l from-primary to-primary-dark">
@@ -286,13 +287,13 @@ export default function AppointmentModal({ open, onClose, onOpenMyAppointments }
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               
               {/* Column 1: Shamsi Date Picker */}
-              <div className="bg-white/80 border border-primary/25 rounded-3xl p-4 sm:p-5 flex flex-col items-center shadow-sm">
-                <div className="w-full flex items-center justify-between border-b border-primary/15 pb-3 mb-4">
+              <div className="bg-white border border-primary/15 rounded-3xl p-4 sm:p-6 flex flex-col items-center shadow-xs">
+                <div className="w-full flex items-center justify-between border-b border-primary/10 pb-3 mb-4">
                   <span className="text-xs font-bold text-primary flex items-center gap-1.5">
                     <span className="w-5 h-5 rounded-full bg-primary text-white text-[10px] font-black flex items-center justify-center">۱</span>
                     انتخاب روز مراجعه (تقویم شمسی)
                   </span>
-                  <span className="text-[11px] text-textDark/50 font-medium">جمعه‌ها تعطیل است</span>
+                  <span className="text-[11px] text-textDark/60 font-medium">جمعه‌ها تعطیل است</span>
                 </div>
 
                 <JalaliCalendar
@@ -303,7 +304,7 @@ export default function AppointmentModal({ open, onClose, onOpenMyAppointments }
               </div>
 
               {/* Column 2: Available Slots & Summary */}
-              <div className="bg-white/80 border border-primary/25 rounded-3xl p-5 sm:p-6 flex flex-col justify-between shadow-sm">
+              <div className="bg-white border border-primary/15 rounded-3xl p-5 sm:p-6 flex flex-col justify-between shadow-xs">
                 <div>
                   <div className="flex items-center justify-between border-b border-primary/15 pb-3 mb-4">
                     <span className="text-xs font-bold text-primary flex items-center gap-1.5">
@@ -347,7 +348,7 @@ export default function AppointmentModal({ open, onClose, onOpenMyAppointments }
                               isSelected
                                 ? 'bg-gradient-to-r from-primary to-primary-dark border-transparent text-white shadow-lg shadow-primary/35 scale-102 ring-2 ring-primary/30'
                                 : isAvailable
-                                ? 'bg-white border-primary/30 text-textDark hover:bg-primary/10 hover:border-primary'
+                                ? 'bg-white border-primary/20 text-textDark hover:bg-primary/10 hover:border-primary'
                                 : 'bg-gray-100/70 border-gray-200 text-gray-400 cursor-not-allowed opacity-50'
                             }`}
                           >
@@ -404,7 +405,7 @@ export default function AppointmentModal({ open, onClose, onOpenMyAppointments }
                         value={reason}
                         onChange={(e) => setReason(e.target.value)}
                         placeholder="مثلاً: معاینه دوره‌ای، چک‌آپ، درد یا مشکل خاص..."
-                        className="w-full px-3.5 py-2 text-xs border border-primary/25 rounded-xl bg-white/95 focus:outline-none focus:ring-2 focus:ring-primary/40 placeholder:text-gray-400 font-medium transition-all"
+                        className="w-full px-3.5 py-2.5 text-xs border border-primary/25 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-primary/40 placeholder:text-gray-400 font-medium transition-all"
                       />
                     </div>
                   </div>
@@ -448,4 +449,3 @@ export default function AppointmentModal({ open, onClose, onOpenMyAppointments }
     </div>
   );
 }
-
