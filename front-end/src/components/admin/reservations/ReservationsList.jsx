@@ -397,7 +397,7 @@ export default function ReservationsList() {
         r.phoneNumber.toLowerCase().includes(q) ||
         r.displayDate.toLowerCase().includes(q)
     );
-  }, [reservations, searchQuery]);
+  }, [reservations, searchQuery, selectedStatusTab]);
 
   const totalPages = Math.max(1, Math.ceil(filteredReservations.length / rowsPerPage));
 
@@ -457,7 +457,10 @@ export default function ReservationsList() {
               type="text"
               placeholder="جستجو بر اساس نام بیمار، شماره تماس یا تاریخ..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setCurrentPage(1);
+              }}
               className="w-full pr-10 pl-4 py-2.5 text-sm border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary placeholder:text-gray-400 bg-gray-50/50 focus:bg-white transition-all"
             />
           </div>
