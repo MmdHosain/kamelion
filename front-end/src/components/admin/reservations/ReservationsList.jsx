@@ -1,5 +1,6 @@
 // src/components/admin/reservations/ReservationsList.jsx
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import {
   Trash2,
   Search,
@@ -749,13 +750,14 @@ export default function ReservationsList() {
       </div>
 
       {/* Modern 2-Column Admin Booking Modal */}
-      {isModalOpen && (
-        <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-6 animate-fadeSlide"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) closeAddModal();
-          }}
-        >
+      {isModalOpen &&
+        createPortal(
+          <div
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-6 animate-fadeSlide"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) closeAddModal();
+            }}
+          >
           <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl max-h-[92vh] overflow-y-auto p-6 md:p-8 flex flex-col gap-6 relative border border-primary/20 chat-scroll">
             
             {/* Modal Header */}
@@ -1006,7 +1008,8 @@ export default function ReservationsList() {
               </form>
             )}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Appointment Detail Modal */}

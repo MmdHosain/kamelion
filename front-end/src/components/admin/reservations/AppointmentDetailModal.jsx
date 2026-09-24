@@ -1,5 +1,6 @@
 // src/components/admin/reservations/AppointmentDetailModal.jsx
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
   X,
   Calendar,
@@ -160,7 +161,7 @@ export default function AppointmentDetailModal({
     }
   };
 
-  return (
+  return createPortal(
     <div
       className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-6 animate-fadeSlide"
       onClick={(e) => {
@@ -402,6 +403,7 @@ export default function AppointmentDetailModal({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

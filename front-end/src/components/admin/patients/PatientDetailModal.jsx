@@ -1,5 +1,6 @@
 // src/components/admin/patients/PatientDetailModal.jsx
 import React, { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import {
   X,
   User,
@@ -132,13 +133,14 @@ const PatientDetailModal = ({
   }, [loadPatientDossier]);
 
   if (!details && !patient && isLoading) {
-    return (
+    return createPortal(
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" dir="rtl">
         <div className="bg-white rounded-3xl p-8 flex flex-col items-center gap-3 shadow-2xl">
           <Loader2 className="w-8 h-8 text-primary animate-spin" />
           <span className="text-sm font-bold text-gray-700">در حال دریافت پرونده بیمار...</span>
         </div>
-      </div>
+      </div>,
+      document.body
     );
   }
 
@@ -185,7 +187,7 @@ const PatientDetailModal = ({
     }
   };
 
-  return (
+  return createPortal(
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-6 animate-fadeSlide"
       onClick={onClose}
@@ -493,7 +495,8 @@ const PatientDetailModal = ({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
