@@ -23,6 +23,7 @@ import { adminApi } from '../../../api/admin';
 import { getApiErrorMessage } from '../../../utils/errorUtils';
 import { toPersianDigits, formatJalaliDisplay } from '../../../utils/jalaliDateUtils';
 import { getStatusConfig } from '../reservations/AppointmentDetailModal';
+import ExpandableReason from './ExpandableReason';
 
 const formatJalaliDate = (dateStr) => {
   if (!dateStr) return '—';
@@ -191,7 +192,7 @@ const PatientDetailModal = ({
       dir="rtl"
     >
       <div
-        className="relative bg-white rounded-3xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col p-6 md:p-8 gap-5 border border-primary/20 chat-scroll"
+        className="relative bg-white rounded-3xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-y-auto flex flex-col p-6 md:p-8 gap-5 border border-primary/20 chat-scroll"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Top Bar: Back to appointment button (if present) & Close button */}
@@ -288,9 +289,9 @@ const PatientDetailModal = ({
         )}
 
         {/* 3-Column Dossier Grid: Notes | AI Indicators | Appointment History */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 flex-1 min-h-[360px]">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 w-full min-w-0">
           {/* Column 1: Clinical Notes (یادداشت‌های بالینی) */}
-          <div className="bg-gray-50/50 border border-gray-200/80 rounded-2xl flex flex-col p-4 gap-3 shadow-inner">
+          <div className="bg-gray-50/50 border border-gray-200/80 rounded-2xl flex flex-col p-4 gap-3 shadow-inner w-full min-w-0 overflow-hidden">
             <div className="flex items-center justify-between border-b border-gray-200/60 pb-2">
               <h3 className="text-xs font-bold text-gray-700 flex items-center gap-1.5">
                 <FileText size={15} className="text-primary" />
@@ -310,7 +311,7 @@ const PatientDetailModal = ({
                 placeholder="ثبت شرح حال، نتیجه آزمایش یا یادداشت بالینی جدید... (کلید ترکیبی Ctrl+Enter)"
                 rows={3}
                 disabled={isSubmittingNote}
-                className="w-full resize-none rounded-xl border border-gray-200 p-2.5 text-xs text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all bg-white disabled:opacity-60"
+                className="w-full resize-none rounded-xl border border-gray-200 p-2.5 text-xs text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all bg-white disabled:opacity-60 break-words"
               />
 
               {noteError && (
@@ -348,7 +349,7 @@ const PatientDetailModal = ({
             </div>
 
             {/* Notes List */}
-            <div className="flex-1 overflow-y-auto chat-scroll flex flex-col gap-2 max-h-56 pr-1">
+            <div className="flex-1 overflow-y-auto chat-scroll flex flex-col gap-2 max-h-[300px] min-h-[140px] pr-1">
               {notes.length === 0 ? (
                 <div className="text-center py-8 text-gray-400 text-xs">
                   هنوز یادداشتی برای این بیمار ثبت نشده است.
@@ -357,7 +358,7 @@ const PatientDetailModal = ({
                 notes.map((note, idx) => (
                   <div
                     key={note.id || idx}
-                    className="bg-white border border-gray-100 rounded-xl p-3 flex flex-col gap-1.5 shadow-sm"
+                    className="bg-white border border-gray-100 rounded-xl p-3 flex flex-col gap-1.5 shadow-sm w-full min-w-0 overflow-hidden"
                   >
                     <div className="flex items-center justify-between text-[10px] text-gray-400 border-b border-gray-50 pb-1">
                       <span className="font-bold text-primary/80">
@@ -365,7 +366,7 @@ const PatientDetailModal = ({
                       </span>
                       <span>{formatNoteDate(note.created_at || note.createdAt)}</span>
                     </div>
-                    <p className="text-xs text-gray-800 leading-relaxed select-text">
+                    <p className="text-xs text-gray-800 leading-relaxed select-text break-words">
                       {note.text}
                     </p>
                   </div>
@@ -375,7 +376,7 @@ const PatientDetailModal = ({
           </div>
 
           {/* Column 2: AI Clinical Indicators (شاخص‌های تریاژ هوشمند) */}
-          <div className="bg-gray-50/50 border border-gray-200/80 rounded-2xl flex flex-col p-4 gap-3 shadow-inner">
+          <div className="bg-gray-50/50 border border-gray-200/80 rounded-2xl flex flex-col p-4 gap-3 shadow-inner w-full min-w-0 overflow-hidden">
             <div className="flex items-center justify-between border-b border-gray-200/60 pb-2">
               <h3 className="text-xs font-bold text-gray-700 flex items-center gap-1.5">
                 <Activity size={15} className="text-primary" />
@@ -383,7 +384,7 @@ const PatientDetailModal = ({
               </h3>
             </div>
 
-            <div className="flex-1 overflow-y-auto chat-scroll space-y-2.5 pr-1">
+            <div className="flex-1 overflow-y-auto chat-scroll space-y-2.5 max-h-[300px] min-h-[140px] pr-1">
               {AI_FIELDS.map(({ label, key }, i) => {
                 const val = aiProfile[key];
                 return (
@@ -415,7 +416,7 @@ const PatientDetailModal = ({
           </div>
 
           {/* Column 3: Appointment History (تاریخچه نوبت‌ها) */}
-          <div className="bg-gray-50/50 border border-gray-200/80 rounded-2xl flex flex-col p-4 gap-3 shadow-inner">
+          <div className="bg-gray-50/50 border border-gray-200/80 rounded-2xl flex flex-col p-4 gap-3 shadow-inner w-full min-w-0 overflow-hidden">
             <div className="flex items-center justify-between border-b border-gray-200/60 pb-2">
               <h3 className="text-xs font-bold text-gray-700 flex items-center gap-1.5">
                 <Calendar size={15} className="text-primary" />
@@ -426,7 +427,7 @@ const PatientDetailModal = ({
               </span>
             </div>
 
-            <div className="flex-1 overflow-y-auto chat-scroll space-y-2.5 max-h-[340px] pr-1">
+            <div className="flex-1 overflow-y-auto chat-scroll space-y-2.5 max-h-[300px] min-h-[140px] pr-1">
               {appointments.length === 0 ? (
                 <div className="text-center py-8 text-gray-400 text-xs">
                   سابقه‌ای برای نوبت‌های قبلی ثبت نشده است.
@@ -440,7 +441,7 @@ const PatientDetailModal = ({
                   return (
                     <div
                       key={appt.id || i}
-                      className="bg-white border border-gray-100 rounded-xl p-3 flex flex-col gap-2 shadow-sm"
+                      className="bg-white border border-gray-100 rounded-xl p-3 flex flex-col gap-2 shadow-sm w-full min-w-0 overflow-hidden"
                     >
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-bold text-gray-800">{displayDate}</span>
@@ -459,12 +460,7 @@ const PatientDetailModal = ({
                         </span>
                       </div>
 
-                      {appt.reason && (
-                        <div className="text-[11px] text-gray-600 bg-gray-50 p-2 rounded-lg leading-relaxed select-text border border-gray-100">
-                          <span className="font-bold text-gray-400 block text-[10px] mb-0.5">علت مراجعه:</span>
-                          {appt.reason}
-                        </div>
-                      )}
+                      <ExpandableReason reason={appt.reason} />
                     </div>
                   );
                 })
