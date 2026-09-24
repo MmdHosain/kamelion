@@ -5,6 +5,7 @@ import {
   Calendar,
   Clock,
   CheckCircle2,
+  Check,
   AlertCircle,
   Loader2,
   Sparkles,
@@ -23,7 +24,7 @@ import {
   toPersianDigits,
 } from '../../utils/jalaliDateUtils';
 
-const QUICK_REASONS = [
+export const QUICK_REASONS = [
   'معاینه و چکاپ دوره‌ای',
   'بررسی سونوگرافی یا ماموگرافی',
   'لمس توده یا احساس درد',
@@ -33,6 +34,28 @@ const QUICK_REASONS = [
 
 const MAX_REASON_LENGTH = 300;
 const MIN_REASON_LENGTH = 5;
+
+export function ReasonChip({ label, active, onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={`text-[11px] font-bold px-2.5 py-1 rounded-xl border transition-all duration-200 cursor-pointer flex items-center gap-1.5 select-none ${
+        active
+          ? 'bg-primary text-white border-primary shadow-xs ring-2 ring-primary/20 hover:bg-primary-dark'
+          : 'bg-primary/5 hover:bg-primary/15 text-primary-dark border-primary/15 hover:border-primary/30'
+      }`}
+    >
+      {active ? (
+        <Check size={12} strokeWidth={2.5} className="shrink-0" />
+      ) : (
+        <span className="text-primary font-bold text-xs leading-none">+</span>
+      )}
+      <span>{label}</span>
+    </button>
+  );
+}
 
 const normalizeSlotStatus = (status) => {
   if (!status) return 'available';
@@ -163,11 +186,57 @@ export default function AppointmentModal({ open, onClose, onOpenMyAppointments }
     }
   };
 
+  const isChipActive = useCallback(
+    (chipText) => {
+      if (!reason || !chipText) return false;
+      const trimmedChip = chipText.trim();
+      const segments = reason
+        .split(/\s*—\s*/)
+        .map((s) => s.trim())
+        .filter(Boolean);
+      return segments.includes(trimmedChip) || reason.includes(trimmedChip);
+    },
+    [reason]
+  );
+
   const handleQuickReasonClick = (chipText) => {
+    const trimmedChip = chipText.trim();
     setReason((prev) => {
-      const next = prev.trim() ? `${prev.trim()} — ${chipText}` : chipText;
+      const trimmedPrev = prev.trim();
+      const segments = trimmedPrev
+        ? trimmedPrev
+            .split(/\s*—\s*/)
+            .map((s) => s.trim())
+            .filter(Boolean)
+        : [];
+
+      const isAlreadyPresent =
+        segments.includes(trimmedChip) || trimmedPrev.includes(trimmedChip);
+
+      let next;
+      if (isAlreadyPresent) {
+        // Toggle OFF: Remove chip from reason string
+        const remaining = segments.filter((s) => s !== trimmedChip);
+        if (remaining.length === segments.length) {
+          // Fallback if not an exact segment match
+          const escaped = trimmedChip.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          next = trimmedPrev
+            .replace(
+              new RegExp(`(^|\\s*—\\s*)${escaped}(\\s*—\\s*|$)`, 'g'),
+              (m, p1, p2) => (p1 && p2 && p1.includes('—') && p2.includes('—') ? ' — ' : '')
+            )
+            .trim();
+        } else {
+          next = remaining.join(' — ');
+        }
+      } else {
+        // Toggle ON: Append chip without duplicate
+        next = trimmedPrev ? `${trimmedPrev} — ${trimmedChip}` : trimmedChip;
+      }
+
       return next.slice(0, MAX_REASON_LENGTH);
     });
+
     setErrors((prev) => ({ ...prev, reason: '' }));
     reasonInputRef.current?.focus();
   };
@@ -641,14 +710,12 @@ export default function AppointmentModal({ open, onClose, onOpenMyAppointments }
                         {/* Quick Selection Tags */}
                         <div className="flex flex-wrap gap-1.5 my-0.5">
                           {QUICK_REASONS.map((chipText) => (
-                            <button
+                            <ReasonChip
                               key={chipText}
-                              type="button"
+                              label={chipText}
+                              active={isChipActive(chipText)}
                               onClick={() => handleQuickReasonClick(chipText)}
-                              className="text-[11px] font-bold px-2.5 py-1 rounded-xl bg-primary/5 hover:bg-primary/15 text-primary-dark border border-primary/15 hover:border-primary/30 transition-all cursor-pointer"
-                            >
-                              + {chipText}
-                            </button>
+                            />
                           ))}
                         </div>
 
