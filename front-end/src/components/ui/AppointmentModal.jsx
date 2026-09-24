@@ -118,8 +118,11 @@ export default function AppointmentModal({ open, onClose, onOpenMyAppointments }
   const [pendingBookingAfterAuth, setPendingBookingAfterAuth] = useState(false);
   const [bookingSuccess, setBookingSuccess] = useState(false);
   const [bookedAppointment, setBookedAppointment] = useState(null);
+  const [isReasonHighlighted, setIsReasonHighlighted] = useState(false);
 
+  const reasonContainerRef = useRef(null);
   const reasonInputRef = useRef(null);
+  const highlightTimeoutRef = useRef(null);
 
   useEffect(() => {
     if (open) {
@@ -134,7 +137,13 @@ export default function AppointmentModal({ open, onClose, onOpenMyAppointments }
       setPendingBookingAfterAuth(false);
       setBookingSuccess(false);
       setBookedAppointment(null);
+      setIsReasonHighlighted(false);
     }
+    return () => {
+      if (highlightTimeoutRef.current) {
+        clearTimeout(highlightTimeoutRef.current);
+      }
+    };
   }, [open]);
 
   const fetchSlots = useCallback(async (date) => {
@@ -173,9 +182,25 @@ export default function AppointmentModal({ open, onClose, onOpenMyAppointments }
   const handleSlotSelect = (time) => {
     setSelectedTime(time);
     setErrors((prev) => ({ ...prev, time: '' }));
+
+    // 1. Smooth scroll Reason for Visit container so it is centered in the viewport
+    reasonContainerRef.current?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'center',
+    });
+
+    // 2. Trigger soft pink glow / halo animation and auto-remove after ~1.5s
+    setIsReasonHighlighted(true);
+    if (highlightTimeoutRef.current) {
+      clearTimeout(highlightTimeoutRef.current);
+    }
+    highlightTimeoutRef.current = setTimeout(() => {
+      setIsReasonHighlighted(false);
+    }, 1500);
+
     setTimeout(() => {
       reasonInputRef.current?.focus();
-    }, 150);
+    }, 300);
   };
 
   const handleReasonChange = (e) => {
@@ -531,7 +556,7 @@ export default function AppointmentModal({ open, onClose, onOpenMyAppointments }
                   />
                 </div>
 
-                {/* Mobile Continue Bar (Appears when date is chosen to allow moving to step 2 without re-clicking day) */}
+                {/* Mobile Continue Bar */}
                 {selectedDate && (
                   <button
                     type="button"
@@ -719,24 +744,33 @@ export default function AppointmentModal({ open, onClose, onOpenMyAppointments }
                           ))}
                         </div>
 
-                        {/* Textarea Input */}
-                        <textarea
-                          id="appointment-reason"
-                          ref={reasonInputRef}
-                          rows={3}
-                          maxLength={MAX_REASON_LENGTH}
-                          value={reason}
-                          onChange={handleReasonChange}
-                          placeholder="علائم، شرح حال مختصر، نتایج ماموگرافی یا هدف از مراجعه را یادداشت فرمایید (حداقل ۵ کاراکتر)..."
-                          aria-required="true"
-                          aria-invalid={Boolean(errors.reason)}
-                          aria-describedby={errors.reason ? 'reason-error' : undefined}
-                          className={`w-full p-3 text-xs md:text-sm border rounded-2xl bg-white focus:outline-none focus:ring-2 transition-all font-medium resize-none shadow-xs ${
-                            errors.reason
-                              ? 'border-rose-400 bg-rose-50/20 focus:ring-rose-200 focus:border-rose-500 text-textDark'
-                              : 'border-primary/25 focus:border-primary focus:ring-primary/20 text-textDark placeholder:text-textDark/45'
+                        {/* Textarea Input Container with Pink Halo Glow Ref */}
+                        <div
+                          ref={reasonContainerRef}
+                          className={`rounded-2xl transition-all duration-300 ${
+                            isReasonHighlighted ? 'pink-halo-glow ring-2 ring-primary/40' : ''
                           }`}
-                        />
+                        >
+                          <textarea
+                            id="appointment-reason"
+                            ref={reasonInputRef}
+                            rows={3}
+                            maxLength={MAX_REASON_LENGTH}
+                            value={reason}
+                            onChange={handleReasonChange}
+                            placeholder="علائم، شرح حال مختصر، نتایج ماموگرافی یا هدف از مراجعه را یادداشت فرمایید (حداقل ۵ کاراکتر)..."
+                            aria-required="true"
+                            aria-invalid={Boolean(errors.reason)}
+                            aria-describedby={errors.reason ? 'reason-error' : undefined}
+                            className={`w-full p-3 text-xs md:text-sm border rounded-2xl bg-white focus:outline-none focus:ring-2 transition-all font-medium resize-none shadow-xs ${
+                              errors.reason
+                                ? 'border-rose-400 bg-rose-50/20 focus:ring-rose-200 focus:border-rose-500 text-textDark'
+                                : isReasonHighlighted
+                                ? 'border-primary ring-2 ring-primary/40 text-textDark'
+                                : 'border-primary/25 focus:border-primary focus:ring-primary/20 text-textDark placeholder:text-textDark/45'
+                            }`}
+                          />
+                        </div>
 
                         {/* Error Message */}
                         {errors.reason && (
@@ -754,7 +788,7 @@ export default function AppointmentModal({ open, onClose, onOpenMyAppointments }
                   )}
                 </div>
 
-                {/* Primary Confirm Booking Button (Always accessible in Step 2 on Mobile and in Action Column on Desktop) */}
+                {/* Primary Confirm Booking Button */}
                 <div className="mt-4 pt-3 border-t border-primary/10 flex flex-col gap-2">
                   {errors.booking && (
                     <p className="text-red-600 text-xs text-center flex items-center justify-center gap-1 bg-red-50 p-2.5 rounded-xl border border-red-200">
