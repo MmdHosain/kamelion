@@ -1,281 +1,113 @@
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from rest_framework import status
+# apps/common/panelchi.py
+#
+# Thin client for PanelChi's pattern-SMS endpoint. Shared across apps -
+# apps/users uses this for OTP codes today; apps/appointments will use
+# the same send_pattern_sms() for appointment-accepted/rejected
+# notices once those patterns exist on the PanelChi dashboard.
+#
+# IMPORTANT: this module only ever *sends* a message against a pattern
+# slug that already exists in the PanelChi dashboard. Creating a
+# pattern (its wording, placeholder syntax, carrier approval) is done
+# on their website, not here - there's no "create pattern" endpoint in
+# their API to call.
 
-from rest_framework_simplejwt.tokens import RefreshToken, TokenError
+import logging
 
-from .serializers import (
-    RequestOTPSerializer,
-    VerifyOTPSerializer,
-    CompleteRegistrationSerializer,
-    AdminLoginSerializer,
-    RefreshTokenSerializer,
-)
-from .services import request_otp, verify_otp, complete_registration
-from .selectors import get_patient_profile
-from .models import User
-from apps.common.panelchi import SmsProviderError
-from django.contrib.auth import authenticate
+import httpx
+from django.conf import settings
+
+logger = logging.getLogger(__name__)
 
 
-
-class RequestOTPView(APIView):
+class SmsProviderError(Exception):
     """
-    Step 0 of login: the user just typed their phone number, before
-    any OTP is involved.
+    Raised when PanelChi rejects a send or the request itself fails
+    (network error, timeout, bad config). The message is safe to
+    surface in logs/error responses - it never contains the API token.
+    """
+    pass
 
-    - If that phone number belongs to an admin (is_staff), no OTP is
-      sent at all - the response tells the frontend to show the
-      admin password screen instead, which then calls
-      /api/auth/admin/login with phone_number + password.
-    - Otherwise, this behaves as before: an OTP is generated and
-      sent (via whatever SMS_PROVIDER is configured), and the normal
-      verify-otp -> (complete-registration) flow continues.
+
+def to_iranian_international(phone_number: str) -> str:
+    """
+    PanelChi expects an international number. For Iranian numbers,
+    '09121234567' -> '+989121234567' (drop the leading 0, add +98).
+    Numbers that already look international (start with '+') are left
+    as-is.
+    """
+    phone_number = phone_number.strip()
+
+    if phone_number.startswith("+"):
+        return phone_number
+
+    if phone_number.startswith("0"):
+        return "+98" + phone_number[1:]
+
+    return phone_number
+
+
+def send_pattern_sms(pattern: str, recipient: str, variables: dict) -> dict:
+    """
+    Send a pattern-based SMS via PanelChi.
+
+    `pattern` is the pattern's slug as configured in the PanelChi
+    dashboard (e.g. settings.PANELCHI_PATTERN_LOGIN). `recipient` is a
+    raw phone number - this function handles the +98 conversion.
+    `variables` is a flat dict of placeholder name -> value, matching
+    whatever placeholders that pattern's approved template actually
+    uses (e.g. {"OTP": "482913", "NAME": "Ali"}).
+
+    Raises SmsProviderError on any failure - callers should not assume
+    the message was delivered (or even accepted) unless this returns
+    without raising.
     """
 
-    authentication_classes = []
-    permission_classes = []
+    if not settings.PANELCHI_SMS_TOKEN:
+        raise SmsProviderError("PANELCHI_SMS_TOKEN is not configured.")
 
-    def post(self, request):
-
-        serializer = RequestOTPSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
-        phone_number = serializer.validated_data["phone_number"]
-
-        is_admin = User.objects.filter(
-            phone_number=phone_number,
-            is_staff=True
-        ).exists()
-
-        if is_admin:
-            # Don't send an OTP for admin numbers - they authenticate
-            # with a password instead.
-            return Response(
-                {"is_admin": True, "message": "Enter your password"},
-                status=status.HTTP_200_OK
-            )
-
-        try:
-            request_otp(phone_number)
-
-        except SmsProviderError as e:
-            # Don't claim success when the code was never actually
-            # delivered.
-            return Response(
-                {"error": str(e)},
-                status=status.HTTP_502_BAD_GATEWAY
-            )
-
-        return Response(
-            {"is_admin": False, "message": "OTP sent"},
-            status=status.HTTP_200_OK
+    if not pattern:
+        raise SmsProviderError(
+            "No PanelChi pattern slug configured for this message - "
+            "create the pattern in the PanelChi dashboard first and "
+            "set its slug in the corresponding environment variable."
         )
 
+    payload = {
+        "pattern": pattern,
+        "recipient": to_iranian_international(recipient),
+        "variables": variables,
+    }
 
-def _login_response(user):
-    """
-    Shared shape for a successful login - used by both VerifyOTPView
-    (returning users) and CompleteRegistrationView (first-time users
-    who just finished signup).
-    """
-    refresh = RefreshToken.for_user(user)
+    if settings.PANELCHI_SOURCE_NUMBER:
+        payload["sourceNumber"] = settings.PANELCHI_SOURCE_NUMBER
 
-    return Response({
-        "access": str(refresh.access_token),
-        "refresh": str(refresh),
-        "user": {
-            "id": user.id,
-            "phone_number": user.phone_number,
-            "full_name": user.full_name,
-            "national_id": user.national_id,
-            "role": "admin" if user.is_staff else "patient"
-        }
-    })
-
-
-class VerifyOTPView(APIView):
-    """
-    Step 1 of login: confirm the OTP code. This is a complete,
-    self-contained check - once the code is right, the phone number
-    is verified and the OTP is consumed, independent of anything
-    that follows.
-
-    Response is one of two shapes:
-    - Phone number already has an account -> logged straight in
-      (same shape as AdminLoginView: access/refresh/user).
-    - First time seeing this phone number -> {"registration_required":
-      true, "signup_token": "..."}. The frontend then collects
-      full_name + national_id and calls /auth/complete-registration
-      with that token.
-    """
-
-    authentication_classes = []
-    permission_classes = []
-
-    def post(self, request):
-
-        serializer = VerifyOTPSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
-        phone_number = serializer.validated_data["phone_number"]
-        code = serializer.validated_data["code"]
-
-        try:
-            kind, value = verify_otp(phone_number, code)
-
-        except ValueError as e:
-            return Response(
-                {"error": str(e)},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        if kind == "user":
-            return _login_response(value)
-
-        # kind == "signup_token" - first time for this phone number
-        return Response({
-            "registration_required": True,
-            "signup_token": value,
-        }, status=status.HTTP_200_OK)
-
-
-class CompleteRegistrationView(APIView):
-    """
-    Step 2 of login, first-time patients only.
-    POST /api/auth/complete-registration - {signup_token, full_name, national_id}
-    """
-
-    authentication_classes = []
-    permission_classes = []
-
-    def post(self, request):
-
-        serializer = CompleteRegistrationSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
-        try:
-            user = complete_registration(
-                token=serializer.validated_data["signup_token"],
-                full_name=serializer.validated_data["full_name"],
-                national_id=serializer.validated_data["national_id"],
-            )
-
-        except ValueError as e:
-            return Response(
-                {"error": str(e)},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        return _login_response(user)
-
-
-class CurrentUserView(APIView):
-    """
-    Returns the currently authenticated user, resolved from the
-    JWT access token. Used by the frontend on page load/refresh to
-    restore session state without requiring a fresh login.
-    """
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        user = request.user
-
-        return Response({
-            "id": user.id,
-            "phone_number": user.phone_number,
-            "full_name": user.full_name,
-            "national_id": user.national_id,
-            "is_staff": user.is_staff,
-            "is_superuser": user.is_superuser,
-            "role": "admin" if user.is_staff else "patient"
-        })
-
-class AdminLoginView(APIView):
-    authentication_classes = []
-    permission_classes = []
-
-    def post(self, request):
-        serializer = AdminLoginSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
-        phone_number = serializer.validated_data["phone_number"]
-        password = serializer.validated_data["password"]
-
-        user = authenticate(
-            request,
-            username=phone_number,
-            password=password
+    try:
+        response = httpx.post(
+            f"{settings.PANELCHI_BASE_URL}/sms/pattern",
+            json=payload,
+            headers={
+                "Authorization": f"Bearer {settings.PANELCHI_SMS_TOKEN}",
+                "Content-Type": "application/json",
+            },
+            timeout=settings.PANELCHI_TIMEOUT,
         )
 
-        if not user:
-            return Response(
-                {"detail": "Invalid credentials"},
-                status=status.HTTP_401_UNAUTHORIZED
-            )
+    except httpx.HTTPError as e:
+        # Network/timeout error - never include the token (it's only
+        # ever in the request headers we built above, not in `e`).
+        logger.error("PanelChi request failed: %s", e)
+        raise SmsProviderError("Could not reach the SMS provider.") from e
 
-        if not user.is_staff:
-            return Response(
-                {"detail": "User is not admin"},
-                status=status.HTTP_403_FORBIDDEN
-            )
+    if response.status_code != 201:
+        # Log the provider's response body for debugging, but the
+        # token itself was only ever sent as a header, never echoed
+        # back by PanelChi in the body, so this is safe to log as-is.
+        logger.error(
+            "PanelChi rejected SMS send (status %s): %s",
+            response.status_code, response.text
+        )
+        raise SmsProviderError(
+            f"SMS provider rejected the request (status {response.status_code})."
+        )
 
-        if not user.is_active:
-            return Response(
-                {"detail": "User is inactive"},
-                status=status.HTTP_403_FORBIDDEN
-            )
-
-        refresh = RefreshToken.for_user(user)
-
-        return Response({
-            "accessToken": str(refresh.access_token),
-            "refreshToken": str(refresh),
-            "user": {
-                "id": user.id,
-                "phone_number": user.phone_number,
-                "full_name": user.full_name,
-                "role": "admin"
-            }
-        }, status=status.HTTP_200_OK)
-
-
-class LogoutView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request):
-        raw_refresh = request.data.get("refreshToken") or request.data.get("refresh")
-        if raw_refresh:
-            try:
-                RefreshToken(raw_refresh).blacklist()
-            except TokenError:
-                # Already invalid/expired/blacklisted - logout still succeeds
-                pass
-
-        return Response({"message": "Logged out"}, status=status.HTTP_200_OK)
-
-
-class RefreshTokenView(APIView):
-    authentication_classes = []
-    permission_classes = []
-
-    def post(self, request):
-        serializer = RefreshTokenSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        raw_refresh = serializer.validated_data["refreshToken"]
-
-        try:
-            refresh = RefreshToken(raw_refresh)
-        except TokenError as e:
-            return Response({"detail": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
-
-        new_access = str(refresh.access_token)
-
-        # SIMPLE_JWT['ROTATE_REFRESH_TOKENS'] is not enabled in settings.py,
-        # so the same refresh token is valid until its own expiry and is
-        # simply echoed back rather than rotated.
-        return Response({
-            "accessToken": new_access,
-            "refreshToken": raw_refresh,
-        }, status=status.HTTP_200_OK)
+    return response.json()
