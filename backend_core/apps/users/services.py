@@ -2,10 +2,12 @@
 
 import random
 import secrets
+from django.conf import settings
 from django.utils import timezone
 from django.db import transaction
 
 from .models import User, OTPRequest, PhoneVerification
+from apps.common.panelchi import send_pattern_sms, SmsProviderError
 
 
 OTP_LENGTH = 6
@@ -23,8 +25,16 @@ def generate_otp():
 
 def request_otp(phone_number: str):
     """
-    Create and store a new OTP for a phone number.
-    Any previous unused OTPs should be invalidated.
+    Create and store a new OTP for a phone number, then deliver it.
+
+    Any previous unused OTPs are invalidated first. Delivery depends
+    on settings.SMS_PROVIDER:
+    - 'console' (default, local dev): the code is only printed to the
+      server log.
+    - 'panelchi': sent via PanelChi's pattern-SMS API. If that send
+      fails, the just-created OTP row is deleted and SmsProviderError
+      is raised - callers must not tell the user "OTP sent" when it
+      wasn't.
     """
 
     phone_number = phone_number.strip()
@@ -36,16 +46,39 @@ def request_otp(phone_number: str):
     ).update(is_used=True)
 
     code = generate_otp()
-    
-    print(f"OTP for {phone_number}: {code}")
 
     otp = OTPRequest.objects.create(
         phone_number=phone_number,
         code=code
     )
 
-    # TODO: integrate SMS provider here
-    # send_sms(phone_number, code)
+    if settings.SMS_PROVIDER == "panelchi":
+        # This pattern's approved template is:
+        #   کد تایید شما %otp_code%
+        #   ورود به پنل دکتر معشوری متخصص پستان
+        # -> a single placeholder, `otp_code`. No name/greeting
+        # placeholder exists in this pattern, so nothing else is sent.
+        # If a future pattern (e.g. appointment-accepted) uses
+        # different placeholder names, match those exactly here too -
+        # PanelChi has nothing to substitute a variable it doesn't
+        # recognize.
+        variables = {"otp_code": code}
+
+        try:
+            send_pattern_sms(
+                pattern=settings.PANELCHI_PATTERN_LOGIN,
+                recipient=phone_number,
+                variables=variables,
+            )
+        except SmsProviderError:
+            # Don't leave a code on file that was never actually
+            # delivered - and don't tell the caller it was sent.
+            otp.delete()
+            raise
+
+    else:
+        # Local/dev fallback - no SMS provider configured.
+        print(f"OTP for {phone_number}: {code}")
 
     return otp
 
