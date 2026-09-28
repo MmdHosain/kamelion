@@ -207,7 +207,6 @@ const Header = ({ onOpenAppointment, onOpenChat, onOpenMyAppointments }) => {
         onClose={() => setMobileMenuOpen(false)}
         onOpenAppointment={onOpenAppointment}
         onOpenChat={onOpenChat}
-        onOpenMyAppointments={onOpenMyAppointments}
       />
     </>
   );
