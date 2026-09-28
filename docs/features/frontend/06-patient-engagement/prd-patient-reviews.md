@@ -11,6 +11,7 @@
   - سکشن نظرات در صفحه اصلی: [`src/components/sections/ReviewsSection.jsx`](file:///e:/GitHub%20Repo/kamelion/front-end/src/components/sections/ReviewsSection.jsx)
   - مدال ثبت و مرور نظرات: [`src/components/CommentModal.jsx`](file:///e:/GitHub%20Repo/kamelion/front-end/src/components/CommentModal.jsx)
   - پنل مدیریت و تایید ادمین: [`src/pages/admin/AdminComments.jsx`](file:///e:/GitHub%20Repo/kamelion/front-end/src/pages/admin/AdminComments.jsx)
+  - کامپوننت اعلان شناور پیام‌ها (Toast): [`src/components/ui/ToastNotification.jsx`](file:///e:/GitHub%20Repo/kamelion/front-end/src/components/ui/ToastNotification.jsx)
 - **استور و سرویس:**
   - استور نظرات: [`src/store/commentsStore.js`](file:///e:/GitHub%20Repo/kamelion/front-end/src/store/commentsStore.js)
   - سرویس ارتباطی: [`src/api/reviewsService.js`](file:///e:/GitHub%20Repo/kamelion/front-end/src/api/reviewsService.js)
@@ -62,6 +63,8 @@ sequenceDiagram
    - فیلد نام مراجع و جعبه متن پیام با اعتبارسنجی حداقل کاراکتر.
 4. **خط‌مشی نظارت و پایش (Moderation Policy):**
    - هیچ دیدگاهی به صورت خودکار بدون تایید منشی یا پزشک به نمایش عمومی درنمی‌آید تا از الفاظ نامناسب یا اطلاعات حساس پزشکی جلوگیری شود.
+5. **اعلان بازخورد واکنش‌گرا (Responsive Feedback Toast):**
+   - نمایش پیام تایید یا خطای ارسال نظر به صورت شناور در بالای صفحه با رعایت حاشیه امن افقی (`inset-x-4` در موبایل و `max-w-lg` سنتر شده در دسکتاپ) جهت جلوگیری از خروج اعلان از کادر نمایش در نمایشگرهای موبایل.
 
 ---
 
