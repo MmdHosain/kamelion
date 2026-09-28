@@ -15,6 +15,7 @@ export default function JalaliCalendar({
   selectedDate,
   onSelect,
   isDateDisabled,
+  isDateAvailable,
   className = '',
 }) {
   // Current viewing Jalali year & month
@@ -92,6 +93,9 @@ export default function JalaliCalendar({
       }
 
       const disabled = isDateDisabled ? isDateDisabled(dateObj) : false;
+      const isAvailable = isDateAvailable
+        ? isDateAvailable(dateObj) && !disabled
+        : !disabled;
 
       grid.push({
         empty: false,
@@ -100,38 +104,39 @@ export default function JalaliCalendar({
         isToday,
         isSelected,
         disabled,
+        isAvailable,
         key: `day-${dayNum}`,
       });
     }
 
     return grid;
-  }, [viewYear, viewMonth, todayJalali, selectedDate, isDateDisabled]);
+  }, [viewYear, viewMonth, todayJalali, selectedDate, isDateDisabled, isDateAvailable]);
 
   const monthTitle = `${PERSIAN_MONTH_NAMES[viewMonth - 1]} ${toPersianDigits(viewYear)}`;
 
   return (
     <div className={`w-full max-w-[340px] select-none ${className}`}>
       {/* Month & Navigation Header */}
-      <div className="flex items-center justify-between mb-3 px-1">
+      <div className="flex items-center justify-between mb-4 px-1">
         <button
           type="button"
           onClick={handlePrevMonth}
-          className="p-1.5 rounded-xl text-textDark/70 hover:text-primary hover:bg-primary/10 transition-colors cursor-pointer"
+          className="p-2 rounded-2xl text-textDark/70 hover:text-primary hover:bg-primary/10 border border-transparent hover:border-primary/20 transition-all duration-200 cursor-pointer shadow-none hover:shadow-xs active:scale-95"
           title="ماه قبل"
           aria-label="ماه قبل"
         >
           <ChevronRight size={18} />
         </button>
 
-        <div className="flex items-center gap-1.5 text-sm font-black text-primary">
-          <CalendarIcon size={16} className="text-primary" />
+        <div className="flex items-center gap-2 text-sm md:text-base font-black text-primary">
+          <CalendarIcon size={17} className="text-primary" />
           <span>{monthTitle}</span>
         </div>
 
         <button
           type="button"
           onClick={handleNextMonth}
-          className="p-1.5 rounded-xl text-textDark/70 hover:text-primary hover:bg-primary/10 transition-colors cursor-pointer"
+          className="p-2 rounded-2xl text-textDark/70 hover:text-primary hover:bg-primary/10 border border-transparent hover:border-primary/20 transition-all duration-200 cursor-pointer shadow-none hover:shadow-xs active:scale-95"
           title="ماه بعد"
           aria-label="ماه بعد"
         >
@@ -140,12 +145,12 @@ export default function JalaliCalendar({
       </div>
 
       {/* Weekday Headers (Saturday to Friday) */}
-      <div className="grid grid-cols-7 gap-1 text-center mb-2">
+      <div className="grid grid-cols-7 gap-1.5 text-center mb-2">
         {PERSIAN_WEEKDAY_NAMES.map((wd) => (
           <div
             key={wd.key}
-            className={`text-[11px] font-bold py-1 ${
-              wd.key === 'FRI' ? 'text-red-400' : 'text-textDark/60'
+            className={`text-xs font-bold py-1.5 ${
+              wd.key === 'FRI' ? 'text-rose-500/80 font-black' : 'text-textDark/70'
             }`}
             title={wd.full}
           >
@@ -155,13 +160,13 @@ export default function JalaliCalendar({
       </div>
 
       {/* Days Grid */}
-      <div className="grid grid-cols-7 gap-1">
+      <div className="grid grid-cols-7 gap-1.5">
         {daysGrid.map((item) => {
           if (item.empty) {
-            return <div key={item.key} className="w-9 h-9" />;
+            return <div key={item.key} className="w-10 h-10" />;
           }
 
-          const { dayNum, dateObj, isToday, isSelected, disabled, key } = item;
+          const { dayNum, dateObj, isToday, isSelected, disabled, isAvailable, key } = item;
 
           return (
             <button
@@ -170,22 +175,49 @@ export default function JalaliCalendar({
               disabled={disabled}
               onClick={() => onSelect && onSelect(dateObj)}
               className={`
-                w-9 h-9 mx-auto rounded-xl flex items-center justify-center text-xs font-bold transition-all duration-200
+                relative w-10 h-10 mx-auto rounded-2xl flex flex-col items-center justify-center text-xs transition-all duration-200 group
                 ${
                   isSelected
-                    ? 'bg-primary text-white shadow-md shadow-primary/30 scale-105 ring-2 ring-primary/40 font-black'
+                    ? 'bg-gradient-to-br from-primary to-primary-dark text-white font-black shadow-md shadow-primary/35 scale-105 ring-2 ring-primary/40 cursor-pointer'
                     : disabled
-                    ? 'text-gray-300 bg-gray-50/50 cursor-not-allowed opacity-40'
+                    ? 'text-gray-300 bg-gray-50/40 border border-transparent cursor-not-allowed opacity-40 select-none'
                     : isToday
-                    ? 'text-primary bg-primary/10 border border-primary/40 hover:bg-primary hover:text-white cursor-pointer'
-                    : 'text-textDark/90 hover:bg-primary/15 hover:text-primary cursor-pointer'
+                    ? 'text-primary bg-primary/10 border-2 border-primary/40 font-black hover:bg-primary hover:text-white hover:border-transparent hover:scale-105 cursor-pointer shadow-xs'
+                    : isAvailable
+                    ? 'text-textDark font-bold bg-white/95 border border-primary/15 hover:border-primary hover:bg-primary/15 hover:text-primary hover:scale-105 active:scale-95 cursor-pointer shadow-xs'
+                    : 'text-textDark/80 font-medium hover:bg-primary/10 hover:text-primary cursor-pointer'
                 }
               `}
             >
-              {toPersianDigits(dayNum)}
+              <span className="leading-none">{toPersianDigits(dayNum)}</span>
+              {/* Doctor Availability Indicator Dot */}
+              {!disabled && isAvailable && (
+                <span
+                  className={`w-1.5 h-1.5 rounded-full mt-1 transition-colors ${
+                    isSelected
+                      ? 'bg-white'
+                      : isToday
+                      ? 'bg-primary'
+                      : 'bg-emerald-500 shadow-[0_0_4px_rgba(16,185,129,0.5)]'
+                  }`}
+                  title="پزشک در این روز نوبت آزاد دارد"
+                />
+              )}
             </button>
           );
         })}
+      </div>
+
+      {/* Doctor Availability & Status Legend */}
+      <div className="flex items-center justify-center gap-4 mt-4 pt-3 border-t border-primary/10 text-[11px] font-bold text-textDark/70">
+        <div className="flex items-center gap-1.5">
+          <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.4)]" />
+          <span>حضور پزشک / نوبت آزاد</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="w-2 h-2 rounded-full bg-gray-300" />
+          <span>تعطیل / تکمیل</span>
+        </div>
       </div>
     </div>
   );
