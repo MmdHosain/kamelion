@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { useCommentsStore } from '../../store/commentsStore';
 import ToastNotification from '../ui/ToastNotification';
+import useBodyScrollLock from '../../hooks/useBodyScrollLock';
 
 const ReviewsSection = () => {
   const { comments, addComment, fetchPublicComments } = useCommentsStore();
@@ -38,25 +39,19 @@ const ReviewsSection = () => {
     return () => clearTimeout(timer);
   }, [toast]);
 
-  // Close modal on ESC key and prevent body scroll
+  // Universal body scroll lock when reviews modal is open
+  useBodyScrollLock(isModalOpen);
+
+  // Close modal on ESC key
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.key === 'Escape') {
+      if (e.key === 'Escape' && isModalOpen) {
         setIsModalOpen(false);
       }
     };
 
-    if (isModalOpen) {
-      document.body.style.overflow = 'hidden';
-      window.addEventListener('keydown', handleKeyDown);
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-
-    return () => {
-      document.body.style.overflow = 'unset';
-      window.removeEventListener('keydown', handleKeyDown);
-    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isModalOpen]);
 
   const handleSubmit = async (e) => {
@@ -256,7 +251,10 @@ const ReviewsSection = () => {
             />
 
             {/* Modal Container */}
-            <div className="relative w-full max-w-4xl max-h-[92vh] bg-gradient-to-br from-bgLight/95 via-white/95 to-bgDark/95 backdrop-blur-2xl border border-primary/30 rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden z-10 animate-scaleUp">
+            <div
+              className="relative w-full max-w-4xl max-h-[92dvh] bg-gradient-to-br from-bgLight/95 via-white/95 to-bgDark/95 backdrop-blur-2xl border border-primary/30 rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden z-10 animate-scaleUp"
+              style={{ overscrollBehavior: 'contain' }}
+            >
               {/* Modal Header */}
               <div className="p-5 md:p-6 border-b border-primary/15 flex items-center justify-between bg-white/60">
                 <div className="flex items-center gap-3">

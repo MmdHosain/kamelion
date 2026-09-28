@@ -1,9 +1,22 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import useBodyScrollLock from "../hooks/useBodyScrollLock";
 
 const CommentModal = ({ open, onClose, onSubmitSuccess }) => {
   const [rate, setRate] = useState(5);
   const [text, setText] = useState("");
   const [mobile, setMobile] = useState("");
+
+  useBodyScrollLock(open);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && open) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [open, onClose]);
 
   if (!open) return null;
 
@@ -22,8 +35,16 @@ const CommentModal = ({ open, onClose, onSubmitSuccess }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/40 z-[999] flex items-end sm:items-center justify-center px-4">
-      <div className="bg-white w-full max-w-lg rounded-t-3xl sm:rounded-3xl p-6 relative animate-slideUp">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="ثبت نظر"
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[999] flex items-end sm:items-center justify-center px-4"
+    >
+      <div
+        className="bg-white w-full max-w-lg rounded-t-3xl sm:rounded-3xl p-6 relative animate-slideUp shadow-2xl"
+        style={{ overscrollBehavior: 'contain' }}
+      >
 
         <div className="w-12 h-1 bg-secondary rounded-full mx-auto mb-4 sm:hidden" />
 

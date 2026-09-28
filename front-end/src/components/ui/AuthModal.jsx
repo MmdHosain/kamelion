@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
 import { useAuth } from '../../hooks/useAuth';
+import useBodyScrollLock from '../../hooks/useBodyScrollLock';
 
 export const toEnglishDigits = (str) => {
   if (!str) return '';
@@ -59,6 +60,20 @@ const AuthModal = () => {
   const [nationalId, setNationalId] = useState('');
   const [password, setPassword] = useState('');
   const [localError, setLocalError] = useState('');
+
+  // Lock body scroll when auth modal is open
+  useBodyScrollLock(authModalOpen);
+
+  // Close on ESC key
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && authModalOpen && !loading) {
+        closeAuthModal();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [authModalOpen, loading, closeAuthModal]);
 
   const phoneInputRef = useRef(null);
   const otpInputRef = useRef(null);
@@ -198,11 +213,19 @@ const AuthModal = () => {
     }
   };
 
+  if (!authModalOpen) return null;
+
   return (
-    <div className="fixed inset-0 z-[110] bg-black/60 backdrop-blur-sm flex items-center justify-center px-4 transition-all duration-300 animate-fadeIn">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="ورود و عضویت در سامانه"
+      className="fixed inset-0 z-[110] bg-black/60 backdrop-blur-sm flex items-center justify-center px-4 transition-all duration-300 animate-fadeIn"
+    >
       <div
         className="bg-gradient-to-br from-bgLight via-white to-bgDark border border-primary/30 rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl relative transform transition-all duration-300"
         id="auth-modal-content"
+        style={{ overscrollBehavior: 'contain' }}
       >
         {/* Close Button */}
         <button

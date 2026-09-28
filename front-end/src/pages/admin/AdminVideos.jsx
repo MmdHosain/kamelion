@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { videoService } from '../../api/videoService';
 import { getApiErrorMessage } from '../../utils/errorUtils';
+import useBodyScrollLock from '../../hooks/useBodyScrollLock';
 
 const DEFAULT_FALLBACK_VIDEOS = [
   {
@@ -51,6 +52,7 @@ export default function AdminVideos() {
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
+  useBodyScrollLock(isModalOpen);
   const [formData, setFormData] = useState({
     title: '',
     src: '',

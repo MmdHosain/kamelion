@@ -17,6 +17,7 @@ import {
 import JalaliCalendar from './JalaliCalendar';
 import { getAvailableSlots, bookSlot } from '../../api/reservationService';
 import { useAuth } from '../../hooks/useAuth';
+import useBodyScrollLock from '../../hooks/useBodyScrollLock';
 import { getApiErrorMessage } from '../../utils/errorUtils';
 import {
   formatDateForApi,
@@ -107,6 +108,9 @@ const normalizeSlotsResponse = (data) => {
 export default function AppointmentModal({ open, onClose, onOpenMyAppointments }) {
   const { isAuthenticated, openAuthModal } = useAuth();
 
+  // Lock body scroll when appointment modal is open
+  useBodyScrollLock(open);
+
   const [mobileStep, setMobileStep] = useState(1); // 1 = Calendar/Date, 2 = Time & Reason
   const [selectedDate, setSelectedDate] = useState(null);
   const [availableSlots, setAvailableSlots] = useState([]);
@@ -123,6 +127,16 @@ export default function AppointmentModal({ open, onClose, onOpenMyAppointments }
   const reasonContainerRef = useRef(null);
   const reasonInputRef = useRef(null);
   const highlightTimeoutRef = useRef(null);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && open && !isBooking) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [open, isBooking, onClose]);
 
   useEffect(() => {
     if (open) {
@@ -389,8 +403,16 @@ export default function AppointmentModal({ open, onClose, onOpenMyAppointments }
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 animate-fadeSlide">
-      <div className="w-full max-w-4xl max-h-[92vh] rounded-[2.5rem] bg-white/95 backdrop-blur-2xl border border-primary/20 p-5 sm:p-8 flex flex-col shadow-[0_25px_60px_-15px_rgba(231,84,128,0.2)] overflow-y-auto chat-scroll relative">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="رزرو وقت ویزیت آنلاین"
+      className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-fadeSlide"
+    >
+      <div
+        className="w-full max-w-4xl max-h-[92dvh] rounded-[2.5rem] bg-white/95 backdrop-blur-2xl border border-primary/20 p-5 sm:p-8 flex flex-col shadow-[0_25px_60px_-15px_rgba(231,84,128,0.2)] overflow-y-auto chat-scroll relative"
+        style={{ overscrollBehavior: 'contain' }}
+      >
         
         {/* Close Button ("X") */}
         <button

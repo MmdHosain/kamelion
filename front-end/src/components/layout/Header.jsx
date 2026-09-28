@@ -9,34 +9,19 @@ import {
   Sparkles,
   Shield,
   User,
-  Film,
-  Stethoscope,
-  BookOpen,
-  HelpCircle,
-  Phone,
-  Home,
-  UserCheck,
-  Scissors,
-  HeartPulse,
   Calendar,
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
-
 import RibbonLogo from '../ui/RibbonLogo';
+import MobileNavDrawer from './MobileNavDrawer';
 
 const Header = ({ onOpenAppointment, onOpenChat, onOpenMyAppointments }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [mobileServicesOpen, setMobileServicesOpen] = useState(false);
-  const [mobileResourcesOpen, setMobileResourcesOpen] = useState(false);
 
   const location = useLocation();
   const { isAuthenticated, user, logout, openAuthModal } = useAuth();
 
   const isAdmin = user?.role === 'admin' || user?.is_staff === true || user?.is_superuser === true;
-
-  const handleNavClick = () => {
-    setMobileMenuOpen(false);
-  };
 
   return (
     <>
@@ -207,252 +192,27 @@ const Header = ({ onOpenAppointment, onOpenChat, onOpenMyAppointments }) => {
 
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden text-textDark/80 hover:text-primary p-1.5 rounded-xl hover:bg-white/50 transition-colors cursor-pointer"
-            aria-label="Toggle Menu"
+            className="lg:hidden text-textDark/80 hover:text-primary p-2 rounded-xl hover:bg-white/50 transition-colors cursor-pointer flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-primary/30"
+            aria-label={mobileMenuOpen ? 'بستن منو' : 'باز کردن منو'}
+            aria-expanded={mobileMenuOpen}
           >
-            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            {mobileMenuOpen ? <X className="w-6 h-6 text-primary" /> : <Menu className="w-6 h-6" />}
           </button>
         </div>
       </header>
 
-      {/* Mobile Navigation Backdrop */}
-      {mobileMenuOpen && (
-        <div
-          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 lg:hidden animate-fadeSlide"
-          onClick={() => setMobileMenuOpen(false)}
-        />
-      )}
-
-      {/* Mobile Navigation Drawer with Expandable Dropdowns */}
-      {mobileMenuOpen && (
-        <nav
-          id="mobile-nav"
-          className="fixed top-[68px] left-3 right-3 max-h-[85vh] overflow-y-auto chat-scroll z-50 bg-gradient-to-br from-bgLight/98 via-white/98 to-bgDark/98 backdrop-blur-2xl border border-primary/25 rounded-3xl p-5 flex flex-col gap-3 shadow-2xl animate-fadeSlide lg:hidden"
-        >
-          {/* خانه */}
-          <Link
-            to="/"
-            onClick={handleNavClick}
-            className={`flex items-center gap-2.5 font-bold text-sm py-2.5 px-3 rounded-2xl transition-all ${
-              location.pathname === '/'
-                ? 'bg-primary text-white shadow-sm'
-                : 'text-textDark/90 hover:bg-primary/10 hover:text-primary'
-            }`}
-          >
-            <Home size={17} />
-            <span>خانه</span>
-          </Link>
-
-          {/* آشنایی با پزشک */}
-          <Link
-            to="/about"
-            onClick={handleNavClick}
-            className={`flex items-center gap-2.5 font-bold text-sm py-2.5 px-3 rounded-2xl transition-all ${
-              location.pathname === '/about'
-                ? 'bg-primary text-white shadow-sm'
-                : 'text-textDark/90 hover:bg-primary/10 hover:text-primary'
-            }`}
-          >
-            <UserCheck size={17} />
-            <span>آشنایی با پزشک</span>
-          </Link>
-
-          {/* خدمات (Accordion Dropdown) */}
-          <div className="rounded-2xl border border-primary/15 overflow-hidden bg-white/60">
-            <button
-              type="button"
-              onClick={() => setMobileServicesOpen(!mobileServicesOpen)}
-              className="w-full flex items-center justify-between font-bold text-sm py-2.5 px-3 text-textDark hover:bg-primary/5 transition-colors cursor-pointer"
-            >
-              <span className="flex items-center gap-2.5 text-primary-dark">
-                <Stethoscope size={17} className="text-primary" />
-                <span>خدمات درمانی و زیبایی</span>
-              </span>
-              <ChevronDown
-                size={16}
-                className={`text-primary transition-transform duration-300 ${
-                  mobileServicesOpen ? 'rotate-180' : ''
-                }`}
-              />
-            </button>
-
-            {mobileServicesOpen && (
-              <div className="flex flex-col gap-1 py-2 px-2.5 border-t border-primary/10 bg-primary/5 animate-fadeSlide">
-                <Link
-                  to="/services"
-                  onClick={handleNavClick}
-                  className="flex items-center justify-between text-xs font-bold py-2 px-3 rounded-xl text-textDark hover:bg-white hover:text-primary transition-all"
-                >
-                  <span>همه خدمات کلینیک</span>
-                </Link>
-                <Link
-                  to="/services#beauty"
-                  onClick={handleNavClick}
-                  className="flex items-center gap-2 text-xs font-medium py-2 px-3 rounded-xl text-textDark/80 hover:bg-white hover:text-primary transition-all"
-                >
-                  <Scissors size={14} className="text-primary/70" />
-                  <span>جراحی‌های زیبایی پستان (ماموپلاستی، پروتز، لیفت)</span>
-                </Link>
-                <Link
-                  to="/services#treatment"
-                  onClick={handleNavClick}
-                  className="flex items-center gap-2 text-xs font-medium py-2 px-3 rounded-xl text-textDark/80 hover:bg-white hover:text-primary transition-all"
-                >
-                  <HeartPulse size={14} className="text-primary/70" />
-                  <span>درمان بیماری‌ها و انکولوژی پستان</span>
-                </Link>
-              </div>
-            )}
-          </div>
-
-          {/* راهنما و منابع (Accordion Dropdown) */}
-          <div className="rounded-2xl border border-primary/15 overflow-hidden bg-white/60">
-            <button
-              type="button"
-              onClick={() => setMobileResourcesOpen(!mobileResourcesOpen)}
-              className="w-full flex items-center justify-between font-bold text-sm py-2.5 px-3 text-textDark hover:bg-primary/5 transition-colors cursor-pointer"
-            >
-              <span className="flex items-center gap-2.5 text-primary-dark">
-                <BookOpen size={17} className="text-primary" />
-                <span>راهنما و منابع</span>
-              </span>
-              <ChevronDown
-                size={16}
-                className={`text-primary transition-transform duration-300 ${
-                  mobileResourcesOpen ? 'rotate-180' : ''
-                }`}
-              />
-            </button>
-
-            {mobileResourcesOpen && (
-              <div className="flex flex-col gap-1 py-2 px-2.5 border-t border-primary/10 bg-primary/5 animate-fadeSlide">
-                <button
-                  type="button"
-                  onClick={() => {
-                    handleNavClick();
-                    if (onOpenChat) onOpenChat();
-                  }}
-                  className="w-full flex items-center justify-between text-xs font-bold py-2 px-3 rounded-xl text-textDark hover:bg-white hover:text-primary transition-all cursor-pointer"
-                >
-                  <span className="flex items-center gap-2">
-                    <Sparkles size={14} className="text-primary" />
-                    <span>دستیار هوشمند تریاژ</span>
-                  </span>
-                  <span className="bg-primary text-white text-[10px] px-2 py-0.5 rounded-full font-bold">
-                    جدید
-                  </span>
-                </button>
-                <Link
-                  to="/video"
-                  onClick={handleNavClick}
-                  className="flex items-center gap-2 text-xs font-medium py-2 px-3 rounded-xl text-textDark/80 hover:bg-white hover:text-primary transition-all"
-                >
-                  <Film size={14} className="text-primary/70" />
-                  <span>ویدیوهای آموزشی و بالینی</span>
-                </Link>
-                <Link
-                  to="/resources"
-                  onClick={handleNavClick}
-                  className="flex items-center gap-2 text-xs font-medium py-2 px-3 rounded-xl text-textDark/80 hover:bg-white hover:text-primary transition-all"
-                >
-                  <BookOpen size={14} className="text-primary/70" />
-                  <span>مطالب آموزشی و مقالات</span>
-                </Link>
-                <Link
-                  to="/faq"
-                  onClick={handleNavClick}
-                  className="flex items-center gap-2 text-xs font-medium py-2 px-3 rounded-xl text-textDark/80 hover:bg-white hover:text-primary transition-all"
-                >
-                  <HelpCircle size={14} className="text-primary/70" />
-                  <span>سوالات متداول</span>
-                </Link>
-              </div>
-            )}
-          </div>
-
-          {/* ارتباط با ما */}
-          <a
-            href="#contact"
-            onClick={handleNavClick}
-            className="flex items-center gap-2.5 font-bold text-sm py-2.5 px-3 rounded-2xl text-textDark/90 hover:bg-primary/10 hover:text-primary transition-all"
-          >
-            <Phone size={17} />
-            <span>ارتباط با ما</span>
-          </a>
-
-          {/* Auth session in drawer */}
-          {isAuthenticated ? (
-            <div className="flex flex-col gap-2.5 border-t border-primary/15 pt-3 mt-1">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-textDark flex items-center gap-1.5">
-                  <User size={15} className="text-primary" />
-                  {user?.full_name || user?.phone_number}
-                </span>
-                <button
-                  onClick={() => {
-                    handleNavClick();
-                    logout();
-                  }}
-                  className="text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-xl cursor-pointer transition-colors"
-                >
-                  خروج از حساب
-                </button>
-              </div>
-
-              {isAdmin ? (
-                <Link
-                  to="/admin/appointments"
-                  onClick={handleNavClick}
-                  className="flex items-center justify-center gap-2 text-xs font-bold bg-primary/10 text-primary hover:bg-primary hover:text-white py-2.5 px-3 rounded-2xl transition-all"
-                >
-                  <Shield size={14} />
-                  <span>رفتن به پنل مدیریت</span>
-                </Link>
-              ) : (
-                onOpenMyAppointments && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      handleNavClick();
-                      onOpenMyAppointments();
-                    }}
-                    className="flex items-center justify-center gap-2 bg-primary/10 hover:bg-primary hover:text-white text-primary text-xs font-bold py-2.5 px-3 rounded-2xl transition-all cursor-pointer"
-                  >
-                    <Calendar size={15} />
-                    <span>نوبت‌های من (پیگیری و لغو)</span>
-                  </button>
-                )
-              )}
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={() => {
-                handleNavClick();
-                openAuthModal();
-              }}
-              className="w-full bg-white/80 border border-primary/25 text-primary text-center font-bold py-2.5 rounded-2xl hover:bg-white transition-colors flex items-center justify-center gap-2 shadow-sm cursor-pointer mt-1"
-            >
-              <LogIn size={16} />
-              <span>ورود به حساب کاربری</span>
-            </button>
-          )}
-
-          {/* CTA Book Online */}
-          <button
-            onClick={() => {
-              handleNavClick();
-              if (onOpenAppointment) onOpenAppointment();
-            }}
-            className="bg-primary hover:bg-primary-dark text-white font-bold py-3 px-4 rounded-2xl transition-all shadow-md shadow-primary/25 mt-2 flex items-center justify-center gap-2 cursor-pointer"
-          >
-            <span>درخواست نوبت آنلاین</span>
-          </button>
-        </nav>
-      )}
+      {/* Modern Redesigned Mobile Navigation Sheet */}
+      <MobileNavDrawer
+        isOpen={mobileMenuOpen}
+        onClose={() => setMobileMenuOpen(false)}
+        onOpenAppointment={onOpenAppointment}
+        onOpenChat={onOpenChat}
+        onOpenMyAppointments={onOpenMyAppointments}
+      />
     </>
   );
 };
+
 
 export default Header;
 

@@ -9,11 +9,13 @@
 - **وضعیت پیاده‌سازی:** ✅ پیاده‌سازی کامل (Completed)
 - **کامپوننت‌های فرانت‌اند:**
   - هدر شیشه‌ای و ناوبری: [`src/components/layout/Header.jsx`](file:///e:/GitHub%20Repo/kamelion/front-end/src/components/layout/Header.jsx)
+  - شیت شناور ناوبری موبایل: [`src/components/layout/MobileNavDrawer.jsx`](file:///e:/GitHub%20Repo/kamelion/front-end/src/components/layout/MobileNavDrawer.jsx)
   - فوتر کلینیک: [`src/components/layout/Footer.jsx`](file:///e:/GitHub%20Repo/kamelion/front-end/src/components/layout/Footer.jsx)
   - فریم‌ورک اصلی و روتینگ: [`src/App.jsx`](file:///e:/GitHub%20Repo/kamelion/front-end/src/App.jsx)
 - **سرویس‌ها و استورها:**
   - استور تم: [`src/store/themeStore.js`](file:///e:/GitHub%20Repo/kamelion/front-end/src/store/themeStore.js)
   - هوک مدیریت اسکرول: [`src/hooks/useScrollFade.js`](file:///e:/GitHub%20Repo/kamelion/front-end/src/hooks/useScrollFade.js)
+  - هوک قفل سراسری اسکرول بدنه: [`src/hooks/useBodyScrollLock.js`](file:///e:/GitHub%20Repo/kamelion/front-end/src/hooks/useBodyScrollLock.js)
 
 ---
 
@@ -58,8 +60,9 @@ graph TD
    - دکمه «تریاژ و مشاوره هوشمند» که کپسول `FloatingChatWidget` را باز می‌کند.
 3. **نوار پیشرفت اسکرول (Top Scroll Progress):**
    - یک خط باریک در بالاترین پیکسل صفحه (`#progress`) که درصد اسکرول کاربر در صفحه جاری را نشان می‌دهد.
-4. **منوی واکنش‌گرا (Mobile Drawer):**
-   - در صفحات موبایل و تبلت، منو به دکمه همبرگری تبدیل شده و با انیمیشن نرم از سمت راست (RTL) باز می‌شود.
+4. **منوی واکنش‌گرا (Floating Mobile Sheet):**
+   - در صفحات موبایل و تبلت، منو به دکمه همبرگری تبدیل شده و با انیمیشن مدرن شناور از بالا (Top Slide Sheet) با گوشه‌های گرد و پس‌زمینه شیشه‌ای باز می‌شود.
+   - به محض باز شدن منو، اسکرول صفحه پس‌زمینه با هوک `useBodyScrollLock` به صورت iOS-Safe قفل می‌شود.
 5. **فوتر جامع (Clinic Footer):**
    - اطلاعات تماس، ساعات کاری دقیق روزهای شنبه تا چهارشنبه، آدرس کلینیک در تهران، لینک‌های مجوز و حقوق معنوی.
 

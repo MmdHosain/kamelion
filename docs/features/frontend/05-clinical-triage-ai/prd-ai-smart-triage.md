@@ -12,6 +12,7 @@
   - اجزای فرعی چت: [`src/components/chat/ChatContainer.jsx`](file:///e:/GitHub%20Repo/kamelion/front-end/src/components/chat/ChatContainer.jsx), [`ChatMessages.jsx`](file:///e:/GitHub%20Repo/kamelion/front-end/src/components/chat/ChatMessages.jsx), [`ChatSuggestions.jsx`](file:///e:/GitHub%20Repo/kamelion/front-end/src/components/chat/ChatSuggestions.jsx)
   - سناریوهای آماده تریاژ: [`src/data/chatScenarios.js`](file:///e:/GitHub%20Repo/kamelion/front-end/src/data/chatScenarios.js)
   - سرویس چت: [`src/api/chatService.js`](file:///e:/GitHub%20Repo/kamelion/front-end/src/api/chatService.js)
+  - هوک‌های اختصاصی: [`src/hooks/useBodyScrollLock.js`](file:///e:/GitHub%20Repo/kamelion/front-end/src/hooks/useBodyScrollLock.js), [`src/hooks/useFooterOverlap.js`](file:///e:/GitHub%20Repo/kamelion/front-end/src/hooks/useFooterOverlap.js)
 
 ---
 
@@ -43,10 +44,11 @@ graph TD
    - در پایین مرکز تمام صفحات عمومی سایت قرار دارد (`fixed bottom-6 left-1/2 -translate-x-1/2`).
    - دارای متن متغیر انیمیشنی هر ۳ ثانیه یک‌بار جهت جلب توجه ملایم کاربر بدون ایجاد مزاحمت.
    - ورودی متن سریع و دکمه ارسال با آیکون روبات `Bot`.
+   - **تغییر هوشمند به دکمه گوشه بالای فوتر (Smart Lift above Footer):** با نزدیک شدن اسکرول کاربر به انتهای سایت و ورود `#site-footer` به صفحه، کپسول عریض به یک FAB جمع‌وجور با آیکون جرقه و نشانگر آنلاین در گوشه پایین چپ تغییر شکل می‌دهد و با هوک `useFooterOverlap` به صورت داینامیک دقیقاً ۲۴ پیکسل بالاتر از لبه بالایی فوتر قرار می‌گیرد تا هیچ بخشی از متن یا پیوندهای فوتر پوشانده نشود.
 2. **پنجره چت گلس‌مورفیک (Expanded Chat Window):**
-   - با کلیک روی کپسول، پنجره گفتگو با افکت اسلاید بالا باز می‌شود.
-   - قابلیت مینیمایز / ماکزیمایز و دکمه بستن.
-   - اسکرول خودکار به آخرین پیام ارسالی (`messagesEndRef`).
+   - با کلیک روی کپسول، پنجره گفتگو با افکت اسلاید باز می‌شود و اسکرول صفحه پس‌زمینه با `useBodyScrollLock` قفل می‌گردد.
+   - ریسپانسیو کامل در موبایل با ارتفاع داینامیک ویوپورت (`100dvh`) و رعایت حاشیه امن (`safe-area-inset-bottom`).
+   - اسکرول کاملاً ایزوله در سطح کانتینر چت بدون پرش صفحه پس‌زمینه، همراه با تشخیص اسکرول کاربر (جلوگیری از پرش اجباری در صورت اسکرول به بالا برای مطالعه پیام‌های پیشین).
 3. **پرامپت‌های پیشنهادی سریع (Quick Prompts):**
    - «درد یا خونریزی شدید دارم» (با آیکون هشدار و وضعیت Urgent).
    - «توده جدید در سینه لمس کرده‌ام».
