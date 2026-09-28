@@ -15,6 +15,7 @@ import {
 import { reservationService } from '../../api/reservationService';
 import { getApiErrorMessage } from '../../utils/errorUtils';
 import { formatJalaliDisplay, toPersianDigits } from '../../utils/jalaliDateUtils';
+import useBodyScrollLock from '../../hooks/useBodyScrollLock';
 
 const STATUS_CONFIG = {
   pending: {
@@ -59,6 +60,9 @@ const parseAppointmentDate = (rawDate) => {
 };
 
 export default function MyAppointmentsModal({ open, onClose, onOpenNewBooking }) {
+  // Lock body scroll when my appointments modal is open
+  useBodyScrollLock(open);
+
   const [appointments, setAppointments] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -86,6 +90,16 @@ export default function MyAppointmentsModal({ open, onClose, onOpenNewBooking })
       setIsLoading(false);
     }
   }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && open) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [open, onClose]);
 
   useEffect(() => {
     if (open) {
@@ -117,8 +131,16 @@ export default function MyAppointmentsModal({ open, onClose, onOpenNewBooking })
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[110] bg-black/60 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-fadeSlide">
-      <div className="w-full max-w-2xl max-h-[90vh] rounded-[2.5rem] bg-gradient-to-br from-bgLight/95 via-white/95 to-bgDark/95 backdrop-blur-2xl border border-primary/30 p-5 sm:p-7 flex flex-col shadow-2xl overflow-y-auto chat-scroll relative">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="نوبت‌های ویزیت من"
+      className="fixed inset-0 z-[110] bg-black/60 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-fadeSlide"
+    >
+      <div
+        className="w-full max-w-2xl max-h-[90dvh] rounded-[2.5rem] bg-gradient-to-br from-bgLight/95 via-white/95 to-bgDark/95 backdrop-blur-2xl border border-primary/30 p-5 sm:p-7 flex flex-col shadow-2xl overflow-y-auto chat-scroll relative"
+        style={{ overscrollBehavior: 'contain' }}
+      >
         {/* Close Button */}
         <button
           type="button"

@@ -1,62 +1,33 @@
-// src/components/ui/AppointmentModal.jsx
+// src/components/admin/reservations/AdminManualBookingModal.jsx
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import {
   X,
-  Calendar,
+  Calendar as CalendarIcon,
   Clock,
   CheckCircle2,
-  Check,
   AlertCircle,
+  AlertTriangle,
   Loader2,
   Sparkles,
-  AlertTriangle,
+  Phone,
+  User,
   FileText,
   ChevronRight,
   ChevronLeft,
 } from 'lucide-react';
-import JalaliCalendar from './JalaliCalendar';
-import { getAvailableSlots, bookSlot } from '../../api/reservationService';
-import { useAuth } from '../../hooks/useAuth';
-import useBodyScrollLock from '../../hooks/useBodyScrollLock';
-import { getApiErrorMessage } from '../../utils/errorUtils';
+import JalaliCalendar from '../../ui/JalaliCalendar';
+import { ReasonChip, QUICK_REASONS } from '../../ui/AppointmentModal';
+import { reservationService } from '../../../api/reservationService';
+import useBodyScrollLock from '../../../hooks/useBodyScrollLock';
+import { getApiErrorMessage } from '../../../utils/errorUtils';
 import {
   formatDateForApi,
   formatJalaliDisplay,
   toPersianDigits,
-} from '../../utils/jalaliDateUtils';
-
-export const QUICK_REASONS = [
-  'معاینه و چکاپ دوره‌ای',
-  'بررسی سونوگرافی یا ماموگرافی',
-  'لمس توده یا احساس درد',
-  'مشاوره جراحی زیبایی (ماموپلاستی / پروتز)',
-  'مراقبت و معاینه پس از جراحی',
-];
+} from '../../../utils/jalaliDateUtils';
 
 const MAX_REASON_LENGTH = 300;
-const MIN_REASON_LENGTH = 5;
-
-export function ReasonChip({ label, active, onClick }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      className={`text-[11px] font-bold px-2.5 py-1 rounded-xl border transition-all duration-200 cursor-pointer flex items-center gap-1.5 select-none ${
-        active
-          ? 'bg-primary text-white border-primary shadow-xs ring-2 ring-primary/20 hover:bg-primary-dark'
-          : 'bg-primary/5 hover:bg-primary/15 text-primary-dark border-primary/15 hover:border-primary/30'
-      }`}
-    >
-      {active ? (
-        <Check size={12} strokeWidth={2.5} className="shrink-0" />
-      ) : (
-        <span className="text-primary font-bold text-xs leading-none">+</span>
-      )}
-      <span>{label}</span>
-    </button>
-  );
-}
 
 const normalizeSlotStatus = (status) => {
   if (!status) return 'available';
@@ -105,76 +76,84 @@ const normalizeSlotsResponse = (data) => {
   return rawSlots.map(normalizeSingleSlot).filter((slot) => slot && slot.time);
 };
 
-export default function AppointmentModal({ open, onClose, onOpenMyAppointments }) {
-  const { isAuthenticated, openAuthModal } = useAuth();
+export default function AdminManualBookingModal({ isOpen, onClose, onCreated }) {
+  // Lock background scroll when modal is open
+  useBodyScrollLock(isOpen);
 
-  // Lock body scroll when appointment modal is open
-  useBodyScrollLock(open);
-
-  const [mobileStep, setMobileStep] = useState(1); // 1 = Calendar/Date, 2 = Time & Reason
+  const [mobileStep, setMobileStep] = useState(1); // 1 = Calendar/Date, 2 = Time & Patient Details
   const [selectedDate, setSelectedDate] = useState(null);
   const [availableSlots, setAvailableSlots] = useState([]);
   const [selectedTime, setSelectedTime] = useState(null);
-  const [reason, setReason] = useState('');
   const [isLoadingSlots, setIsLoadingSlots] = useState(false);
-  const [isBooking, setIsBooking] = useState(false);
-  const [errors, setErrors] = useState({});
-  const [pendingBookingAfterAuth, setPendingBookingAfterAuth] = useState(false);
-  const [bookingSuccess, setBookingSuccess] = useState(false);
-  const [bookedAppointment, setBookedAppointment] = useState(null);
-  const [isReasonHighlighted, setIsReasonHighlighted] = useState(false);
 
-  const reasonContainerRef = useRef(null);
+  // Patient info states
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [reason, setReason] = useState('');
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [bookedData, setBookedData] = useState(null);
+  const [isPatientHighlighted, setIsPatientHighlighted] = useState(false);
+
+  const patientSectionRef = useRef(null);
+  const phoneInputRef = useRef(null);
+  const fullNameInputRef = useRef(null);
   const reasonInputRef = useRef(null);
   const highlightTimeoutRef = useRef(null);
 
+  // Close on Escape key
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.key === 'Escape' && open && !isBooking) {
+      if (e.key === 'Escape' && isOpen && !isSubmitting) {
         onClose();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [open, isBooking, onClose]);
+  }, [isOpen, isSubmitting, onClose]);
 
+  // Reset modal state on opening
   useEffect(() => {
-    if (open) {
+    if (isOpen) {
       setMobileStep(1);
       setSelectedDate(null);
       setAvailableSlots([]);
       setSelectedTime(null);
-      setReason('');
       setIsLoadingSlots(false);
-      setIsBooking(false);
+      setPhoneNumber('');
+      setFullName('');
+      setReason('');
+      setIsSubmitting(false);
       setErrors({});
-      setPendingBookingAfterAuth(false);
-      setBookingSuccess(false);
-      setBookedAppointment(null);
-      setIsReasonHighlighted(false);
+      setSubmitSuccess(false);
+      setBookedData(null);
+      setIsPatientHighlighted(false);
     }
     return () => {
       if (highlightTimeoutRef.current) {
         clearTimeout(highlightTimeoutRef.current);
       }
     };
-  }, [open]);
+  }, [isOpen]);
 
+  // Fetch available slots from backend
   const fetchSlots = useCallback(async (date) => {
     if (!date) return;
 
     setIsLoadingSlots(true);
-    setErrors((prev) => ({ ...prev, date: '', booking: '', time: '' }));
+    setErrors((prev) => ({ ...prev, date: '', time: '', submit: '' }));
     setSelectedTime(null);
     setAvailableSlots([]);
 
     try {
       const apiDate = formatDateForApi(date);
-      const response = await getAvailableSlots(apiDate);
+      const response = await reservationService.getAvailableSlots(apiDate);
       const slots = normalizeSlotsResponse(response);
       setAvailableSlots(slots);
     } catch (err) {
-      console.error('Error fetching slots:', err);
+      console.error('Error fetching slots for admin booking:', err);
       setAvailableSlots([]);
       setErrors((prev) => ({
         ...prev,
@@ -189,7 +168,7 @@ export default function AppointmentModal({ open, onClose, onOpenMyAppointments }
     if (!day) return;
     setSelectedDate(day);
     fetchSlots(day);
-    // On mobile, advance smoothly to Step 2 (Time & Reason)
+    // On mobile, advance smoothly to Step 2
     setMobileStep(2);
   };
 
@@ -197,32 +176,31 @@ export default function AppointmentModal({ open, onClose, onOpenMyAppointments }
     setSelectedTime(time);
     setErrors((prev) => ({ ...prev, time: '' }));
 
-    // 1. Smooth scroll Reason for Visit container so it is centered in the viewport
-    reasonContainerRef.current?.scrollIntoView({
+    // 1. Smooth scroll to patient info & reason section
+    patientSectionRef.current?.scrollIntoView({
       behavior: 'smooth',
       block: 'center',
     });
 
-    // 2. Trigger soft pink glow / halo animation and auto-remove after ~1.5s
-    setIsReasonHighlighted(true);
+    // 2. Trigger soft pink glow / halo animation
+    setIsPatientHighlighted(true);
     if (highlightTimeoutRef.current) {
       clearTimeout(highlightTimeoutRef.current);
     }
     highlightTimeoutRef.current = setTimeout(() => {
-      setIsReasonHighlighted(false);
+      setIsPatientHighlighted(false);
     }, 1500);
 
+    // 3. Auto-focus appropriate input
     setTimeout(() => {
-      reasonInputRef.current?.focus();
+      if (!phoneNumber.trim()) {
+        phoneInputRef.current?.focus();
+      } else if (!fullName.trim()) {
+        fullNameInputRef.current?.focus();
+      } else {
+        reasonInputRef.current?.focus();
+      }
     }, 300);
-  };
-
-  const handleReasonChange = (e) => {
-    const val = e.target.value;
-    setReason(val);
-    if (errors.reason && val.trim().length >= MIN_REASON_LENGTH) {
-      setErrors((prev) => ({ ...prev, reason: '' }));
-    }
   };
 
   const isChipActive = useCallback(
@@ -257,7 +235,6 @@ export default function AppointmentModal({ open, onClose, onOpenMyAppointments }
         // Toggle OFF: Remove chip from reason string
         const remaining = segments.filter((s) => s !== trimmedChip);
         if (remaining.length === segments.length) {
-          // Fallback if not an exact segment match
           const escaped = trimmedChip.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
           next = trimmedPrev
             .replace(
@@ -284,103 +261,87 @@ export default function AppointmentModal({ open, onClose, onOpenMyAppointments }
     const newErrors = {};
 
     if (!selectedDate) {
-      newErrors.date = 'لطفاً ابتدا روز مورد نظر خود را از تقویم انتخاب فرمایید.';
+      newErrors.date = 'لطفاً ابتدا روز مورد نظر را از تقویم انتخاب فرمایید.';
     }
 
     if (!selectedTime) {
       newErrors.time = 'لطفاً یکی از ساعت‌های کاری خالی را برای ویزیت انتخاب نمایید.';
     }
 
-    const trimmedReason = reason.trim();
-    if (!trimmedReason) {
-      newErrors.reason = 'ثبت علت مراجعه الزامی است. لطفاً دلیل ویزیت خود را بنویسید.';
-    } else if (trimmedReason.length < MIN_REASON_LENGTH) {
-      newErrors.reason = `علت مراجعه باید حداقل ${toPersianDigits(MIN_REASON_LENGTH)} کاراکتر باشد تا پزشک بتواند شرح حال اولیه را بررسی کند.`;
+    const trimmedPhone = phoneNumber.trim();
+    if (!trimmedPhone) {
+      newErrors.phoneNumber = 'شماره تماس بیمار الزامی است.';
+    } else if (!/^09\d{9}$/.test(trimmedPhone) && !/^\+989\d{9}$/.test(trimmedPhone)) {
+      newErrors.phoneNumber = 'شماره موبایل نامعتبر است (مثال: 09123456789).';
     }
 
-    setErrors((prev) => ({ ...prev, ...newErrors }));
+    const trimmedName = fullName.trim();
+    if (!trimmedName) {
+      newErrors.fullName = 'نام و نام خانوادگی بیمار الزامی است.';
+    } else if (trimmedName.length < 3) {
+      newErrors.fullName = 'نام و نام خانوادگی باید حداقل ۳ حرف باشد.';
+    }
+
+    setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const doBookAppointment = useCallback(async () => {
-    if (!selectedDate || !selectedTime) return;
-
-    const trimmedReason = reason.trim();
-    if (!trimmedReason || trimmedReason.length < MIN_REASON_LENGTH) {
-      setErrors((prev) => ({
-        ...prev,
-        reason: 'ثبت علت مراجعه الزامی است (حداقل ۵ کاراکتر).',
-      }));
-      reasonInputRef.current?.focus();
-      return;
-    }
-
-    setIsBooking(true);
-    setErrors((prev) => ({ ...prev, booking: '' }));
-
-    try {
-      const apiDate = formatDateForApi(selectedDate);
-      const result = await bookSlot(apiDate, selectedTime, trimmedReason);
-      setBookedAppointment({
-        ...result,
-        displayDate: formatJalaliDisplay(selectedDate, true),
-        time: selectedTime,
-        reason: trimmedReason,
-      });
-      setBookingSuccess(true);
-    } catch (err) {
-      const errorMsg = getApiErrorMessage(
-        err,
-        'خطا در ثبت نوبت. لطفاً دوباره تلاش کنید یا ساعت دیگری را انتخاب نمایید.'
-      );
-      const friendlyMsg =
-        errorMsg === 'Selected time slot is not available.'
-          ? 'زمان انتخابی دیگر در دسترس نیست یا پر شده است.'
-          : errorMsg;
-
-      setErrors((prev) => ({ ...prev, booking: friendlyMsg }));
-    } finally {
-      setIsBooking(false);
-    }
-  }, [selectedDate, selectedTime, reason]);
-
-  useEffect(() => {
-    if (
-      open &&
-      isAuthenticated &&
-      pendingBookingAfterAuth &&
-      selectedDate &&
-      selectedTime &&
-      reason.trim().length >= MIN_REASON_LENGTH &&
-      !isBooking
-    ) {
-      setPendingBookingAfterAuth(false);
-      doBookAppointment();
-    }
-  }, [open, isAuthenticated, pendingBookingAfterAuth, selectedDate, selectedTime, reason, isBooking, doBookAppointment]);
-
-  const handleBookAppointment = () => {
-    if (isBooking) return;
+  const handleSubmit = async (e) => {
+    if (e) e.preventDefault();
+    if (isSubmitting) return;
 
     const isValid = validateForm();
     if (!isValid) {
       if (!selectedTime) {
         setMobileStep(2);
       }
-      if (!reason.trim() || reason.trim().length < MIN_REASON_LENGTH) {
-        setMobileStep(2);
-        setTimeout(() => reasonInputRef.current?.focus(), 150);
+      return;
+    }
+
+    setIsSubmitting(true);
+    setErrors((prev) => ({ ...prev, submit: '' }));
+
+    try {
+      const apiDate = formatDateForApi(selectedDate);
+      const payload = {
+        phone_number: phoneNumber.trim(),
+        full_name: fullName.trim(),
+        date: apiDate,
+        time: selectedTime,
+        reason: reason.trim(),
+        force_create_user: true,
+      };
+
+      const created = await reservationService.createAdminReservation(payload);
+
+      setBookedData({
+        ...created,
+        patientName: fullName.trim(),
+        phoneNumber: phoneNumber.trim(),
+        displayDate: formatJalaliDisplay(selectedDate, true),
+        time: selectedTime,
+        reason: reason.trim(),
+      });
+
+      setSubmitSuccess(true);
+      if (onCreated) {
+        onCreated(created);
       }
-      return;
-    }
+    } catch (err) {
+      console.error('Error submitting admin reservation:', err);
+      const errorMsg = getApiErrorMessage(
+        err,
+        'خطا در ثبت نوبت توسط ادمین. لطفاً دوباره تلاش فرمایید.'
+      );
+      const friendlyMsg =
+        errorMsg === 'Selected time slot is not available.'
+          ? 'زمان انتخابی دیگر در دسترس نیست یا پر شده است.'
+          : errorMsg;
 
-    if (!isAuthenticated) {
-      setPendingBookingAfterAuth(true);
-      if (openAuthModal) openAuthModal();
-      return;
+      setErrors((prev) => ({ ...prev, submit: friendlyMsg }));
+    } finally {
+      setIsSubmitting(false);
     }
-
-    doBookAppointment();
   };
 
   const isPastDate = (day) => {
@@ -400,25 +361,27 @@ export default function AppointmentModal({ open, onClose, onOpenMyAppointments }
     return isPastDate(day) || isTooFarFuture(day) || day.getDay() === 5; // Friday closed
   };
 
-  if (!open) return null;
+  if (!isOpen) return null;
 
-  return (
+  return createPortal(
     <div
       role="dialog"
       aria-modal="true"
-      aria-label="رزرو وقت ویزیت آنلاین"
-      className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-fadeSlide"
+      aria-label="ثبت نوبت حضوری یا تلفنی بیمار"
+      className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-fadeSlide"
+      onClick={(e) => {
+        if (e.target === e.currentTarget && !isSubmitting) onClose();
+      }}
     >
       <div
         className="w-full max-w-4xl max-h-[92dvh] rounded-[2.5rem] bg-white/95 backdrop-blur-2xl border border-primary/20 p-5 sm:p-8 flex flex-col shadow-[0_25px_60px_-15px_rgba(231,84,128,0.2)] overflow-y-auto chat-scroll relative"
         style={{ overscrollBehavior: 'contain' }}
       >
-        
-        {/* Close Button ("X") */}
+        {/* Close Button */}
         <button
           type="button"
           onClick={onClose}
-          disabled={isBooking}
+          disabled={isSubmitting}
           className="absolute top-5 left-5 sm:top-6 sm:left-6 w-10 h-10 rounded-2xl bg-white/90 hover:bg-white border border-primary/25 hover:border-primary text-textDark hover:text-primary shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-center z-20 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/40 active:scale-95 disabled:opacity-50"
           aria-label="بستن پنجره"
           title="بستن"
@@ -429,88 +392,83 @@ export default function AppointmentModal({ open, onClose, onOpenMyAppointments }
         {/* Modal Header */}
         <div className="text-center mb-4 sm:mb-6">
           <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-primary-dark text-white flex items-center justify-center mx-auto mb-3 shadow-lg shadow-primary/25">
-            <Calendar className="w-6 h-6" />
+            <CalendarIcon className="w-6 h-6" />
           </div>
           <h2 className="text-2xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-l from-primary to-primary-dark">
-            رزرو وقت ویزیت آنلاین
+            ثبت دستی نوبت بیمار توسط ادمین
           </h2>
           <p className="text-xs md:text-sm text-textDark/75 font-medium mt-1">
-            کلینیک تخصصی بیماری‌ها و جراحی پستان دکتر نگار معشوری
+            رزرو نوبت تلفنی یا حضوری کلینیک دکتر نگار معشوری
           </p>
         </div>
 
-        {bookingSuccess ? (
-          <div className="bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-primary/10 border-2 border-amber-500/30 p-6 sm:p-8 rounded-3xl text-center flex flex-col items-center gap-4 my-auto shadow-lg animate-fadeSlide">
-            <div className="w-16 h-16 rounded-2xl bg-amber-500/20 text-amber-600 flex items-center justify-center shadow-inner">
-              <Clock className="w-9 h-9 animate-pulse" />
+        {submitSuccess ? (
+          /* Success Screen */
+          <div className="bg-gradient-to-br from-emerald-500/10 via-emerald-500/5 to-primary/10 border-2 border-emerald-500/30 p-6 sm:p-8 rounded-3xl text-center flex flex-col items-center gap-4 my-auto shadow-lg animate-fadeSlide">
+            <div className="w-16 h-16 rounded-2xl bg-emerald-500/20 text-emerald-600 flex items-center justify-center shadow-inner">
+              <CheckCircle2 className="w-9 h-9" />
             </div>
 
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-100 border border-amber-300 text-amber-900 text-xs font-black shadow-sm">
-              <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
-              وضعیت: در انتظار بررسی و تایید کلینیک
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-100 border border-emerald-300 text-emerald-900 text-xs font-black shadow-sm">
+              <span className="w-2 h-2 rounded-full bg-emerald-500" />
+              وضعیت: ثبت قطعی در سامانه کلینیک
             </div>
 
             <h3 className="text-xl md:text-2xl font-black text-textDark">
-              درخواست نوبت شما با موفقیت ثبت شد
+              نوبت بیمار با موفقیت در سیستم ثبت گردید
             </h3>
 
             <p className="text-xs md:text-sm text-textDark/80 font-medium max-w-md leading-relaxed">
-              این ساعت ویزیت تا زمان بررسی منشی مطب برای شما رزرو موقت گردید. پس از تایید نهایی، پیامک تایید برای شما ارسال خواهد شد.
+              اطلاعات نوبت در کارتابل رزروهای ادمین به‌روزرسانی شد.
             </p>
 
-            {bookedAppointment && (
-              <div className="w-full max-w-sm bg-white/90 rounded-2xl border border-primary/20 p-4 text-xs flex flex-col gap-2.5 font-bold text-textDark shadow-sm">
+            {bookedData && (
+              <div className="w-full max-w-sm bg-white/95 rounded-2xl border border-primary/20 p-4 text-xs flex flex-col gap-2.5 font-bold text-textDark shadow-sm">
+                <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+                  <span className="text-textDark/60">نام بیمار:</span>
+                  <span className="text-primary-dark font-black">{bookedData.patientName}</span>
+                </div>
+                <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+                  <span className="text-textDark/60">شماره تماس:</span>
+                  <span className="font-mono text-gray-800" dir="ltr">{toPersianDigits(bookedData.phoneNumber)}</span>
+                </div>
                 <div className="flex justify-between items-center border-b border-gray-100 pb-2">
                   <span className="text-textDark/60">تاریخ ویزیت:</span>
-                  <span className="text-primary-dark">{bookedAppointment.displayDate}</span>
+                  <span className="text-primary-dark">{bookedData.displayDate}</span>
                 </div>
                 <div className="flex justify-between items-center border-b border-gray-100 pb-2">
                   <span className="text-textDark/60">ساعت ویزیت:</span>
-                  <span className="text-primary font-black">ساعت {toPersianDigits(bookedAppointment.time)}</span>
+                  <span className="text-primary font-black">ساعت {toPersianDigits(bookedData.time)}</span>
                 </div>
-                {bookedAppointment.reason && (
+                {bookedData.reason && (
                   <div className="flex justify-between items-start border-b border-gray-100 pb-2 gap-2 text-right">
                     <span className="text-textDark/60 shrink-0">علت مراجعه:</span>
                     <span className="text-textDark font-medium leading-relaxed max-w-[220px]">
-                      {bookedAppointment.reason}
+                      {bookedData.reason}
                     </span>
                   </div>
                 )}
-                {bookedAppointment.id && (
+                {bookedData.id && (
                   <div className="flex justify-between items-center">
-                    <span className="text-textDark/60">کد رهگیری نوبت:</span>
-                    <span className="font-mono text-gray-800">#{bookedAppointment.id}</span>
+                    <span className="text-textDark/60">شناسه نوبت:</span>
+                    <span className="font-mono text-gray-800">#{bookedData.id}</span>
                   </div>
                 )}
               </div>
             )}
 
-            <div className="flex flex-col sm:flex-row items-center gap-2.5 mt-2 w-full max-w-sm justify-center">
+            <div className="flex items-center gap-3 mt-2">
               <button
                 type="button"
                 onClick={onClose}
-                className="w-full sm:w-auto px-8 py-2.5 rounded-2xl bg-primary hover:bg-primary-dark text-white font-bold text-sm shadow-md shadow-primary/25 hover:shadow-primary/40 hover:-translate-y-0.5 transition-all cursor-pointer"
+                className="px-8 py-2.5 rounded-2xl bg-primary hover:bg-primary-dark text-white font-bold text-sm shadow-md shadow-primary/25 hover:shadow-primary/40 hover:-translate-y-0.5 transition-all cursor-pointer"
               >
-                متوجه شدم / بستن
+                بستن و بازگشت به لیست نوبت‌ها
               </button>
-
-              {onOpenMyAppointments && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    onClose();
-                    onOpenMyAppointments();
-                  }}
-                  className="w-full sm:w-auto px-5 py-2.5 rounded-2xl bg-white hover:bg-gray-50 border border-primary/25 text-primary text-xs font-bold transition-all cursor-pointer shadow-sm whitespace-nowrap"
-                >
-                  مشاهده نوبت‌های من
-                </button>
-              )}
             </div>
           </div>
         ) : (
-          <div className="flex flex-col gap-5">
-            
+          <form onSubmit={handleSubmit} className="flex flex-col gap-5">
             {/* Mobile Step Progress Indicator (Hidden on Desktop) */}
             <div className="flex lg:hidden items-center justify-center gap-2.5 mb-2">
               <button
@@ -522,9 +480,11 @@ export default function AppointmentModal({ open, onClose, onOpenMyAppointments }
                     : 'bg-primary/10 text-primary hover:bg-primary/20'
                 }`}
               >
-                <span className={`w-4 h-4 rounded-full text-[10px] flex items-center justify-center font-black ${
-                  mobileStep === 1 ? 'bg-white text-primary' : 'bg-primary text-white'
-                }`}>
+                <span
+                  className={`w-4 h-4 rounded-full text-[10px] flex items-center justify-center font-black ${
+                    mobileStep === 1 ? 'bg-white text-primary' : 'bg-primary text-white'
+                  }`}
+                >
                   {selectedDate && mobileStep === 2 ? '✓' : '۱'}
                 </span>
                 <span>۱. انتخاب روز</span>
@@ -546,25 +506,30 @@ export default function AppointmentModal({ open, onClose, onOpenMyAppointments }
                     : 'bg-gray-100 text-gray-400 cursor-not-allowed opacity-60'
                 }`}
               >
-                <span className={`w-4 h-4 rounded-full text-[10px] flex items-center justify-center font-black ${
-                  mobileStep === 2 ? 'bg-white text-primary' : 'bg-gray-300 text-white'
-                }`}>
+                <span
+                  className={`w-4 h-4 rounded-full text-[10px] flex items-center justify-center font-black ${
+                    mobileStep === 2 ? 'bg-white text-primary' : 'bg-gray-300 text-white'
+                  }`}
+                >
                   ۲
                 </span>
-                <span>۲. ساعت و مشخصات</span>
+                <span>۲. ساعت و مشخصات بیمار</span>
               </button>
             </div>
 
-            {/* Two-Column Responsive Grid (Step 1 or Step 2 on Mobile, Combined Side-by-Side on Desktop) */}
+            {/* Two-Column Responsive Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-              
               {/* Column 1: Step 1 (Date Selection Calendar) */}
-              <div className={`${
-                mobileStep === 1 ? 'flex' : 'hidden lg:flex'
-              } flex-col bg-white border border-primary/15 rounded-3xl p-4 sm:p-6 shadow-xs animate-fadeSlide`}>
+              <div
+                className={`${
+                  mobileStep === 1 ? 'flex' : 'hidden lg:flex'
+                } flex-col bg-white border border-primary/15 rounded-3xl p-4 sm:p-6 shadow-xs animate-fadeSlide`}
+              >
                 <div className="w-full flex items-center justify-between border-b border-primary/10 pb-3 mb-4">
                   <span className="text-xs font-bold text-primary flex items-center gap-1.5">
-                    <span className="w-5 h-5 rounded-full bg-primary text-white text-[10px] font-black flex items-center justify-center">۱</span>
+                    <span className="w-5 h-5 rounded-full bg-primary text-white text-[10px] font-black flex items-center justify-center">
+                      ۱
+                    </span>
                     انتخاب روز مراجعه (تقویم شمسی)
                   </span>
                   <span className="text-[11px] text-textDark/60 font-medium">جمعه‌ها تعطیل است</span>
@@ -577,6 +542,13 @@ export default function AppointmentModal({ open, onClose, onOpenMyAppointments }
                     isDateDisabled={isUnavailable}
                   />
                 </div>
+
+                {errors.date && (
+                  <div className="mt-3 p-3 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 shrink-0 text-red-500" />
+                    <span>{errors.date}</span>
+                  </div>
+                )}
 
                 {/* Mobile Continue Bar */}
                 {selectedDate && (
@@ -591,12 +563,13 @@ export default function AppointmentModal({ open, onClose, onOpenMyAppointments }
                 )}
               </div>
 
-              {/* Column 2: Step 2 (Time Slots, Reason & Confirm Button) */}
-              <div className={`${
-                mobileStep === 2 ? 'flex' : 'hidden lg:flex'
-              } flex-col justify-between bg-white border border-primary/15 rounded-3xl p-5 sm:p-6 shadow-xs animate-fadeSlide min-h-[460px]`}>
+              {/* Column 2: Step 2 & 3 (Time Slots + Patient Details & Reason at the End) */}
+              <div
+                className={`${
+                  mobileStep === 2 ? 'flex' : 'hidden lg:flex'
+                } flex-col justify-between bg-white border border-primary/15 rounded-3xl p-5 sm:p-6 shadow-xs animate-fadeSlide min-h-[460px]`}
+              >
                 <div className="flex flex-col gap-4">
-                  
                   {/* Mobile Back to Calendar Bar */}
                   <div className="flex lg:hidden items-center justify-between border-b border-primary/10 pb-3">
                     <button
@@ -619,7 +592,9 @@ export default function AppointmentModal({ open, onClose, onOpenMyAppointments }
                   {/* Selected Date Summary Header */}
                   <div className="flex items-center justify-between border-b border-primary/10 pb-3">
                     <span className="text-xs font-bold text-primary flex items-center gap-1.5">
-                      <span className="w-5 h-5 rounded-full bg-primary text-white text-[10px] font-black flex items-center justify-center">۲</span>
+                      <span className="w-5 h-5 rounded-full bg-primary text-white text-[10px] font-black flex items-center justify-center">
+                        ۲
+                      </span>
                       انتخاب ساعت ویزیت
                     </span>
                     {selectedDate && (
@@ -640,20 +615,13 @@ export default function AppointmentModal({ open, onClose, onOpenMyAppointments }
 
                   {/* Time Slots Area */}
                   {isLoadingSlots && (
-                    <div className="flex flex-col justify-center items-center h-40 gap-2">
+                    <div className="flex flex-col justify-center items-center h-32 gap-2">
                       <Loader2 className="w-8 h-8 text-primary animate-spin" />
                       <span className="text-xs text-textDark/60 font-medium">در حال دریافت زمان‌های خالی...</span>
                     </div>
                   )}
 
-                  {!isLoadingSlots && errors.date && (
-                    <div className="p-4 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2 my-2">
-                      <AlertCircle className="w-4 h-4 shrink-0 text-red-500" />
-                      <span>{errors.date}</span>
-                    </div>
-                  )}
-
-                  {!isLoadingSlots && !errors.date && availableSlots.length > 0 && (
+                  {!isLoadingSlots && availableSlots.length > 0 && (
                     <div className="flex flex-col gap-2">
                       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-40 overflow-y-auto chat-scroll p-1">
                         {availableSlots.map((slot, index) => {
@@ -665,7 +633,7 @@ export default function AppointmentModal({ open, onClose, onOpenMyAppointments }
                               key={`${slot.time}-${index}`}
                               type="button"
                               onClick={() => handleSlotSelect(slot.time)}
-                              disabled={!isAvailable || isBooking}
+                              disabled={!isAvailable || isSubmitting}
                               className={`py-2.5 px-3 rounded-2xl border-2 text-center font-black text-sm transition-all duration-200 cursor-pointer ${
                                 isSelected
                                   ? 'bg-gradient-to-r from-primary to-primary-dark border-transparent text-white shadow-lg shadow-primary/35 scale-102 ring-2 ring-primary/30'
@@ -691,7 +659,7 @@ export default function AppointmentModal({ open, onClose, onOpenMyAppointments }
                     </div>
                   )}
 
-                  {!isLoadingSlots && !errors.date && selectedDate && availableSlots.length === 0 && (
+                  {!isLoadingSlots && selectedDate && availableSlots.length === 0 && (
                     <div className="flex flex-col items-center justify-center py-6 px-4 text-center bg-amber-500/5 rounded-2xl border border-amber-500/20 my-2">
                       <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center mb-2">
                         <AlertTriangle className="w-5 h-5" />
@@ -700,7 +668,7 @@ export default function AppointmentModal({ open, onClose, onOpenMyAppointments }
                         نوبت خالی برای این روز یافت نشد
                       </p>
                       <p className="text-[11px] md:text-xs text-textDark/65 max-w-xs leading-relaxed">
-                        برای تاریخ انتخاب‌شده برنامه ویزیت تعریف نشده یا تمامی نوبت‌ها تکمیل شده است. لطفاً روز کاری دیگری را انتخاب نمایید.
+                        برای تاریخ انتخاب‌شده برنامه ویزیت تعریف نشده یا تمامی نوبت‌ها تکمیل شده است.
                       </p>
                       <button
                         type="button"
@@ -713,21 +681,25 @@ export default function AppointmentModal({ open, onClose, onOpenMyAppointments }
                   )}
 
                   {!isLoadingSlots && !selectedDate && (
-                    <div className="text-center text-textDark/55 py-8 text-xs md:text-sm font-medium leading-relaxed">
-                      لطفاً ابتدا از تقویم، یک روز کاری را انتخاب نمایید تا زمان‌های آزاد نمایش داده شوند.
+                    <div className="text-center text-textDark/55 py-6 text-xs md:text-sm font-medium leading-relaxed">
+                      لطفاً ابتدا از تقویم سمت راست، روز کاری مورد نظر را انتخاب فرمایید.
                     </div>
                   )}
 
-                  {/* Step 3: Mandatory Reason for Visit & Selected Time Pill */}
+                  {/* Step 3: Patient Information & Reason (Positioned at the end) */}
                   {selectedDate && (
-                    <div className="pt-3 border-t border-primary/15 flex flex-col gap-3 animate-fadeSlide">
-                      
+                    <div
+                      ref={patientSectionRef}
+                      className={`pt-4 border-t border-primary/15 flex flex-col gap-4 transition-all duration-300 rounded-2xl ${
+                        isPatientHighlighted ? 'pink-halo-glow ring-2 ring-primary/40 p-3' : ''
+                      }`}
+                    >
                       {/* Selection Summary Pill */}
                       {selectedTime && (
-                        <div className="p-3 rounded-2xl bg-gradient-to-r from-primary/10 via-primary/5 to-primary-dark/10 border border-primary/20 flex items-center justify-between text-xs font-bold text-textDark">
+                        <div className="p-3 rounded-2xl bg-gradient-to-r from-primary/10 via-primary/5 to-primary-dark/10 border border-primary/20 flex items-center justify-between text-xs font-bold text-textDark animate-fadeSlide">
                           <span className="flex items-center gap-1.5 text-primary-dark">
                             <Sparkles className="w-4 h-4 text-primary" />
-                            زمان انتخابی شما:
+                            زمان انتخابی ویزیت:
                           </span>
                           <span className="font-black text-primary">
                             ساعت {toPersianDigits(selectedTime)} — {formatJalaliDisplay(selectedDate, true)}
@@ -735,21 +707,103 @@ export default function AppointmentModal({ open, onClose, onOpenMyAppointments }
                         </div>
                       )}
 
-                      {/* Mandatory Reason Form Field */}
+                      <div className="border-b border-primary/10 pb-2">
+                        <span className="text-xs font-bold text-primary flex items-center gap-1.5">
+                          <span className="w-5 h-5 rounded-full bg-primary text-white text-[10px] font-black flex items-center justify-center">
+                            ۳
+                          </span>
+                          مشخصات بیمار و علت مراجعه
+                        </span>
+                      </div>
+
+                      {/* Phone Number Field */}
+                      <div className="flex flex-col gap-1.5">
+                        <label
+                          htmlFor="patient-phone"
+                          className="text-xs font-bold text-textDark flex items-center gap-1.5"
+                        >
+                          <Phone className="w-3.5 h-3.5 text-primary" />
+                          <span>شماره تماس بیمار</span>
+                          <span className="text-rose-500 font-black" title="الزامی">*</span>
+                        </label>
+                        <input
+                          id="patient-phone"
+                          ref={phoneInputRef}
+                          type="tel"
+                          dir="ltr"
+                          placeholder="مثال: 09123456789"
+                          value={phoneNumber}
+                          onChange={(e) => {
+                            setPhoneNumber(e.target.value);
+                            if (errors.phoneNumber) setErrors((prev) => ({ ...prev, phoneNumber: '' }));
+                          }}
+                          className={`w-full p-2.5 text-xs md:text-sm border rounded-2xl bg-white focus:outline-none focus:ring-2 font-mono transition-all shadow-xs ${
+                            errors.phoneNumber
+                              ? 'border-rose-400 bg-rose-50/20 focus:ring-rose-200 focus:border-rose-500 text-textDark'
+                              : 'border-primary/25 focus:border-primary focus:ring-primary/20 text-textDark'
+                          }`}
+                        />
+                        {errors.phoneNumber && (
+                          <span className="text-rose-600 text-[11px] font-bold flex items-center gap-1">
+                            <AlertCircle className="w-3.5 h-3.5" />
+                            {errors.phoneNumber}
+                          </span>
+                        )}
+                        <span className="text-[11px] text-textDark/60">
+                          در صورت عدم وجود کاربر در سامانه، حساب با این شماره خودکار ساخته می‌شود.
+                        </span>
+                      </div>
+
+                      {/* Full Name Field */}
+                      <div className="flex flex-col gap-1.5">
+                        <label
+                          htmlFor="patient-name"
+                          className="text-xs font-bold text-textDark flex items-center gap-1.5"
+                        >
+                          <User className="w-3.5 h-3.5 text-primary" />
+                          <span>نام و نام خانوادگی بیمار</span>
+                          <span className="text-rose-500 font-black" title="الزامی">*</span>
+                        </label>
+                        <input
+                          id="patient-name"
+                          ref={fullNameInputRef}
+                          type="text"
+                          placeholder="مثال: سارا محمدی"
+                          value={fullName}
+                          onChange={(e) => {
+                            setFullName(e.target.value);
+                            if (errors.fullName) setErrors((prev) => ({ ...prev, fullName: '' }));
+                          }}
+                          className={`w-full p-2.5 text-xs md:text-sm border rounded-2xl bg-white focus:outline-none focus:ring-2 font-medium transition-all shadow-xs ${
+                            errors.fullName
+                              ? 'border-rose-400 bg-rose-50/20 focus:ring-rose-200 focus:border-rose-500 text-textDark'
+                              : 'border-primary/25 focus:border-primary focus:ring-primary/20 text-textDark'
+                          }`}
+                        />
+                        {errors.fullName && (
+                          <span className="text-rose-600 text-[11px] font-bold flex items-center gap-1">
+                            <AlertCircle className="w-3.5 h-3.5" />
+                            {errors.fullName}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Reason Field with Quick Tags */}
                       <div className="flex flex-col gap-1.5">
                         <div className="flex items-center justify-between">
                           <label
-                            htmlFor="appointment-reason"
+                            htmlFor="patient-reason"
                             className="text-xs font-bold text-textDark flex items-center gap-1.5"
                           >
-                            <span className="w-5 h-5 rounded-full bg-primary text-white text-[10px] font-black flex items-center justify-center">۳</span>
                             <FileText className="w-3.5 h-3.5 text-primary" />
-                            <span>علت مراجعه به پزشک</span>
-                            <span className="text-rose-500 font-black" title="الزامی">*</span>
+                            <span>علت مراجعه و شرح حال</span>
+                            <span className="text-textDark/45 text-[11px] font-normal">(اختیاری)</span>
                           </label>
-                          <span className={`text-[11px] font-mono font-bold ${
-                            reason.length >= MAX_REASON_LENGTH ? 'text-rose-500' : 'text-textDark/55'
-                          }`}>
+                          <span
+                            className={`text-[11px] font-mono font-bold ${
+                              reason.length >= MAX_REASON_LENGTH ? 'text-rose-500' : 'text-textDark/55'
+                            }`}
+                          >
                             {toPersianDigits(reason.length)} / {toPersianDigits(MAX_REASON_LENGTH)} کاراکتر
                           </span>
                         </div>
@@ -766,87 +820,70 @@ export default function AppointmentModal({ open, onClose, onOpenMyAppointments }
                           ))}
                         </div>
 
-                        {/* Textarea Input Container with Pink Halo Glow Ref */}
-                        <div
-                          ref={reasonContainerRef}
-                          className={`rounded-2xl transition-all duration-300 ${
-                            isReasonHighlighted ? 'pink-halo-glow ring-2 ring-primary/40' : ''
-                          }`}
-                        >
-                          <textarea
-                            id="appointment-reason"
-                            ref={reasonInputRef}
-                            rows={3}
-                            maxLength={MAX_REASON_LENGTH}
-                            value={reason}
-                            onChange={handleReasonChange}
-                            placeholder="علائم، شرح حال مختصر، نتایج ماموگرافی یا هدف از مراجعه را یادداشت فرمایید (حداقل ۵ کاراکتر)..."
-                            aria-required="true"
-                            aria-invalid={Boolean(errors.reason)}
-                            aria-describedby={errors.reason ? 'reason-error' : undefined}
-                            className={`w-full p-3 text-xs md:text-sm border rounded-2xl bg-white focus:outline-none focus:ring-2 transition-all font-medium resize-none shadow-xs ${
-                              errors.reason
-                                ? 'border-rose-400 bg-rose-50/20 focus:ring-rose-200 focus:border-rose-500 text-textDark'
-                                : isReasonHighlighted
-                                ? 'border-primary ring-2 ring-primary/40 text-textDark'
-                                : 'border-primary/25 focus:border-primary focus:ring-primary/20 text-textDark placeholder:text-textDark/45'
-                            }`}
-                          />
-                        </div>
-
-                        {/* Error Message */}
-                        {errors.reason && (
-                          <div
-                            id="reason-error"
-                            role="alert"
-                            className="flex items-center gap-1.5 text-rose-600 text-xs font-bold mt-1 bg-rose-50/80 px-2.5 py-1.5 rounded-xl border border-rose-200 animate-fadeSlide"
-                          >
-                            <AlertCircle className="w-4 h-4 shrink-0 text-rose-500" />
-                            <span>{errors.reason}</span>
-                          </div>
-                        )}
+                        {/* Textarea Input */}
+                        <textarea
+                          id="patient-reason"
+                          ref={reasonInputRef}
+                          rows={2}
+                          maxLength={MAX_REASON_LENGTH}
+                          value={reason}
+                          onChange={(e) => setReason(e.target.value)}
+                          placeholder="علائم، شرح حال مختصر، نتایج ماموگرافی یا توضیحات لازم..."
+                          className="w-full p-2.5 text-xs md:text-sm border border-primary/25 focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-2xl bg-white font-medium resize-none shadow-xs text-textDark placeholder:text-textDark/45"
+                        />
                       </div>
                     </div>
                   )}
                 </div>
 
-                {/* Primary Confirm Booking Button */}
+                {/* Confirm and Cancel Action Bar */}
                 <div className="mt-4 pt-3 border-t border-primary/10 flex flex-col gap-2">
-                  {errors.booking && (
+                  {errors.submit && (
                     <p className="text-red-600 text-xs text-center flex items-center justify-center gap-1 bg-red-50 p-2.5 rounded-xl border border-red-200">
                       <AlertCircle className="w-4 h-4 shrink-0" />
-                      <span>{errors.booking}</span>
+                      <span>{errors.submit}</span>
                     </p>
                   )}
 
-                  <button
-                    type="button"
-                    onClick={handleBookAppointment}
-                    disabled={!selectedTime || !selectedDate || isBooking}
-                    className={`w-full py-3.5 sm:py-4 rounded-2xl text-white font-black text-sm md:text-base transition-all duration-300 flex items-center justify-center gap-2 shadow-lg ${
-                      selectedTime && selectedDate && !isBooking
-                        ? 'bg-primary hover:bg-primary-dark shadow-primary/30 hover:shadow-primary/50 hover:-translate-y-0.5 cursor-pointer'
-                        : 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-60'
-                    }`}
-                  >
-                    {isBooking ? (
-                      <>
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                        در حال ثبت نهایی در سیستم...
-                      </>
-                    ) : (
-                      <>
-                        <CheckCircle2 className="w-5 h-5" />
-                        تایید و دریافت نوبت ویزیت
-                      </>
-                    )}
-                  </button>
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={onClose}
+                      disabled={isSubmitting}
+                      className="px-5 py-3 rounded-2xl text-xs font-bold text-textDark/70 hover:text-textDark bg-gray-100 hover:bg-gray-200 border border-gray-200 transition-colors cursor-pointer"
+                    >
+                      انصراف
+                    </button>
+
+                    <button
+                      type="submit"
+                      disabled={!selectedTime || !selectedDate || isSubmitting}
+                      className={`flex-1 py-3.5 rounded-2xl text-white font-black text-xs md:text-sm transition-all duration-300 flex items-center justify-center gap-2 shadow-lg ${
+                        selectedTime && selectedDate && !isSubmitting
+                          ? 'bg-primary hover:bg-primary-dark shadow-primary/30 hover:shadow-primary/50 hover:-translate-y-0.5 cursor-pointer'
+                          : 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-60'
+                      }`}
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <span>در حال ثبت نوبت در سیستم...</span>
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle2 className="w-4 h-4" />
+                          <span>تایید و ثبت نهایی نوبت</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          </form>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

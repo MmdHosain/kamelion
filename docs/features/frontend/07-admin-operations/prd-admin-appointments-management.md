@@ -8,7 +8,8 @@
 - **ماژول:** کارتابل نوبت‌های رزرو شده و ثبت دستی (Appointments Management)
 - **وضعیت پیاده‌سازی:** ✅ پیاده‌سازی کامل (Completed)
 - **کامپوننت‌های فرانت‌اند:**
-  - جدول نوبت‌ها و مودال ثبت دستی: [`src/components/admin/reservations/ReservationsList.jsx`](file:///e:/GitHub%20Repo/kamelion/front-end/src/components/admin/reservations/ReservationsList.jsx)
+  - جدول نوبت‌ها: [`src/components/admin/reservations/ReservationsList.jsx`](file:///e:/GitHub%20Repo/kamelion/front-end/src/components/admin/reservations/ReservationsList.jsx)
+  - مودال ثبت دستی و تلفنی نوبت توسط ادمین: [`src/components/admin/reservations/AdminManualBookingModal.jsx`](file:///e:/GitHub%20Repo/kamelion/front-end/src/components/admin/reservations/AdminManualBookingModal.jsx)
   - مودال مشاهده و مدیریت جزئیات نوبت: [`src/components/admin/reservations/AppointmentDetailModal.jsx`](file:///e:/GitHub%20Repo/kamelion/front-end/src/components/admin/reservations/AppointmentDetailModal.jsx)
   - مودال پرونده بالینی و سوابق بیمار: [`src/components/admin/patients/PatientDetailModal.jsx`](file:///e:/GitHub%20Repo/kamelion/front-end/src/components/admin/patients/PatientDetailModal.jsx)
 - **سرویس‌های وب:**
@@ -44,11 +45,11 @@
    - دکمه «مشاهده اطلاعات و پرونده بیمار» جهت بستن پاپ‌آپ نوبت و باز کردن پاپ‌آپ پرونده بیمار.
 3. **فیلتر و جستجوی آنی (Live Search & Filter):**
    - باکس جستجو با قابلیت تایپ نام بیمار یا ارقام شماره موبایل با فیلترینگ کلاینت و سرور.
-4. **ثبت دستی نوبت توسط ادمین (Manual Booking Modal):**
-   - انتخاب تاریخ در تقویم شمسی جلالی.
-   - استعلام اسلات‌های باز و انتخاب ساعت.
-   - دریافت شماره موبایل و نام بیمار.
-   - در صورت عدم وجود کاربر، پارامتر `force_create_user: true` ارسال می‌شود تا بیمار بدون نیاز به دریافت OTP دستی در مطب توسط منشی ثبت گردد.
+4. **ثبت دستی نوبت توسط ادمین (`AdminManualBookingModal`):**
+   - طراحی مطابق با الگوی تعاملی رزرو صفحه اصلی (تقویم شمسی جلالی، نقاط راهنمای وضعیت، کارت‌های ساعت خالی با آیکون Clock و ارقام فارسی).
+   - اسکرول نرم خودکار و هایلایت نوری هاله صورتی (`pink-halo-glow`) به سمت فرم اطلاعات بیمار بلافاصله پس از انتخاب ساعت.
+   - فرم دریافت شماره تماس بیمار (الزامی، LTR)، نام و نام خانوادگی بیمار (الزامی)، و فیلد علت مراجعه با تگ‌های تاگل‌شونده سریع (`ReasonChip`) و شمارنده فارسی کاراکترها.
+   - ارسال پارامتر `force_create_user: true` جهت ثبت خودکار حساب کاربر در صورت عدم وجود بدون نیاز به OTP دستی در مطب.
 5. **لغو و حذف نوبت (Cancellation):**
    - دکمه قرمز `Trash2` با مدال تایید جهت جلوگیری از لغو تصادفی نوبت.
    - آزادسازی مجدد اسلات در صورت لغو نوبت در دیتابیس.

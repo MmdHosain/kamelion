@@ -22,6 +22,7 @@ import {
 import { adminApi } from '../../../api/admin';
 import { getApiErrorMessage } from '../../../utils/errorUtils';
 import { toPersianDigits } from '../../../utils/jalaliDateUtils';
+import useBodyScrollLock from '../../../hooks/useBodyScrollLock';
 
 export const getStatusConfig = (status) => {
   switch (status) {
@@ -89,6 +90,8 @@ export default function AppointmentDetailModal({
   onStatusChange,
   onDelete,
 }) {
+  useBodyScrollLock(Boolean(appointment));
+
   const [isApproving, setIsApproving] = useState(false);
   const [isDisapproving, setIsDisapproving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);

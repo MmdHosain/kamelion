@@ -25,6 +25,7 @@ import { getApiErrorMessage } from '../../../utils/errorUtils';
 import { toPersianDigits, formatJalaliDisplay } from '../../../utils/jalaliDateUtils';
 import { getStatusConfig } from '../reservations/AppointmentDetailModal';
 import ExpandableReason from './ExpandableReason';
+import useBodyScrollLock from '../../../hooks/useBodyScrollLock';
 
 const formatJalaliDate = (dateStr) => {
   if (!dateStr) return '—';
@@ -75,6 +76,8 @@ const PatientDetailModal = ({
   onClose,
   onBackToAppointment,
 }) => {
+  useBodyScrollLock(Boolean(patient || patientId || phoneNumber));
+
   const [details, setDetails] = useState(patient || null);
   const [isLoading, setIsLoading] = useState(false);
   const [loadError, setLoadError] = useState('');

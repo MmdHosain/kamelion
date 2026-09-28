@@ -1,6 +1,5 @@
 // src/components/admin/reservations/ReservationsList.jsx
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
-import { createPortal } from 'react-dom';
 import {
   Trash2,
   Search,
@@ -10,31 +9,23 @@ import {
   ChevronsRight,
   Plus,
   ChevronDown,
-  X,
-  Calendar as CalendarIcon,
-  Clock,
-  User,
-  Phone,
-  FileText,
   Loader2,
   AlertCircle,
-  AlertTriangle,
   CheckCircle2,
   Check,
-  Sparkles,
+  X,
   Eye,
 } from 'lucide-react';
 import { reservationService } from '../../../api/reservationService';
 import { adminApi } from '../../../api/admin';
 import { getApiErrorMessage } from '../../../utils/errorUtils';
-import JalaliCalendar from '../../ui/JalaliCalendar';
 import {
-  formatDateForApi,
   formatJalaliDisplay,
   toPersianDigits,
 } from '../../../utils/jalaliDateUtils';
 import AppointmentDetailModal, { getStatusConfig } from './AppointmentDetailModal';
 import PatientDetailModal from '../patients/PatientDetailModal';
+import AdminManualBookingModal from './AdminManualBookingModal';
 
 const ROW_OPTIONS = [10, 25, 50, 100];
 const TABLE_HEADERS = [
@@ -121,21 +112,6 @@ const normalizeReservation = (item) => {
   };
 };
 
-const normalizeSlots = (data) => {
-  let rawSlots = [];
-  if (Array.isArray(data)) rawSlots = data;
-  else if (Array.isArray(data?.available_slots)) rawSlots = data.available_slots;
-  else if (Array.isArray(data?.slots)) rawSlots = data.slots;
-  else if (Array.isArray(data?.results)) rawSlots = data.results;
-
-  return rawSlots
-    .map((s) => {
-      if (typeof s === 'string') return s.slice(0, 5);
-      if (s?.time) return String(s.time).slice(0, 5);
-      return null;
-    })
-    .filter(Boolean);
-};
 
 export default function ReservationsList() {
   const [reservations, setReservations] = useState([]);
@@ -153,21 +129,7 @@ export default function ReservationsList() {
   const [activePatient, setActivePatient] = useState(null);
 
   // Add Modal State
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalDate, setModalDate] = useState(null);
-  const [modalTime, setModalTime] = useState(null);
-  const [availableSlots, setAvailableSlots] = useState([]);
-  const [isLoadingSlots, setIsLoadingSlots] = useState(false);
-  const [slotsError, setSlotsError] = useState('');
-
-  const [formData, setFormData] = useState({
-    phoneNumber: '',
-    fullName: '',
-    reason: '',
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState('');
-  const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   const handleOpenAppointmentDetail = (appointment) => {
     setActiveAppointment(appointment);
@@ -221,106 +183,8 @@ export default function ReservationsList() {
     loadReservations();
   }, [loadReservations]);
 
-  // Fetch slots whenever modalDate changes
-  const fetchSlotsForDate = useCallback(async (date) => {
-    if (!date) return;
-    setIsLoadingSlots(true);
-    setSlotsError('');
-    setModalTime(null);
-    setAvailableSlots([]);
-
-    try {
-      const apiDate = formatDateForApi(date);
-      const res = await reservationService.getAvailableSlots(apiDate);
-      const slots = normalizeSlots(res);
-      setAvailableSlots(slots);
-    } catch (err) {
-      console.error('Error fetching admin slots:', err);
-      setSlotsError('خطا در دریافت ساعت‌های آزاد برای تاریخ انتخابی.');
-      setAvailableSlots([]);
-    } finally {
-      setIsLoadingSlots(false);
-    }
-  }, []);
-
-  const handleDateSelect = (date) => {
-    if (!date) return;
-    setModalDate(date);
-    fetchSlotsForDate(date);
-  };
-
-  const openAddModal = () => {
-    setModalDate(null);
-    setModalTime(null);
-    setAvailableSlots([]);
-    setSlotsError('');
-    setFormData({
-      phoneNumber: '',
-      fullName: '',
-      reason: '',
-    });
-    setSubmitError('');
-    setSubmitSuccess(false);
-    setIsModalOpen(true);
-  };
-
-  const closeAddModal = () => {
-    if (isSubmitting) return;
-    setIsModalOpen(false);
-  };
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = async (e) => {
-    if (e) e.preventDefault();
-
-    const phoneNumber = formData.phoneNumber.trim();
-    const fullName = formData.fullName.trim();
-
-    if (!phoneNumber || !fullName) {
-      setSubmitError('شماره تماس و نام و نام خانوادگی بیمار الزامی است.');
-      return;
-    }
-
-    if (!modalDate || !modalTime) {
-      setSubmitError('لطفاً تاریخ و یکی از ساعت‌های آزاد را انتخاب نمایید.');
-      return;
-    }
-
-    setIsSubmitting(true);
-    setSubmitError('');
-
-    try {
-      const payload = {
-        phone_number: phoneNumber,
-        full_name: fullName,
-        date: formatDateForApi(modalDate),
-        time: modalTime,
-        reason: formData.reason.trim(),
-      };
-
-      const created = await reservationService.createAdminReservation(payload);
-
-      setReservations((prev) => [normalizeReservation(created), ...prev]);
-      setSubmitSuccess(true);
-
-      setTimeout(() => {
-        setIsModalOpen(false);
-      }, 1500);
-    } catch (error) {
-      console.error('Admin reservation failed:', error);
-      const msg = getApiErrorMessage(error, 'خطا در ثبت نوبت توسط ادمین.');
-      setSubmitError(
-        msg === 'Selected time slot is not available.'
-          ? 'زمان انتخابی دیگر در دسترس نیست یا پر شده است.'
-          : msg
-      );
-    } finally {
-      setIsSubmitting(false);
-    }
+  const handleAppointmentCreated = (created) => {
+    setReservations((prev) => [normalizeReservation(created), ...prev]);
   };
 
   const handleApprove = async (id) => {
@@ -393,9 +257,9 @@ export default function ReservationsList() {
 
     return list.filter(
       (r) =>
-        r.fullName.toLowerCase().includes(q) ||
-        r.phoneNumber.toLowerCase().includes(q) ||
-        r.displayDate.toLowerCase().includes(q)
+        (r.fullName || '').toLowerCase().includes(q) ||
+        (r.phoneNumber || '').toLowerCase().includes(q) ||
+        (r.displayDate || '').toLowerCase().includes(q)
     );
   }, [reservations, searchQuery, selectedStatusTab]);
 
@@ -430,18 +294,6 @@ export default function ReservationsList() {
     return result;
   };
 
-  const isUnavailableDay = (day) => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return day < today || day.getDay() === 5; // Friday closed
-  };
-
-  const inputCls = `
-    w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-xl
-    focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent
-    placeholder:text-gray-400 bg-white transition-all
-  `;
-
   return (
     <>
       <div className="p-6 bg-white rounded-3xl shadow-sm min-h-[520px] flex flex-col gap-5 border border-primary/10">
@@ -467,7 +319,7 @@ export default function ReservationsList() {
 
           <button
             type="button"
-            onClick={openAddModal}
+            onClick={() => setIsAddModalOpen(true)}
             className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-2.5 bg-primary hover:bg-primary-dark text-white text-sm font-bold rounded-2xl shadow-md shadow-primary/25 hover:shadow-primary/40 hover:-translate-y-0.5 transition-all duration-200 cursor-pointer whitespace-nowrap"
           >
             <Plus size={18} />
@@ -752,268 +604,12 @@ export default function ReservationsList() {
         </div>
       </div>
 
-      {/* Modern 2-Column Admin Booking Modal */}
-      {isModalOpen &&
-        createPortal(
-          <div
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-6 animate-fadeSlide"
-            onClick={(e) => {
-              if (e.target === e.currentTarget) closeAddModal();
-            }}
-          >
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl max-h-[92vh] overflow-y-auto p-6 md:p-8 flex flex-col gap-6 relative border border-primary/20 chat-scroll">
-            
-            {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-gray-100 pb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center font-bold">
-                  <CalendarIcon size={20} />
-                </div>
-                <div>
-                  <h2 className="text-lg font-black text-gray-900">
-                    ثبت نوبت حضوری یا تلفنی توسط ادمین
-                  </h2>
-                  <p className="text-xs text-gray-500 font-medium">
-                    انتخاب روز و ساعت کاری فعال و ثبت مشخصات بیمار در سیستم
-                  </p>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                onClick={closeAddModal}
-                disabled={isSubmitting}
-                className="p-2 rounded-xl text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer"
-                aria-label="بستن"
-              >
-                <X size={20} />
-              </button>
-            </div>
-
-            {submitSuccess ? (
-              <div className="bg-emerald-50 border border-emerald-200 p-8 rounded-3xl text-center flex flex-col items-center gap-3 my-8">
-                <CheckCircle2 className="w-14 h-14 text-emerald-600 animate-bounce" />
-                <h3 className="text-lg font-black text-emerald-900">
-                  نوبت با موفقیت در سیستم ثبت گردید!
-                </h3>
-                <p className="text-xs text-emerald-700 font-medium">
-                  مشخصات نوبت به جدول نوبت‌ها افزوده شد.
-                </p>
-              </div>
-            ) : (
-              <form onSubmit={handleAddSubmit} className="flex flex-col gap-6">
-                
-                {/* 2-Columns Layout: Date & Slots (Right) + Patient Info (Left) */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  
-                  {/* Column 1: Shamsi Calendar & Slots */}
-                  <div className="bg-gray-50/70 border border-primary/15 rounded-3xl p-5 flex flex-col gap-4">
-                    <div className="flex items-center justify-between border-b border-primary/10 pb-2.5">
-                      <span className="text-xs font-bold text-primary flex items-center gap-1.5">
-                        <span className="w-5 h-5 rounded-full bg-primary text-white text-[10px] font-black flex items-center justify-center">
-                          ۱
-                        </span>
-                        انتخاب روز و ساعت ویزیت
-                      </span>
-                      <span className="text-[11px] text-gray-400 font-medium">جمعه‌ها تعطیل</span>
-                    </div>
-
-                    <div className="flex justify-center">
-                      <JalaliCalendar
-                        selectedDate={modalDate}
-                        onSelect={handleDateSelect}
-                        isDateDisabled={isUnavailableDay}
-                      />
-                    </div>
-
-                    {/* Slots Area */}
-                    <div className="pt-2 border-t border-primary/10">
-                      <div className="flex items-center justify-between mb-2.5">
-                        <span className="text-xs font-bold text-gray-700 flex items-center gap-1">
-                          <Clock size={14} className="text-primary" />
-                          ساعت‌های خالی این روز:
-                        </span>
-                        {modalDate && (
-                          <span className="text-[11px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-lg">
-                            {formatJalaliDisplay(modalDate, false)}
-                          </span>
-                        )}
-                      </div>
-
-                      {isLoadingSlots && (
-                        <div className="flex items-center justify-center py-6 gap-2 text-xs text-gray-500">
-                          <Loader2 size={16} className="text-primary animate-spin" />
-                          <span>در حال دریافت ساعت‌های خالی...</span>
-                        </div>
-                      )}
-
-                      {!isLoadingSlots && slotsError && (
-                        <div className="p-2.5 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl flex items-center gap-1.5">
-                          <AlertCircle size={14} className="shrink-0" />
-                          <span>{slotsError}</span>
-                        </div>
-                      )}
-
-                      {!isLoadingSlots && !slotsError && availableSlots.length > 0 && (
-                        <div className="grid grid-cols-3 gap-2 max-h-36 overflow-y-auto chat-scroll p-1">
-                          {availableSlots.map((slot) => {
-                            const isSelected = modalTime === slot;
-                            return (
-                              <button
-                                key={slot}
-                                type="button"
-                                onClick={() => setModalTime(slot)}
-                                className={`py-2 px-2 rounded-xl border text-center font-bold text-xs transition-all cursor-pointer ${
-                                  isSelected
-                                    ? 'bg-primary text-white border-primary shadow-sm font-black ring-2 ring-primary/30'
-                                    : 'bg-white border-gray-200 text-gray-700 hover:border-primary hover:bg-primary/5'
-                                }`}
-                              >
-                                {toPersianDigits(slot)}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      )}
-
-                      {!isLoadingSlots && !slotsError && modalDate && availableSlots.length === 0 && (
-                        <div className="text-center py-4 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-800 text-xs font-medium">
-                          نوبت خالی برای این تاریخ وجود ندارد یا شیفت پزشک تعریف نشده است.
-                        </div>
-                      )}
-
-                      {!isLoadingSlots && !modalDate && (
-                        <div className="text-center py-6 text-gray-400 text-xs">
-                          ابتدا یک روز را از تقویم بالا انتخاب نمایید.
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Column 2: Patient Form */}
-                  <div className="bg-white border border-gray-100 rounded-3xl p-5 flex flex-col justify-between shadow-sm">
-                    <div className="flex flex-col gap-4">
-                      <div className="border-b border-gray-100 pb-2.5">
-                        <span className="text-xs font-bold text-primary flex items-center gap-1.5">
-                          <span className="w-5 h-5 rounded-full bg-primary text-white text-[10px] font-black flex items-center justify-center">
-                            ۲
-                          </span>
-                          مشخصات بیمار و کاربر
-                        </span>
-                      </div>
-
-                      {/* Phone Number */}
-                      <div className="flex flex-col gap-1.5">
-                        <label className="text-xs font-bold text-gray-700 flex items-center gap-1">
-                          <Phone size={14} className="text-primary" />
-                          شماره تماس بیمار <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                          name="phoneNumber"
-                          type="tel"
-                          placeholder="مثال: 09123456789"
-                          value={formData.phoneNumber}
-                          onChange={handleFormChange}
-                          className={inputCls}
-                          dir="ltr"
-                          required
-                        />
-                        <span className="text-[11px] text-gray-400">
-                          در صورت عدم وجود کاربر، حساب جدید با این شماره به صورت خودکار ایجاد می‌شود.
-                        </span>
-                      </div>
-
-                      {/* Full Name */}
-                      <div className="flex flex-col gap-1.5">
-                        <label className="text-xs font-bold text-gray-700 flex items-center gap-1">
-                          <User size={14} className="text-primary" />
-                          نام و نام خانوادگی بیمار / کاربر <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                          name="fullName"
-                          type="text"
-                          placeholder="مثال: سارا محمدی"
-                          value={formData.fullName}
-                          onChange={handleFormChange}
-                          className={inputCls}
-                          required
-                        />
-                      </div>
-
-                      {/* Reason */}
-                      <div className="flex flex-col gap-1.5">
-                        <label className="text-xs font-bold text-gray-700 flex items-center gap-1">
-                          <FileText size={14} className="text-primary" />
-                          علت مراجعه / توضیحات <span className="text-gray-400 font-normal">(اختیاری)</span>
-                        </label>
-                        <textarea
-                          name="reason"
-                          rows={3}
-                          placeholder="مثال: ویزیت ماموگرافی دوره‌ای، بررسی نتیجه سونوگرافی..."
-                          value={formData.reason}
-                          onChange={handleFormChange}
-                          className={`${inputCls} resize-none`}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Summary Info Box */}
-                    {modalDate && modalTime && (
-                      <div className="mt-4 p-3 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-between text-xs font-bold text-primary-dark">
-                        <span className="flex items-center gap-1">
-                          <Sparkles size={14} className="text-primary" />
-                          زمان ثبت:
-                        </span>
-                        <span>
-                          {formatJalaliDisplay(modalDate, false)} — ساعت {toPersianDigits(modalTime)}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {submitError && (
-                  <div className="rounded-2xl bg-red-50 border border-red-200 text-red-700 px-4 py-3 text-xs font-bold flex items-center gap-2">
-                    <AlertCircle size={16} className="shrink-0" />
-                    <span>{submitError}</span>
-                  </div>
-                )}
-
-                {/* Footer Buttons */}
-                <div className="flex items-center justify-end gap-3 pt-2 border-t border-gray-100">
-                  <button
-                    type="button"
-                    onClick={closeAddModal}
-                    disabled={isSubmitting}
-                    className="px-5 py-2.5 text-xs font-bold text-gray-600 border border-gray-200 rounded-2xl hover:bg-gray-50 disabled:opacity-50 transition-colors cursor-pointer"
-                  >
-                    انصراف
-                  </button>
-
-                  <button
-                    type="submit"
-                    disabled={isSubmitting || !modalDate || !modalTime}
-                    className="px-7 py-2.5 text-xs font-bold text-white bg-primary hover:bg-primary-dark rounded-2xl shadow-md shadow-primary/25 disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer flex items-center gap-2"
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <Loader2 size={16} className="animate-spin" />
-                        <span>در حال ثبت نوبت...</span>
-                      </>
-                    ) : (
-                      <>
-                        <CheckCircle2 size={16} />
-                        <span>تایید و ثبت نوبت</span>
-                      </>
-                    )}
-                  </button>
-                </div>
-              </form>
-            )}
-          </div>
-        </div>,
-        document.body
-      )}
+      {/* Modern Admin Manual Booking Modal */}
+      <AdminManualBookingModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onCreated={handleAppointmentCreated}
+      />
 
       {/* Appointment Detail Modal */}
       {activeAppointment && (
