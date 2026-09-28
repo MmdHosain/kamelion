@@ -67,7 +67,15 @@ export default function AdminVideos() {
     try {
       const data = await videoService.getVideos();
       if (Array.isArray(data) && data.length > 0) {
-        setVideos(data);
+        const formatted = data.map(v => {
+          let currentSrc = v.src || '';
+          if (currentSrc.includes('aparat.com/v/')) {
+            const hash = currentSrc.split('aparat.com/v/')[1].split('/')[0].split('?')[0];
+            currentSrc = `https://www.aparat.com/video/video/embed/videohash/${hash}/vt/frame`;
+          }
+          return { ...v, src: currentSrc };
+        });
+        setVideos(formatted);
       } else {
         setVideos(DEFAULT_FALLBACK_VIDEOS);
       }
@@ -109,6 +117,11 @@ export default function AdminVideos() {
     if (!title || !src) {
       setFormError('عنوان و آدرس ویدیو الزامی هستند.');
       return;
+    }
+
+    if (src.includes('aparat.com/v/')) {
+      const hash = src.split('aparat.com/v/')[1].split('/')[0].split('?')[0];
+      src = `https://www.aparat.com/video/video/embed/videohash/${hash}/vt/frame`;
     }
 
     // Auto-detect iframe if user selected video but entered youtube/aparat embed url
