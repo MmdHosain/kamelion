@@ -7,7 +7,7 @@ from django.utils import timezone
 from django.db import transaction
 
 from .models import User, OTPRequest, PhoneVerification
-from apps.common.panelchi import send_pattern_sms, SmsProviderError
+from apps.common.panelchi import send_pattern_sms, panelchi_enabled, SmsProviderError
 
 
 OTP_LENGTH = 6
@@ -52,7 +52,7 @@ def request_otp(phone_number: str):
         code=code
     )
 
-    if settings.SMS_PROVIDER == "panelchi":
+    if panelchi_enabled():
         # This pattern's approved template is:
         #   کد تایید شما %otp_code%
         #   ورود به پنل دکتر معشوری متخصص پستان

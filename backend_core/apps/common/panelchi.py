@@ -28,6 +28,31 @@ class SmsProviderError(Exception):
     pass
 
 
+def panelchi_enabled() -> bool:
+    """
+    The single on/off switch for real SMS sending, used by both the
+    OTP flow and the appointment notices.
+
+    SMS_PROVIDER=panelchi -> real texts via PanelChi.
+    SMS_PROVIDER=console  -> nothing is sent; messages are only logged
+                             (for local dev / no credit spent).
+    Anything else is treated as console, with a warning, so a typo can
+    never silently start sending real texts.
+    """
+    provider = (settings.SMS_PROVIDER or "").strip().lower()
+
+    if provider == "panelchi":
+        return True
+
+    if provider != "console":
+        logger.warning(
+            "Unknown SMS_PROVIDER %r - treating as 'console' (no SMS sent).",
+            settings.SMS_PROVIDER,
+        )
+
+    return False
+
+
 def to_iranian_international(phone_number: str) -> str:
     """
     PanelChi expects an international number. For Iranian numbers,
@@ -110,4 +135,11 @@ def send_pattern_sms(pattern: str, recipient: str, variables: dict) -> dict:
             f"SMS provider rejected the request (status {response.status_code})."
         )
 
-    return response.json()
+    try:
+        return response.json()
+    except ValueError:
+        # Success (201) but the body wasn't valid JSON (or was empty) -
+        # not every provider guarantees a JSON body on success, and
+        # the status code is already our real signal that this
+        # worked, so don't let a body-parsing quirk look like a crash.
+        return {}

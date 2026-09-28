@@ -5,6 +5,7 @@ from django.utils import timezone
 
 from apps.users.models import User
 
+from .notifications import send_appointment_decision_sms
 from .models import (
     DoctorAvailability,
     AvailabilityException,
@@ -164,6 +165,8 @@ def approve_appointment(appointment):
     appointment.status = Appointment.SCHEDULED
     appointment.save(update_fields=["status"])
 
+    send_appointment_decision_sms(appointment, approved=True)
+
     return appointment
 
 
@@ -177,6 +180,8 @@ def disapprove_appointment(appointment):
 
     appointment.status = Appointment.CANCELLED_BY_ADMIN
     appointment.save(update_fields=["status"])
+
+    send_appointment_decision_sms(appointment, approved=False)
 
     return appointment
 

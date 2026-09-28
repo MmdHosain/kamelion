@@ -17,6 +17,7 @@ from .serializers import (
 )
 from .services import admin_book_appointment, approve_appointment, disapprove_appointment
 from .pagination import AppointmentPagination
+from .notifications import send_appointment_decision_sms
 
 
 
@@ -123,6 +124,20 @@ class AdminAppointmentDetailView(RetrieveUpdateDestroyAPIView):
     def update(self, request, *args, **kwargs):
         kwargs["partial"] = True
         return super().update(request, *args, **kwargs)
+
+    def perform_update(self, serializer):
+        # The admin panel approves/rejects by PUTting a new status here
+        # (not necessarily via the approve/ and disapprove/ endpoints),
+        # so notify the patient whenever a PENDING appointment moves to
+        # scheduled (approved) or cancelled_admin (rejected).
+        old_status = serializer.instance.status
+        appointment = serializer.save()
+
+        if old_status == Appointment.PENDING:
+            if appointment.status == Appointment.SCHEDULED:
+                send_appointment_decision_sms(appointment, approved=True)
+            elif appointment.status == Appointment.CANCELLED_BY_ADMIN:
+                send_appointment_decision_sms(appointment, approved=False)
 
 
 class AdminCreateAppointmentView(APIView):
