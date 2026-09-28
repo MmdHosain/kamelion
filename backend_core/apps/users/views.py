@@ -15,6 +15,7 @@ from .serializers import (
 from .services import request_otp, verify_otp, complete_registration
 from .selectors import get_patient_profile
 from .models import User
+from apps.common.panelchi import SmsProviderError
 from django.contrib.auth import authenticate
 
 
@@ -29,7 +30,7 @@ class RequestOTPView(APIView):
       admin password screen instead, which then calls
       /api/auth/admin/login with phone_number + password.
     - Otherwise, this behaves as before: an OTP is generated and
-      "sent" (printed/logged for now), and the normal
+      sent (via whatever SMS_PROVIDER is configured), and the normal
       verify-otp -> (complete-registration) flow continues.
     """
 
@@ -56,7 +57,16 @@ class RequestOTPView(APIView):
                 status=status.HTTP_200_OK
             )
 
-        request_otp(phone_number)
+        try:
+            request_otp(phone_number)
+
+        except SmsProviderError as e:
+            # Don't claim success when the code was never actually
+            # delivered.
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_502_BAD_GATEWAY
+            )
 
         return Response(
             {"is_admin": False, "message": "OTP sent"},

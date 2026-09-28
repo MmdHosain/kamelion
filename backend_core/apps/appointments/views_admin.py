@@ -14,9 +14,11 @@ from .serializers import (
     AvailabilityExceptionBulkSerializer,
     AppointmentSerializer,
     AdminBookAppointmentSerializer,
+    AdminAppointmentFilterSerializer,
 )
 from .services import admin_book_appointment, approve_appointment, disapprove_appointment
 from .pagination import AppointmentPagination
+from .notifications import send_appointment_decision_sms
 
 
 
@@ -55,11 +57,22 @@ class AdminAppointmentsView(ListCreateAPIView):
             .order_by("-id")
         )
 
-        # e.g. GET /api/admin/appointments/?status=pending to pull up
-        # just the reservations awaiting approval.
-        status_param = self.request.query_params.get("status")
-        if status_param:
-            queryset = queryset.filter(status=status_param)
+        # Filters (only applied on GET; POST is a booking, not a listing):
+        #   ?date_from=2026-03-01&date_to=2026-03-31  (inclusive range)
+        #   ?status=pending | approved | disapproved  (comma-separate to combine)
+        filters = AdminAppointmentFilterSerializer(data=self.request.query_params)
+        filters.is_valid(raise_exception=True)
+
+        date_from = filters.validated_data.get("date_from")
+        date_to = filters.validated_data.get("date_to")
+        statuses = filters.validated_data.get("status")
+
+        if date_from:
+            queryset = queryset.filter(appointment_date__gte=date_from)
+        if date_to:
+            queryset = queryset.filter(appointment_date__lte=date_to)
+        if statuses:
+            queryset = queryset.filter(status__in=statuses)
 
         search = self.request.query_params.get("search")
 
@@ -123,6 +136,20 @@ class AdminAppointmentDetailView(RetrieveUpdateDestroyAPIView):
     def update(self, request, *args, **kwargs):
         kwargs["partial"] = True
         return super().update(request, *args, **kwargs)
+
+    def perform_update(self, serializer):
+        # The admin panel approves/rejects by PUTting a new status here
+        # (not necessarily via the approve/ and disapprove/ endpoints),
+        # so notify the patient whenever a PENDING appointment moves to
+        # scheduled (approved) or cancelled_admin (rejected).
+        old_status = serializer.instance.status
+        appointment = serializer.save()
+
+        if old_status == Appointment.PENDING:
+            if appointment.status == Appointment.SCHEDULED:
+                send_appointment_decision_sms(appointment, approved=True)
+            elif appointment.status == Appointment.CANCELLED_BY_ADMIN:
+                send_appointment_decision_sms(appointment, approved=False)
 
 
 class AdminCreateAppointmentView(APIView):
