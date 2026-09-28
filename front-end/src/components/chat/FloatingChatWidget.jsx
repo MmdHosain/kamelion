@@ -59,8 +59,8 @@ const FloatingChatWidget = ({ isOpen, onToggle, onOpenAppointment }) => {
   // 1. Lock background page body scroll when chat modal is open
   useBodyScrollLock(isOpen);
 
-  // 2. Track footer overlap to morph into FAB lifted above footer
-  const { isFooterVisible, bottomOffset } = useFooterOverlap('site-footer', 24);
+  // 2. Track footer overlap to morph into FAB earlier before reaching footer (180px ahead) and stay lifted above it
+  const { isFooterVisible, bottomOffset } = useFooterOverlap('site-footer', 24, 180);
 
   // 2. Close on ESC key
   useEffect(() => {
