@@ -4,7 +4,7 @@ Orchestration of one patient message (API.md §6):
   1. store the patient's message
   2. build the request
   3. call POST /v1/chat (timeout + retry rules live in ai_client)
-  4. on 200: store `reply`, store `triage` (the backend actions of §5 come later)
+  4. on 200: store `reply`, store `triage`, run the backend action of the level (actions.py)
   5. on failure: fallback (§7.3)
 """
 import logging
@@ -12,6 +12,7 @@ import logging
 from django.db import transaction
 
 from . import ai_client
+from .actions import patient_actions, run_actions
 from . import constants as c
 from .models import ChatMessage, ChatSession
 from .payload import build_request
@@ -89,11 +90,15 @@ def process_patient_message(session: ChatSession, text: str) -> dict:
         locked.triage_summary = new_triage["summary"]
         locked.save(update_fields=["triage_level", "triage_summary", "updated_at"])
 
-    return {
-        "reply": result["reply"],
-        "triage_level": new_triage["level"],
-        "fallback": False,
-    }
+        # §5: the action of the level the session is in (once per level).
+        run_actions(locked, text)
+
+        return {
+            "reply": result["reply"],
+            "triage_level": new_triage["level"],
+            "fallback": False,
+            **patient_actions(locked),
+        }
 
 
 def _reject_downgrade(previous_level, new_level) -> None:
@@ -118,4 +123,5 @@ def _fallback(session: ChatSession, patient_text: str) -> dict:
         "reply": text,
         "triage_level": session.triage_level or "unknown",
         "fallback": True,
+        **patient_actions(session),
     }

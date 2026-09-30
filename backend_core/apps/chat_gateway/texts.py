@@ -23,3 +23,20 @@ def is_farsi(text: str) -> bool:
 def fallback_message(patient_text: str) -> str:
     template = FALLBACK_FA if is_farsi(patient_text) else FALLBACK_EN
     return template.format(phone=settings.CLINIC_PHONE_NUMBER)
+
+
+# Stored in the conversation record when an emergency code is issued. The frontend shows the
+# code itself from the `emergency_code` response field. The clinic owns the wording.
+EMERGENCY_CODE_EN = (
+    "Your case needs a visit tomorrow. Your emergency code is {code}. "
+    "If your condition gets worse, contact emergency services right away."
+)
+EMERGENCY_CODE_FA = (
+    "وضعیت شما نیاز به ویزیت فردا دارد. کد اورژانس شما {code} است. "
+    "در صورت بدتر شدن حال شما، بلافاصله با اورژانس تماس بگیرید."
+)
+
+
+def emergency_code_message(patient_text: str, code: str) -> str:
+    template = EMERGENCY_CODE_FA if is_farsi(patient_text) else EMERGENCY_CODE_EN
+    return template.format(code=code)
