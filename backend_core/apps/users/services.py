@@ -98,6 +98,7 @@ def verify_otp(phone_number: str, code: str):
                                  number; the caller must now call
                                  complete_registration() with this
                                  token plus full_name and national_id
+                                 (and optionally sex / date_of_birth)
                                  to finish creating the account.
     """
 
@@ -137,11 +138,15 @@ def verify_otp(phone_number: str, code: str):
 
 
 @transaction.atomic
-def complete_registration(token: str, full_name: str, national_id: str):
+def complete_registration(token: str, full_name: str, national_id: str,
+                          sex=None, date_of_birth=None):
     """
     Step 2 of login, first-time patients only: creates the account
     for the phone number that was verified in verify_otp(), using
     the signup token as proof instead of the OTP code.
+
+    full_name and national_id are required; sex and date_of_birth are
+    optional and stored as NULL when not given.
     """
 
     full_name = (full_name or "").strip()
@@ -165,6 +170,8 @@ def complete_registration(token: str, full_name: str, national_id: str):
         phone_number=signup.phone_number,
         full_name=full_name,
         national_id=national_id,
+        sex=(sex or None),
+        date_of_birth=date_of_birth,
     )
 
     return user
