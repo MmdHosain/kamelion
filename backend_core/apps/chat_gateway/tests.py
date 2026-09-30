@@ -10,7 +10,7 @@ from apps.users.models import User
 
 from . import ai_client
 from . import constants as c
-from .models import ChatMessage, ChatSession
+from .models import ChatMessage, ChatSession, TriageAction
 from .payload import build_patient, to_rfc3339
 
 URL = "/api/chat/message"
@@ -148,7 +148,7 @@ class RequestContractTests(ChatTestCase):
 
 class TriageStorageTests(ChatTestCase):
     """API.md §4.1 / §4.6 / §5.1: the backend stores the triage and sends it back unchanged.
-    The backend actions of §5 are not built yet."""
+    """
 
     def test_triage_stored_after_every_successful_call(self):
         self.post.side_effect = [ok(level="unknown"), ok(level="high_priority", summary="first")]
@@ -169,10 +169,10 @@ class TriageStorageTests(ChatTestCase):
         self.send("a"); self.send("b")
         self.assertEqual(self.sent_payload()["triage"], {"level": "urgent", "summary": "chest pain"})
 
-    def test_response_has_no_summary_and_no_actions(self):
+    def test_response_has_no_summary(self):
         self.post.return_value = ok(level="urgent", summary="staff only text")
         data = self.send("a").json()
-        self.assertEqual(set(data), {"reply", "triage_level", "fallback"})
+        self.assertEqual(set(data), {"reply", "triage_level", "fallback", "booking_offer", "emergency_code"})
         self.assertEqual(data["triage_level"], "urgent")
         self.assertNotIn("staff only text", str(data))
 
@@ -339,3 +339,142 @@ class ClientUnitTests(SimpleTestCase):
         from config import settings as project_settings
         self.assertEqual(project_settings.AI_SERVICE_TIMEOUT, 30)
         self.assertEqual(project_settings.AI_SERVICE_RETRY_DELAY, 2)
+
+
+class ActionTests(ChatTestCase):
+    """Triage actions: low/high offer a reservation, urgent issues an emergency code."""
+
+    def test_unknown_and_out_of_scope_have_no_action(self):
+        for level in ("unknown", "out_of_scope"):
+            self.post.return_value = ok(level=level)
+            data = self.send("hi", session_id=f"s-{level}").json()
+            self.assertFalse(data["booking_offer"])
+            self.assertIsNone(data["emergency_code"])
+        self.assertEqual(TriageAction.objects.count(), 0)
+
+    def test_low_and_high_offer_booking(self):
+        for level in ("low_priority", "high_priority"):
+            self.post.return_value = ok(level=level, summary="s")
+            data = self.send("hi", session_id=f"s-{level}").json()
+            self.assertTrue(data["booking_offer"])
+            self.assertIsNone(data["emergency_code"])
+            self.assertEqual(TriageAction.objects.get(session__session_id=f"s-{level}").kind, "booking_offer")
+
+    def test_urgent_issues_code_and_shows_it_in_the_same_response(self):
+        self.post.return_value = ok(reply="Please stay calm.", level="urgent", summary="chest pain")
+        data = self.send("chest pain").json()
+        self.assertRegex(data["emergency_code"], r"^URG-[A-Z2-9]{6}$")
+        self.assertFalse(data["booking_offer"])
+        self.assertEqual(data["reply"], "Please stay calm.")  # the AI reply is never edited
+        msg = ChatMessage.objects.get(kind="emergency_code")
+        self.assertEqual(msg.role, "backend")
+        self.assertIn(data["emergency_code"], msg.content)
+
+    def test_action_runs_once_per_level_and_code_is_stable(self):
+        self.post.side_effect = [ok(level="urgent", summary="a"), ok(level="urgent", summary="b")]
+        first = self.send("a").json()["emergency_code"]
+        second = self.send("b").json()["emergency_code"]
+        self.assertEqual(first, second)
+        self.assertEqual(TriageAction.objects.count(), 1)
+        self.assertEqual(ChatMessage.objects.filter(kind="emergency_code").count(), 1)
+
+    def test_escalation_low_to_urgent_runs_both_actions(self):
+        self.post.side_effect = [ok(level="low_priority", summary="a"), ok(level="urgent", summary="b")]
+        self.assertTrue(self.send("a").json()["booking_offer"])
+        data = self.send("b").json()
+        self.assertFalse(data["booking_offer"])
+        self.assertIsNotNone(data["emergency_code"])
+        self.assertEqual(TriageAction.objects.count(), 2)
+
+    def test_emergency_code_message_is_never_sent_as_history(self):
+        self.post.return_value = ok(level="urgent", summary="s")
+        self.send("a"); self.send("b")
+        history = self.sent_payload()["history"]
+        self.assertEqual([h["role"] for h in history], ["user", "assistant"])
+
+    def test_fallback_still_shows_the_existing_code(self):
+        self.post.side_effect = [ok(level="urgent", summary="s"), err(400, "invalid_request")]
+        code = self.send("a").json()["emergency_code"]
+        data = self.send("b").json()
+        self.assertTrue(data["fallback"])
+        self.assertEqual(data["emergency_code"], code)
+
+    def test_failed_action_does_not_break_the_reply_and_is_retried(self):
+        self.post.side_effect = [ok(level="urgent", summary="a"), ok(level="urgent", summary="b")]
+        with mock.patch("apps.chat_gateway.actions.generate_emergency_code", side_effect=RuntimeError("boom")):
+            with self.assertLogs("apps.chat_gateway.actions", level="ERROR"):
+                data = self.send("a").json()
+        self.assertFalse(data["fallback"])
+        self.assertIsNone(data["emergency_code"])
+        self.assertEqual(ChatSession.objects.get().triage_level, "urgent")
+        self.assertIsNotNone(self.send("b").json()["emergency_code"])
+
+
+class AdminEndpointTests(ChatTestCase):
+    """GET /api/admin/patients/<pk>/chats/ and /triage_level/."""
+
+    def setUp(self):
+        super().setUp()
+        self.admin = User.objects.create_user(phone_number="09120000001")
+        self.admin.is_staff = True
+        self.admin.save()
+        self.chats = f"/api/admin/patients/{self.user.pk}/chats/"
+        self.triage = f"/api/admin/patients/{self.user.pk}/triage_level/"
+
+    def as_admin(self):
+        self.client.force_authenticate(self.admin)
+
+    def test_patients_cannot_use_admin_endpoints(self):
+        for url in (self.chats, self.triage):
+            self.assertEqual(self.client.get(url).status_code, 403)
+        self.client.force_authenticate(None)
+        self.assertEqual(self.client.get(self.triage).status_code, 401)
+
+    def test_unknown_patient_and_staff_user_are_404(self):
+        self.as_admin()
+        self.assertEqual(self.client.get("/api/admin/patients/999999/chats/").status_code, 404)
+        self.assertEqual(self.client.get(f"/api/admin/patients/{self.admin.pk}/triage_level/").status_code, 404)
+
+    def test_chats_lists_the_patients_chats_with_latest_triage(self):
+        self.post.side_effect = [ok(level="urgent", summary="chest pain"), ok(level="high_priority", summary="lump")]
+        code = self.send("a", session_id="s1").json()["emergency_code"]
+        self.send("b", session_id="s2")
+        other = User.objects.create_user(phone_number="09125550000")
+        ChatSession.objects.create(session_id="other", user=other, triage_level="urgent", triage_summary="x")
+        self.as_admin()
+        rows = {r["session_id"]: r for r in self.client.get(self.chats).json()["results"]}
+        self.assertEqual(set(rows), {"s1", "s2"})  # not the other patient's chat
+        self.assertEqual(rows["s1"]["triage_level"], "urgent")
+        self.assertEqual(rows["s1"]["triage_summary"], "chest pain")
+        self.assertEqual(rows["s1"]["emergency_code"], code)
+        self.assertIsNone(rows["s2"]["emergency_code"])
+
+    def test_chats_filter_by_level(self):
+        self.post.side_effect = [ok(level="urgent", summary="a"), ok(level="low_priority", summary="b")]
+        self.send("a", session_id="s1"); self.send("b", session_id="s2")
+        self.as_admin()
+        res = self.client.get(self.chats + "?level=urgent").json()["results"]
+        self.assertEqual([r["session_id"] for r in res], ["s1"])
+
+    def test_triage_level_is_the_most_recent_chat_and_has_code_when_urgent(self):
+        self.post.side_effect = [ok(level="low_priority", summary="old"), ok(level="urgent", summary="new")]
+        self.send("a", session_id="s1")
+        code = self.send("b", session_id="s2").json()["emergency_code"]
+        self.as_admin()
+        data = self.client.get(self.triage).json()
+        self.assertEqual((data["session_id"], data["triage_level"], data["triage_summary"]), ("s2", "urgent", "new"))
+        self.assertEqual(data["emergency_code"], code)
+
+    def test_triage_level_has_no_code_when_not_urgent(self):
+        self.post.return_value = ok(level="high_priority", summary="lump")
+        self.send("a")
+        self.as_admin()
+        data = self.client.get(self.triage).json()
+        self.assertEqual(data["triage_level"], "high_priority")
+        self.assertIsNone(data["emergency_code"])
+
+    def test_triage_level_is_null_when_patient_has_no_triaged_chat(self):
+        self.as_admin()
+        data = self.client.get(self.triage).json()
+        self.assertIsNone(data["triage_level"])
+        self.assertIsNone(data["emergency_code"])

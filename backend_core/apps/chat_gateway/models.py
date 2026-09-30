@@ -67,8 +67,10 @@ class ChatMessage(models.Model):
 
     # Kinds of backend-generated messages.
     FALLBACK = "fallback"
+    EMERGENCY_CODE = "emergency_code"
     KIND_CHOICES = [
         (FALLBACK, "Fallback message"),
+        (EMERGENCY_CODE, "Emergency code"),
     ]
 
     session = models.ForeignKey(ChatSession, on_delete=models.CASCADE, related_name="messages")
@@ -87,3 +89,33 @@ class ChatMessage(models.Model):
 
     def __str__(self):
         return f"[{self.role}] {self.content[:40]}"
+
+
+class TriageAction(models.Model):
+    """
+    The backend action that ran when a session entered an actionable triage level
+    (API.md §5). At most one row per (session, level), which is what makes every
+    action run at most once (§5.2 rule 2).
+    """
+    BOOKING_OFFER = "booking_offer"
+    EMERGENCY_CODE = "emergency_code"
+    KIND_CHOICES = [
+        (BOOKING_OFFER, "Booking offer"),
+        (EMERGENCY_CODE, "Emergency code"),
+    ]
+
+    session = models.ForeignKey(ChatSession, on_delete=models.CASCADE, related_name="triage_actions")
+    level = models.CharField(max_length=20, choices=TRIAGE_LEVEL_CHOICES)
+    kind = models.CharField(max_length=30, choices=KIND_CHOICES)
+    # Only set for kind=emergency_code.
+    emergency_code = models.CharField(max_length=16, null=True, blank=True, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["created_at", "id"]
+        constraints = [
+            models.UniqueConstraint(fields=["session", "level"], name="uniq_triage_action_per_level"),
+        ]
+
+    def __str__(self):
+        return f"{self.session_id}:{self.level}:{self.kind}"
