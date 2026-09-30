@@ -84,6 +84,15 @@ class User(AbstractBaseUser, PermissionsMixin):
     # and we don't want that to ever block login/registration.
     national_id = models.CharField(max_length=20, blank=True, null=True)
 
+    # Optional. Collected at first-time signup next to the name and national ID,
+    # and used as medical context (e.g. sent to the AI Service by chat_gateway).
+    FEMALE = 'female'
+    MALE = 'male'
+    SEX_CHOICES = [(FEMALE, 'Female'), (MALE, 'Male')]
+
+    sex = models.CharField(max_length=10, choices=SEX_CHOICES, blank=True, null=True)
+    date_of_birth = models.DateField(blank=True, null=True)
+
     # Standard Django user flags
     is_active = models.BooleanField(default=True)  # can login
     is_staff = models.BooleanField(default=False)  # can access admin panel
@@ -109,43 +118,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         # Human-readable representation
         return f"{self.phone_number} ({self.full_name or 'No name'})"
-
-
-class PatientProfile(models.Model):
-    """
-    Stores additional medical/personal info about the patient.
-
-    Separated from User to keep authentication data minimal.
-    """
-
-    # One profile per user
-    user = models.OneToOneField(
-        User,
-        on_delete=models.CASCADE,
-        related_name='patient_profile'
-    )
-
-    # Date of birth used for medical context
-    date_of_birth = models.DateField(blank=True, null=True)
-
-    # Optional home address
-    address = models.TextField(blank=True, null=True)
-
-    # Audit timestamps
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        verbose_name = "Patient Profile"
-        verbose_name_plural = "Patient Profiles"
-
-        # Indexes improve filtering performance
-        indexes = [
-            models.Index(fields=['date_of_birth']),
-        ]
-
-    def __str__(self):
-        return f"Profile for {self.user.phone_number}"
 
 
 class PatientNote(models.Model):

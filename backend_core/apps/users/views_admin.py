@@ -4,7 +4,7 @@ from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 from rest_framework import status
 
-from .models import User, PatientProfile, PatientNote
+from .models import User, PatientNote
 from .serializers import (
     PatientListSerializer,
     PatientDetailSerializer,
@@ -57,7 +57,7 @@ class AdminPatientListView(APIView):
 class AdminPatientDetailView(APIView):
     """
     GET /api/admin/patients/<id>/ - Admin.
-    Full dossier: profile fields, appointment history, clinical notes.
+    Full dossier: patient fields, appointment history, clinical notes.
 
     PUT/PATCH /api/admin/patients/<id>/ - Admin.
     Lets an admin edit the patient's own info - currently just
@@ -72,8 +72,6 @@ class AdminPatientDetailView(APIView):
             patient = _patient_queryset().get(pk=pk)
         except User.DoesNotExist:
             return Response({"detail": "Patient not found"}, status=status.HTTP_404_NOT_FOUND)
-
-        profile = PatientProfile.objects.filter(user=patient).first()
 
         appointments = [
             {
@@ -93,8 +91,8 @@ class AdminPatientDetailView(APIView):
             "full_name": patient.full_name or "",
             "phone_number": patient.phone_number,
             "national_id": patient.national_id,
-            "date_of_birth": profile.date_of_birth if profile else None,
-            "address": profile.address if profile else None,
+            "sex": patient.sex,
+            "date_of_birth": patient.date_of_birth,
             "appointments": appointments,
             "notes": notes,
         }

@@ -82,9 +82,16 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
-# ── FastAPI Gateway ────────────────────────────────────
-FASTAPI_BASE_URL = config('FASTAPI_BASE_URL', default='http://localhost:8001')
-FASTAPI_TIMEOUT = config('FASTAPI_TIMEOUT', default=10, cast=int)
+# ── AI Service (apps/chat_gateway, contract: API.md v1) ─
+# Base URL of the AI Service, without the /v1 path. HTTPS in production.
+AI_SERVICE_BASE_URL = config('AI_SERVICE_BASE_URL', default='')
+# Bearer API key, one per environment. Keep it in the secret manager, never in code or logs.
+AI_SERVICE_API_KEY = config('AI_SERVICE_API_KEY', default='')
+# API.md §7.2: 30 s client timeout, one retry after 2 s.
+AI_SERVICE_TIMEOUT = config('AI_SERVICE_TIMEOUT', default=30, cast=int)
+AI_SERVICE_RETRY_DELAY = config('AI_SERVICE_RETRY_DELAY', default=2, cast=float)
+# Shown in the fallback message when the AI Service is unavailable (API.md §7.3).
+CLINIC_PHONE_NUMBER = config('CLINIC_PHONE_NUMBER', default='')
 
 # ── SMS (PanelChi) ─────────────────────────────────────
 # SMS_PROVIDER controls how request_otp() delivers its code:
