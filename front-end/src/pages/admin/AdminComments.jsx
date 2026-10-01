@@ -14,6 +14,12 @@ import {
 import { useCommentsStore } from '../../store/commentsStore';
 import ToastNotification from '../../components/ui/ToastNotification';
 
+const THEMES_LIST = [
+  'from-[#e75480] to-[#ba2d63]',
+  'from-[#b685c2] to-[#7d4a99]',
+  'from-[#7d4a99] to-[#e75480]'
+];
+
 const AdminComments = () => {
   const {
     adminComments,
@@ -249,9 +255,10 @@ const AdminComments = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4">
-          {filteredComments.map((comment) => {
+          {filteredComments.map((comment, index) => {
             const isApproved = comment.approved === true;
             const isBusy = actionLoadingId === comment.id;
+            const avatarGradient = THEMES_LIST[index % THEMES_LIST.length];
 
             return (
               <div
@@ -266,7 +273,7 @@ const AdminComments = () => {
                 <div className="flex-1 space-y-3 w-full">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-primary to-primary-dark text-white font-bold flex items-center justify-center text-sm shadow-md shadow-primary/20 shrink-0">
+                      <div className={`w-10 h-10 rounded-2xl bg-gradient-to-br ${avatarGradient} text-white font-bold flex items-center justify-center text-sm shadow-md shadow-primary/20 shrink-0`}>
                         {comment.avatar || (comment.name ? comment.name.charAt(0) : 'ک')}
                       </div>
                       <div>
