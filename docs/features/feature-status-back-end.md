@@ -37,6 +37,7 @@
 | 15 | Role-based access control beyond admin/patient | ❌ Not Implemented |
 | 16 | Patient/admin patient-info editing | ✅ Completed |
 | 17 | Review / comment submission & moderation | ✅ Completed |
+| 18 | Medical articles & patient education module (`apps.articles`) | 📋 Documented & Ready for Dev |
 
 ## Feature Details
 
@@ -109,6 +110,9 @@ Admins can edit a patient's `full_name` and/or `national_id` via `PUT`/`PATCH /a
 
 ### 17. Review / comment submission & moderation — ✅ Completed *(newly documented — pre-existing, not built this cycle, but previously missing from this document)*
 Public users (authenticated or not) can submit a review (`POST /api/reviews/`) with `text` and `rating` (1–5) required; it starts as `pending` and isn't visible on the public list (`GET /api/reviews/`) until an admin approves it (`PATCH /api/admin/reviews/<id>/` with `{"approved": true}`) or deletes it (`DELETE /api/admin/reviews/<id>/`). **Changed this cycle:** the `name` field is now optional — previously a review without a name was rejected.
+
+### 18. Medical articles & patient education module (`apps.articles`) — 📋 Documented & Ready for Dev
+Architecture and implementation guide created at [`docs/architecture/backend-articles-guide.md`](file:///e:/GitHub%20Repo/kamelion/docs/architecture/backend-articles-guide.md). Introduces `Category` and `Article` models with sanitized HTML content (`bleach`), WebP image optimization with Pillow, video embeds, and public/admin DRF endpoints.
 
 ## Notes for Reviewers
 

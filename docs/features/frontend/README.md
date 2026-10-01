@@ -45,6 +45,8 @@ docs/features/frontend/
 | `PRD-FE-018` | سامانه مدیریت ویدیوها (Video CMS) | Admin Operations | 🟡 نیمه‌متصل (Mock) | [مشاهده سند](file:///e:/GitHub%20Repo/kamelion/docs/features/frontend/07-admin-operations/prd-admin-video-cms.md) |
 | `PRD-FE-019` | داشبورد آمار، عملکرد و گزارشات | Admin Operations | 🟡 نیمه‌متصل (Mock) | [مشاهده سند](file:///e:/GitHub%20Repo/kamelion/docs/features/frontend/07-admin-operations/prd-admin-dashboard-analytics.md) |
 | `PRD-FE-020` | شخصی‌ساز پالت رنگ و تم سراسری | Admin Operations | 🟡 نیمه‌متصل (Local) | [مشاهده سند](file:///e:/GitHub%20Repo/kamelion/docs/features/frontend/07-admin-operations/prd-admin-theme-customizer.md) |
+| `PRD-FE-021` | پرتال عمومی مقالات و آموزش پزشکی | Public Pages | ✅ سند تصویب‌شده (Approved Spec) | [مشاهده سند](file:///e:/GitHub%20Repo/kamelion/docs/features/frontend/04-public-content/prd-medical-articles-public.md) |
+| `PRD-FE-022` | سامانه مدیریت مقالات و نویسندگی پزشک (CMS) | Admin Operations | ✅ سند تصویب‌شده (Approved Spec) | [مشاهده سند](file:///e:/GitHub%20Repo/kamelion/docs/features/frontend/07-admin-operations/prd-admin-articles-cms.md) |
 
 ---
 
