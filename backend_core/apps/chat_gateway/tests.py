@@ -478,3 +478,42 @@ class AdminEndpointTests(ChatTestCase):
         data = self.client.get(self.triage).json()
         self.assertIsNone(data["triage_level"])
         self.assertIsNone(data["emergency_code"])
+
+    def test_chats_returns_all_sessions_with_their_full_conversation(self):
+        self.post.side_effect = [
+            ok(level="low_priority", summary="old"),
+            ok(level="urgent", summary="new"),
+            ok(level="urgent", summary="new"),
+        ]
+        self.send("hello", session_id="s1")
+        self.send("chest pain", session_id="s2")
+        self.send("more", session_id="s2")
+        self.as_admin()
+        rows = {r["session_id"]: r for r in self.client.get(self.chats).json()["results"]}
+        self.assertEqual(set(rows), {"s1", "s2"})  # every session, not only the latest
+        s1, s2 = rows["s1"], rows["s2"]
+        self.assertEqual(s1["triage_summary"], "old")
+        self.assertEqual(s1["message_count"], len(s1["messages"]))
+        self.assertEqual(s1["messages"][0]["role"], "user")
+        self.assertEqual(s1["messages"][0]["content"], "hello")
+        self.assertEqual(s1["messages"][1]["role"], "assistant")
+        self.assertEqual(s2["triage_level"], "urgent")
+        self.assertIn("backend", {m["role"] for m in s2["messages"]})  # emergency code message
+        self.assertEqual(s2["last_message_at"], s2["messages"][-1]["created_at"])
+
+    def test_triage_level_endpoint_stays_light(self):
+        self.post.return_value = ok(level="high_priority", summary="lump")
+        self.send("a")
+        self.as_admin()
+        self.assertNotIn("messages", self.client.get(self.triage).json())
+
+    def test_patients_list_shows_latest_triage_level(self):
+        self.post.side_effect = [ok(level="low_priority", summary="a"), ok(level="urgent", summary="b")]
+        self.send("a", session_id="s1")
+        self.send("b", session_id="s2")
+        quiet = User.objects.create_user(phone_number="09126660000")
+        self.as_admin()
+        rows = {r["id"]: r for r in self.client.get("/api/admin/patients/").json()}
+        self.assertEqual(rows[self.user.pk]["triage_level"], "urgent")
+        self.assertIsNone(rows[quiet.pk]["triage_level"])
+

@@ -1,8 +1,10 @@
-from django.db.models import Q, Count, Max
+from django.db.models import Q, Count, Max, OuterRef, Subquery
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 from rest_framework import status
+
+from apps.chat_gateway.models import ChatSession
 
 from .models import User, PatientNote
 from .serializers import (
@@ -18,10 +20,19 @@ def _patient_queryset():
     return User.objects.filter(is_staff=False)
 
 
+def _latest_triaged_chat(user_pk):
+    """The patient's most recently active chat that has a triage (same rule as /triage_level/)."""
+    return (
+        ChatSession.objects.filter(user=user_pk, triage_level__isnull=False)
+        .order_by("-updated_at", "-id")
+    )
+
+
 class AdminPatientListView(APIView):
     """
     GET /api/admin/patients/?search= - Admin.
-    Returns patient profiles + a summary of their appointment history.
+    Returns patient profiles + a summary of their appointment history + their latest triage level
+    (null when they have none). Details: /api/admin/patients/<pk>/chats/.
     """
     permission_classes = [IsAdminUser]
 
@@ -30,6 +41,7 @@ class AdminPatientListView(APIView):
             appointment_count=Count("appointments", distinct=True),
             last_appointment=Max("appointments__appointment_date"),
             notes_count=Count("clinical_notes", distinct=True),
+            triage_level=Subquery(_latest_triaged_chat(OuterRef("pk")).values("triage_level")[:1]),
         )
 
         search = request.query_params.get("search", "").strip()
@@ -46,6 +58,7 @@ class AdminPatientListView(APIView):
                 "last_appointment": u.last_appointment,
                 "appointment_count": u.appointment_count,
                 "notes_count": u.notes_count,
+                "triage_level": u.triage_level,
             }
             for u in queryset.order_by("-last_appointment")
         ]

@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from . import constants as c
-from .models import ChatSession
+from .models import ChatMessage, ChatSession
 
 
 class ChatMessageInputSerializer(serializers.Serializer):
@@ -52,3 +52,36 @@ class AdminChatSessionSerializer(serializers.ModelSerializer):
             if action.level == c.URGENT:
                 return action.emergency_code
         return None
+
+
+class AdminChatMessageSerializer(serializers.ModelSerializer):
+    """One message of a chat, for clinic staff. `role` is patient / AI reply / backend generated."""
+
+    class Meta:
+        model = ChatMessage
+        fields = ["id", "role", "kind", "content", "created_at"]
+
+
+class AdminChatSessionDetailSerializer(AdminChatSessionSerializer):
+    """Detailed chat for GET /api/admin/patients/<pk>/chats/: triage + the full conversation."""
+    message_count = serializers.SerializerMethodField()
+    last_message_at = serializers.SerializerMethodField()
+    messages = serializers.SerializerMethodField()
+
+    class Meta(AdminChatSessionSerializer.Meta):
+        fields = AdminChatSessionSerializer.Meta.fields + ["message_count", "last_message_at", "messages"]
+
+    def _messages(self, obj):
+        # Reads the prefetched messages (see views_admin), so a page costs no query per chat.
+        return list(obj.messages.all())
+
+    def get_message_count(self, obj):
+        return len(self._messages(obj))
+
+    def get_last_message_at(self, obj):
+        msgs = self._messages(obj)
+        # Same timestamp format as the other datetime fields of this serializer.
+        return serializers.DateTimeField().to_representation(msgs[-1].created_at) if msgs else None
+
+    def get_messages(self, obj):
+        return AdminChatMessageSerializer(self._messages(obj), many=True).data
