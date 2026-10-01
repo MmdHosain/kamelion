@@ -9,7 +9,7 @@ from apps.users.models import User
 
 from . import constants as c
 from .models import ChatSession
-from .serializers import AdminChatSessionSerializer
+from .serializers import AdminChatSessionDetailSerializer, AdminChatSessionSerializer
 
 
 def _get_patient(pk):
@@ -23,15 +23,16 @@ def _patient_sessions(patient):
 
 class AdminPatientChatsView(ListAPIView):
     """
-    GET /api/admin/patients/<pk>/chats/  - the patient's chats with the latest triage of each,
-    newest activity first. Optional: ?level=urgent|high_priority|low_priority|unknown|out_of_scope
+    GET /api/admin/patients/<pk>/chats/  - ALL of the patient's chats (not just the latest), newest
+    activity first. Each has its latest triage (level, summary, emergency code) and its full
+    conversation. Optional: ?level=urgent|high_priority|low_priority|unknown|out_of_scope
     """
     permission_classes = [IsAdminUser]
-    serializer_class = AdminChatSessionSerializer
+    serializer_class = AdminChatSessionDetailSerializer
     pagination_class = AppointmentPagination
 
     def get_queryset(self):
-        qs = _patient_sessions(_get_patient(self.kwargs["pk"]))
+        qs = _patient_sessions(_get_patient(self.kwargs["pk"])).prefetch_related("messages")
         level = self.request.query_params.get("level")
         if level in c.TRIAGE_LEVELS:
             qs = qs.filter(triage_level=level)

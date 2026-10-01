@@ -77,6 +77,7 @@ class PatientListSerializer(serializers.Serializer):
     last_appointment = serializers.DateField(allow_null=True)
     appointment_count = serializers.IntegerField()
     notes_count = serializers.IntegerField()
+    triage_level = serializers.CharField(allow_null=True)
 
 
 class PatientDetailSerializer(serializers.Serializer):
