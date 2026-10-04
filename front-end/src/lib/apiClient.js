@@ -52,6 +52,22 @@ const clearAuthInStore = () => {
 
 apiClient.interceptors.request.use(
   (config) => {
+    // If request URL is an absolute URL from backend pagination that lost its port (e.g. http://localhost/api/...)
+    // convert it to a relative endpoint so Axios preserves apiClient's baseURL and active port.
+    if (config.url && /^https?:\/\//i.test(config.url)) {
+      try {
+        const parsed = new URL(config.url);
+        if (typeof window !== 'undefined' && window.location) {
+          const isSameHost = parsed.hostname === window.location.hostname;
+          if (isSameHost) {
+            config.url = parsed.pathname.replace(/^\/api/, '') + parsed.search;
+          }
+        }
+      } catch {
+        // ignore malformed URLs
+      }
+    }
+
     const token = getAccessTokenFromStore();
 
     if (token) {

@@ -146,10 +146,10 @@ const Header = ({ onOpenAppointment, onOpenChat, onOpenMyAppointments }) => {
               {isAdmin ? (
                 <Link
                   to="/admin/appointments"
-                  className="flex items-center gap-1.5 bg-primary/10 hover:bg-primary hover:text-white border border-primary/30 text-primary text-xs md:text-sm font-bold py-2 px-3.5 md:px-4 rounded-full transition-all shadow-sm"
+                  className="flex items-center gap-2 bg-white/70 hover:bg-white border border-primary/20 text-primary text-xs md:text-sm font-bold py-2 px-4 md:px-5 rounded-full transition-all hover:-translate-y-0.5 shadow-sm cursor-pointer"
                 >
                   <Shield className="w-4 h-4" />
-                  <span>پنل مدیریت</span>
+                  <span className="hidden sm:inline">پنل مدیریت</span>
                 </Link>
               ) : (
                 <>
@@ -157,14 +157,14 @@ const Header = ({ onOpenAppointment, onOpenChat, onOpenMyAppointments }) => {
                     type="button"
                     onClick={onOpenMyAppointments}
                     title="مشاهده و لغو نوبت‌های من"
-                    className="flex items-center gap-1.5 bg-primary/10 hover:bg-primary hover:text-white border border-primary/30 text-primary text-xs font-bold py-2 px-3 md:px-3.5 rounded-full transition-all cursor-pointer shadow-sm"
+                    className="flex items-center gap-2 bg-white/70 hover:bg-white border border-primary/20 text-primary text-xs md:text-sm font-bold py-2 px-4 md:px-5 rounded-full transition-all hover:-translate-y-0.5 shadow-sm cursor-pointer"
                   >
-                    <Calendar className="w-3.5 h-3.5" />
+                    <Calendar className="w-4 h-4" />
                     <span className="hidden sm:inline">نوبت‌های من</span>
                   </button>
 
-                  <div className="flex items-center gap-1.5 bg-white/70 border border-primary/20 text-textDark text-xs font-bold py-1.5 px-3 rounded-full shadow-sm">
-                    <User className="w-3.5 h-3.5 text-primary" />
+                  <div className="flex items-center gap-1.5 bg-white/70 border border-primary/20 text-textDark text-xs md:text-sm font-bold py-2 px-3 md:px-4 rounded-full shadow-sm">
+                    <User className="w-4 h-4 text-primary" />
                     <span className="max-w-[120px] truncate">{user?.full_name || user?.phone_number || 'حساب کاربری'}</span>
                   </div>
                 </>
@@ -173,9 +173,9 @@ const Header = ({ onOpenAppointment, onOpenChat, onOpenMyAppointments }) => {
               <button
                 onClick={logout}
                 title="خروج از حساب"
-                className="flex items-center gap-1 bg-red-50 hover:bg-red-500 hover:text-white text-red-600 border border-red-200 text-xs font-bold py-2 px-3 rounded-full transition-all cursor-pointer shadow-sm"
+                className="flex items-center gap-2 bg-red-50 hover:bg-red-500 hover:text-white text-red-600 border border-red-200 text-xs md:text-sm font-bold py-2 px-3 md:px-4 rounded-full transition-all hover:-translate-y-0.5 cursor-pointer shadow-sm"
               >
-                <LogOut className="w-3.5 h-3.5" />
+                <LogOut className="w-4 h-4" />
                 <span className="hidden sm:inline">خروج</span>
               </button>
             </div>
@@ -214,4 +214,3 @@ const Header = ({ onOpenAppointment, onOpenChat, onOpenMyAppointments }) => {
 
 
 export default Header;
-

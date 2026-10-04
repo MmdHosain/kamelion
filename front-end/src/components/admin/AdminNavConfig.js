@@ -2,6 +2,7 @@ import {
   LayoutDashboard,
   Users,
   Calendar,
+  CalendarClock,
   MessageSquare,
   Palette,
   Film,
@@ -13,6 +14,11 @@ export const ADMIN_NAV_ITEMS = [
     label: 'نوبت‌ها و زمان‌بندی',
     icon: Calendar,
     path: '/admin/appointments',
+  },
+  {
+    label: 'تقویم کاری و نوبت‌های آتی',
+    icon: CalendarClock,
+    path: '/admin/agenda',
   },
   {
     label: 'مدیریت مقالات',

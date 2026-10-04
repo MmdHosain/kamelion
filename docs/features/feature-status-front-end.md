@@ -39,7 +39,8 @@
 | **FE-13** | شخصی‌سازی تم و پالت رنگی سراسری (Themes) | 2026-08-28 | — | `GET /api/settings/theme`<br>`PUT /api/admin/settings/theme` | ⚠️ آماده فرانت / نیازمند مدل Settings در بک‌اند |
 | **FE-14** | داشبورد گزارشات تحلیلی و آمار کلینیک (Analytics) | 2026-02-22 | — | `GET /api/admin/stats` | ⚠️ آماده فرانت با Recharts / نیازمند سرویس آمار در بک‌اند |
 | **FE-15** | پنل کاربری بیمار برای مشاهده و لغو نوبت‌های خود | 2026-06-08 | **Feature 8, 9** | `GET /api/appointments/my/`<br>`POST /api/appointments/<id>/cancel/` | ✅ تکمیل و کاملاً متصل (مدال MyAppointmentsModal و قابلیت لغو) |
-| **FE-16** | پرتال مقالات آموزشی و سامانه نویسندگی ادمین (Articles CMS) | 2026-10-04 | **Feature 18** | `GET /api/articles/`<br>`GET /api/articles/<slug>/`<br>`GET/POST /api/admin/articles/`<br>`PUT/DELETE /api/admin/articles/<id>/`<br>`POST /api/admin/articles/upload-image/` | ✅ پیاده‌سازی کامل و آفلاین-فرست (ادیتور غنی، سایدبار TOC، ذخیره در دیسک، همگام‌سازی خودکار و PRD-FE-021/022) |
+| **FE-16** | تقویم کاری و نوبت‌های آتی پزشک (Doctor Agenda) | 2026-10-03 | **Feature 7b, 10** | `GET /api/admin/appointments/?date_from=&date_to=` | ✅ تکمیل و متصل (تقویم مینی دوگانه شمسی/میلادی، کارت‌های تایم‌لاین روزانه، دسترسی از سایدبار و تب نوبت‌ها) |
+| **FE-17** | پرتال مقالات آموزشی و سامانه نویسندگی ادمین (Articles CMS) | 2026-10-04 | **Feature 18** | `GET /api/articles/`<br>`GET /api/articles/<slug>/`<br>`GET/POST /api/admin/articles/`<br>`PUT/DELETE /api/admin/articles/<id>/`<br>`POST /api/admin/articles/upload-image/` | ✅ پیاده‌سازی کامل و آفلاین-فرست (ادیتور غنی، سایدبار TOC، ذخیره در دیسک، همگام‌سازی خودکار و PRD-FE-022/023) |
 
 ---
 
@@ -704,11 +705,11 @@
 
 ---
 
-### FE-16: پرتال مقالات آموزشی و سامانه نویسندگی ادمین (Articles CMS)
+### FE-17: پرتال مقالات آموزشی و سامانه نویسندگی ادمین (Articles CMS)
 - **دسته‌بندی:** Public Content & Admin CMS
 - **تاریخ پیاده‌سازی:** 2026-10-04
 - **وضعیت فعلی:** ✅ تکمیل و فعال با پشتیبانی آفلاین کامل (Completed & Offline-First)
-- **تطابق با اسناد:** مطابق با [`PRD-FE-021`](file:///e:/GitHub%20Repo/kamelion/docs/features/frontend/04-public-content/prd-medical-articles-public.md) و [`PRD-FE-022`](file:///e:/GitHub%20Repo/kamelion/docs/features/frontend/07-admin-operations/prd-admin-articles-cms.md) و معادل **Feature 18** در `feature-status-back-end.md`
+- **تطابق با اسناد:** مطابق با [`PRD-FE-022`](file:///e:/GitHub%20Repo/kamelion/docs/features/frontend/04-public-content/prd-medical-articles-public.md) و [`PRD-FE-023`](file:///e:/GitHub%20Repo/kamelion/docs/features/frontend/07-admin-operations/prd-admin-articles-cms.md) و معادل **Feature 18** در `feature-status-back-end.md`
 
 #### سیر تکاملی و تاریخچه پیاده‌سازی (Implementation & Features)
 1. **لایه آفلاین-فرست و همگام‌سازی خودکار:**
