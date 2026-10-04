@@ -5,6 +5,7 @@ import {
   MessageSquare,
   Palette,
   Film,
+  BookOpen,
 } from 'lucide-react';
 
 export const ADMIN_NAV_ITEMS = [
@@ -12,6 +13,11 @@ export const ADMIN_NAV_ITEMS = [
     label: 'نوبت‌ها و زمان‌بندی',
     icon: Calendar,
     path: '/admin/appointments',
+  },
+  {
+    label: 'مدیریت مقالات',
+    icon: BookOpen,
+    path: '/admin/articles',
   },
   {
     label: 'مدیریت ویدیوها',

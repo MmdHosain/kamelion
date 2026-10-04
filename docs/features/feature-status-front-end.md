@@ -39,7 +39,7 @@
 | **FE-13** | شخصی‌سازی تم و پالت رنگی سراسری (Themes) | 2026-08-28 | — | `GET /api/settings/theme`<br>`PUT /api/admin/settings/theme` | ⚠️ آماده فرانت / نیازمند مدل Settings در بک‌اند |
 | **FE-14** | داشبورد گزارشات تحلیلی و آمار کلینیک (Analytics) | 2026-02-22 | — | `GET /api/admin/stats` | ⚠️ آماده فرانت با Recharts / نیازمند سرویس آمار در بک‌اند |
 | **FE-15** | پنل کاربری بیمار برای مشاهده و لغو نوبت‌های خود | 2026-06-08 | **Feature 8, 9** | `GET /api/appointments/my/`<br>`POST /api/appointments/<id>/cancel/` | ✅ تکمیل و کاملاً متصل (مدال MyAppointmentsModal و قابلیت لغو) |
-| **FE-16** | پرتال مقالات آموزشی و سامانه نویسندگی ادمین (Articles CMS) | 2026-10-01 | **Feature 18** | `GET /api/articles/`<br>`GET /api/articles/<slug>/`<br>`GET/POST /api/admin/articles/`<br>`PUT/DELETE /api/admin/articles/<id>/`<br>`POST /api/admin/articles/upload-image/` | 📋 سند طراحی تصویب‌شده (Approved Specs PRD-FE-021 & PRD-FE-022) |
+| **FE-16** | پرتال مقالات آموزشی و سامانه نویسندگی ادمین (Articles CMS) | 2026-10-04 | **Feature 18** | `GET /api/articles/`<br>`GET /api/articles/<slug>/`<br>`GET/POST /api/admin/articles/`<br>`PUT/DELETE /api/admin/articles/<id>/`<br>`POST /api/admin/articles/upload-image/` | ✅ پیاده‌سازی کامل و آفلاین-فرست (ادیتور غنی، سایدبار TOC، ذخیره در دیسک، همگام‌سازی خودکار و PRD-FE-021/022) |
 
 ---
 
@@ -701,6 +701,36 @@
   - **متد و آدرس:** `POST /api/appointments/<id>/cancel/`
   - **دسترسی:** `Bearer <token>` (`IsAuthenticated`)
   - **منطق بک‌اند:** بیمار می‌تواند نوبت خود را در هر دو وضعیت `scheduled` **یا `pending`** لغو کند. پس از لغو، اسلات زمانی نوبت بلافاصله برای دیگران آزاد می‌شود.
+
+---
+
+### FE-16: پرتال مقالات آموزشی و سامانه نویسندگی ادمین (Articles CMS)
+- **دسته‌بندی:** Public Content & Admin CMS
+- **تاریخ پیاده‌سازی:** 2026-10-04
+- **وضعیت فعلی:** ✅ تکمیل و فعال با پشتیبانی آفلاین کامل (Completed & Offline-First)
+- **تطابق با اسناد:** مطابق با [`PRD-FE-021`](file:///e:/GitHub%20Repo/kamelion/docs/features/frontend/04-public-content/prd-medical-articles-public.md) و [`PRD-FE-022`](file:///e:/GitHub%20Repo/kamelion/docs/features/frontend/07-admin-operations/prd-admin-articles-cms.md) و معادل **Feature 18** در `feature-status-back-end.md`
+
+#### سیر تکاملی و تاریخچه پیاده‌سازی (Implementation & Features)
+1. **لایه آفلاین-فرست و همگام‌سازی خودکار:**
+   - ایجاد هوک اختصاصی `useOfflineArticleSync.js` که هنگام قطعی اینترنت، مقالات را در دیسک/حافظه سیستم کاربر ذخیره می‌کند و پیام واضح ذخیره در سیستم می‌دهد و پس از اتصال مجدد نت، مقالات صف را به صورت خودکار به سرور ارسال می‌کند.
+2. **ویرایشگر متن غنی و اختصاصی فرانت (SimpleRichEditor):**
+   - ادیتور کاملاً راست‌چین و بهینه برای زبان فارسی، بدون وابستگی به پکیج‌های ناسازگار با React 19.
+   - دارای تشخیص خودکار جهت خط (`dir="auto"` و فارسی/انگلیسی)، استایل‌های تیتر H2/H3، بولد، ایتالیک، لیست، نقل‌قول، لینک و درج تصویر.
+3. **ابزار ورود متن از فایل (FileTextImporter):**
+   - پشتیبانی از فایل‌های `.txt` و `.md` و تبدیل به پاراگراف‌ها و هدینگ‌های تمیز بدون نیاز به تایپ مجدد.
+4. **کارتابل ادمین (AdminArticles) و فرم ویرایش (AdminArticleEditor):**
+   - جدول مدیریت مقالات با پیش‌نمایش، فیلتر وضعیت، جستجوی زنده، دکمه سوییچ سریع انتشار و دیالوگ تایید حذف.
+   - فرم نگارش مقاله با تولید خودکار Slug، انتخاب دسته‌بندی، خلاصه مقاله، درگ‌وان‌دراپ تصویر شاخص و امبد ویدیو.
+5. **پرتال عمومی مراجعین (ResourcesPage & ArticleDetailPage):**
+   - ارتقای صفحه آرشیو به لیست پویا با فیلتر تب‌ها و سرچ دی‌بانس.
+   - صفحه نمایش تکی مقاله همراه با Breadcrumb، سایدبار چسبان (TOC خودکار و کارت CTA نوبت‌دهی متصل به مدال رزرو)، امبد ویدیوی آپارات و گرید مقالات مرتبط.
+
+#### فایل‌های درگیر در فرانت‌اند
+- **سرویس‌ها و هوک‌ها:** `src/api/articleService.js`, `src/api/adminArticleService.js`, `src/hooks/useOfflineArticleSync.js`
+- **کامپوننت‌های ادمین:** `src/components/admin/articles/SimpleRichEditor.jsx`, `src/components/admin/articles/FileTextImporter.jsx`, `src/components/admin/articles/CoverImageUploader.jsx`, `src/components/admin/articles/ArticleStatusBadge.jsx`
+- **صفحات ادمین:** `src/pages/admin/AdminArticles.jsx`, `src/pages/admin/AdminArticleEditor.jsx`, `src/components/admin/AdminNavConfig.js`, `src/pages/admin/AdminPage.jsx`
+- **کامپوننت‌های عمومی:** `src/components/articles/ArticleCard.jsx`, `src/components/articles/ArticleSidebar.jsx`, `src/components/articles/ArticleMediaEmbed.jsx`, `src/components/articles/ArticleRelatedGrid.jsx`
+- **صفحات عمومی و روتینگ:** `src/pages/ResourcesPage.jsx`, `src/pages/ArticleDetailPage.jsx`, `src/App.jsx`
 
 ---
 
