@@ -39,6 +39,7 @@
 | **FE-13** | شخصی‌سازی تم و پالت رنگی سراسری (Themes) | 2026-08-28 | — | `GET /api/settings/theme`<br>`PUT /api/admin/settings/theme` | ⚠️ آماده فرانت / نیازمند مدل Settings در بک‌اند |
 | **FE-14** | داشبورد گزارشات تحلیلی و آمار کلینیک (Analytics) | 2026-02-22 | — | `GET /api/admin/stats` | ⚠️ آماده فرانت با Recharts / نیازمند سرویس آمار در بک‌اند |
 | **FE-15** | پنل کاربری بیمار برای مشاهده و لغو نوبت‌های خود | 2026-06-08 | **Feature 8, 9** | `GET /api/appointments/my/`<br>`POST /api/appointments/<id>/cancel/` | ✅ تکمیل و کاملاً متصل (مدال MyAppointmentsModal و قابلیت لغو) |
+| **FE-16** | تقویم کاری و نوبت‌های آتی پزشک (Doctor Agenda) | 2026-10-03 | **Feature 7b, 10** | `GET /api/admin/appointments/?date_from=&date_to=` | ✅ تکمیل و متصل (تقویم مینی دوگانه شمسی/میلادی، کارت‌های تایم‌لاین روزانه، دسترسی از سایدبار و تب نوبت‌ها) |
 
 ---
 

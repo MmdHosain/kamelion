@@ -6,6 +6,17 @@ const extractResults = (data) => {
   return [];
 };
 
+export const cleanNextUrl = (url) => {
+  if (!url) return null;
+  try {
+    const parsed = new URL(url);
+    const path = parsed.pathname.replace(/^\/api/, '');
+    return `${path}${parsed.search}`;
+  } catch {
+    return url.replace(/^https?:\/\/[^\/]+(\/api)?/, '');
+  }
+};
+
 export const reservationService = {
   // USER ENDPOINTS
   getAvailableSlots: async (date) => {
@@ -45,7 +56,7 @@ export const reservationService = {
       const response = await apiClient.get(nextUrl, isFirst && Object.keys(params).length ? { params } : undefined);
       const data = response.data;
       items.push(...extractResults(data));
-      nextUrl = data?.next || null;
+      nextUrl = cleanNextUrl(data?.next);
       isFirst = false;
     }
     return items;
