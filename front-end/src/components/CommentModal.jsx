@@ -46,7 +46,7 @@ const CommentModal = ({ open, onClose, onSubmitSuccess }) => {
         style={{ overscrollBehavior: 'contain' }}
       >
 
-        <div className="w-12 h-1 bg-secondary rounded-full mx-auto mb-4 sm:hidden" />
+        <div className="w-12 h-1 bg-primary rounded-full mx-auto mb-4 sm:hidden" />
 
         <button
           onClick={onClose}
@@ -76,7 +76,7 @@ const CommentModal = ({ open, onClose, onSubmitSuccess }) => {
         </div>
 
         <textarea
-          className="w-full border border-secondary/40 rounded-2xl p-3 mt-2
+          className="w-full border border-primary/40 rounded-2xl p-3 mt-2
                      focus:outline-none focus:ring-1 focus:ring-primary/40"
           placeholder="تجربه خود را صادقانه بنویسید..."
           value={text}
@@ -84,7 +84,7 @@ const CommentModal = ({ open, onClose, onSubmitSuccess }) => {
         />
 
         <input
-          className="w-full border border-secondary/40 rounded-2xl p-3 mt-3
+          className="w-full border border-primary/40 rounded-2xl p-3 mt-3
                      focus:outline-none focus:ring-1 focus:ring-primary/40"
           placeholder="شماره موبایل (اختیاری)"
           value={mobile}

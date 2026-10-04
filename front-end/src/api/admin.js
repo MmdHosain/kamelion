@@ -1,5 +1,7 @@
 import apiClient from '../lib/apiClient';
 
+import { cleanNextUrl } from './reservationService';
+
 const extractResults = (data) => {
   if (Array.isArray(data)) return data;
   if (Array.isArray(data?.results)) return data.results;
@@ -28,7 +30,7 @@ export const adminApi = {
       const response = await apiClient.get(nextUrl);
       const data = response.data;
       items.push(...extractResults(data));
-      nextUrl = data?.next || null;
+      nextUrl = cleanNextUrl(data?.next);
     }
     return items;
   },
