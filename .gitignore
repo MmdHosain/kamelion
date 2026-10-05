@@ -61,3 +61,4 @@ coverage/
 *.log
 backend_core/venv/pyvenv.cfg
 /backend_core/venv
+backend_private.pem

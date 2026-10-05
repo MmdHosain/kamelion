@@ -6,6 +6,7 @@ Only this module talks to the AI Service. It does no database work.
 import logging
 import time
 import uuid
+import hashlib, json, jwt
 
 import httpx
 from django.conf import settings
@@ -18,17 +19,29 @@ logger = logging.getLogger(__name__)
 class AIServiceError(Exception):
     """The call failed and the caller must use the fallback (§7.3)."""
 
-
 def _post(payload: dict) -> httpx.Response:
-    """One HTTP attempt. Every attempt gets its own X-Request-ID (§2.1)."""
     request_id = str(uuid.uuid4())
     url = f"{settings.AI_SERVICE_BASE_URL.rstrip('/')}/v1/chat"
+
+    body = json.dumps(payload, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+    now = int(time.time())
+    token = jwt.encode(
+        {
+            "iss": "kamelion-backend",
+            "iat": now,
+            "exp": now + 60,
+            "jti": str(uuid.uuid4()),
+            "body_sha256": hashlib.sha256(body).hexdigest(),
+        },
+        settings.AI_SERVICE_SIGNING_KEY,
+        algorithm="EdDSA",
+    )
     headers = {
-        "Authorization": f"Bearer {settings.AI_SERVICE_API_KEY}",
+        "Authorization": f"Bearer {token}",
         "Content-Type": "application/json",
         "X-Request-ID": request_id,
     }
-    response = httpx.post(url, json=payload, headers=headers, timeout=settings.AI_SERVICE_TIMEOUT)
+    response = httpx.post(url, content=body, headers=headers, timeout=settings.AI_SERVICE_TIMEOUT)
     response.request_id = response.headers.get("X-Request-ID", request_id)
     return response
 
