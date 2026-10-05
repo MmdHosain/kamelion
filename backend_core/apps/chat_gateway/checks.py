@@ -10,11 +10,21 @@ def check_ai_service_settings(app_configs, **kwargs):
             "AI_SERVICE_BASE_URL is not set: every chat message will get the fallback reply.",
             id="chat_gateway.W001",
         ))
-    if not settings.AI_SERVICE_API_KEY:
+
+    key = settings.AI_SERVICE_SIGNING_KEY
+    if not key:
         problems.append(Warning(
-            "AI_SERVICE_API_KEY is not set: the AI Service will answer 401 (API.md §2.1).",
+            "AI_SERVICE_SIGNING_KEY is not set: requests to the AI Service cannot be signed, "
+            "so every chat message will get the fallback reply.",
             id="chat_gateway.W002",
         ))
+    elif "BEGIN PRIVATE KEY" not in key or "END PRIVATE KEY" not in key:
+        problems.append(Warning(
+            "AI_SERVICE_SIGNING_KEY does not look like a PEM private key. In .env it must be on "
+            "one line with \\n between the lines.",
+            id="chat_gateway.W005",
+        ))
+
     if not settings.CLINIC_PHONE_NUMBER:
         problems.append(Warning(
             "CLINIC_PHONE_NUMBER is not set: the fallback message must contain the clinic's "
