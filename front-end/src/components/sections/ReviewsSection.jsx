@@ -138,17 +138,6 @@ const ReviewsSection = () => {
             صداقت در درمان و همراهی در تک‌تک مراحل بهبودی
           </p>
         </div>
-
-        {/* Modal trigger button in header */}
-        {approvedComments.length > 0 && (
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="inline-flex items-center gap-2 self-start md:self-auto bg-white/70 hover:bg-white text-primary border border-primary/30 hover:border-primary px-4 py-2.5 rounded-2xl text-xs md:text-sm font-bold shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 cursor-pointer group"
-          >
-            <MessagesSquare className="w-4 h-4 text-primary group-hover:scale-110 transition-transform" />
-            <span>مشاهده همه دیدگاه‌ها ({approvedComments.length})</span>
-          </button>
-        )}
       </div>
 
       {/* Reviews Grid (Initial 4) */}
