@@ -16,6 +16,7 @@ export default function JalaliCalendar({
   onSelect,
   isDateDisabled,
   isDateAvailable,
+  onMonthChange,
   className = '',
 }) {
   // Current viewing Jalali year & month
@@ -40,6 +41,13 @@ export default function JalaliCalendar({
       setViewMonth(j.jm);
     }
   }, [selectedDate]);
+
+  // Trigger month change listener whenever the view year or month changes
+  useEffect(() => {
+    if (onMonthChange) {
+      onMonthChange(viewYear, viewMonth);
+    }
+  }, [viewYear, viewMonth, onMonthChange]);
 
   // Navigate to previous Jalali month
   const handlePrevMonth = () => {

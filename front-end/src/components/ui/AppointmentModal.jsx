@@ -18,6 +18,7 @@ import JalaliCalendar from './JalaliCalendar';
 import { getAvailableSlots, bookSlot } from '../../api/reservationService';
 import { useAuth } from '../../hooks/useAuth';
 import useBodyScrollLock from '../../hooks/useBodyScrollLock';
+import { useUnavailableDates } from '../../hooks/useUnavailableDates';
 import { getApiErrorMessage } from '../../utils/errorUtils';
 import {
   formatDateForApi,
@@ -107,6 +108,7 @@ const normalizeSlotsResponse = (data) => {
 
 export default function AppointmentModal({ open, onClose, onOpenMyAppointments }) {
   const { isAuthenticated, openAuthModal } = useAuth();
+  const { isDateAvailable, fetchMonthDates, clearCache } = useUnavailableDates();
 
   // Lock body scroll when appointment modal is open
   useBodyScrollLock(open);
@@ -152,13 +154,15 @@ export default function AppointmentModal({ open, onClose, onOpenMyAppointments }
       setBookingSuccess(false);
       setBookedAppointment(null);
       setIsReasonHighlighted(false);
+    } else {
+      clearCache();
     }
     return () => {
       if (highlightTimeoutRef.current) {
         clearTimeout(highlightTimeoutRef.current);
       }
     };
-  }, [open]);
+  }, [open, clearCache]);
 
   const fetchSlots = useCallback(async (date) => {
     if (!date) return;
@@ -575,6 +579,8 @@ export default function AppointmentModal({ open, onClose, onOpenMyAppointments }
                     selectedDate={selectedDate}
                     onSelect={handleDayClick}
                     isDateDisabled={isUnavailable}
+                    isDateAvailable={isDateAvailable}
+                    onMonthChange={fetchMonthDates}
                   />
                 </div>
 

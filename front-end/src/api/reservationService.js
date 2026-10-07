@@ -26,6 +26,12 @@ export const reservationService = {
     return response.data; // AppointmentModal.jsx handles normalization
   },
 
+  getUnavailableDates: async (year, month) => {
+    const formattedMonth = String(month).padStart(2, '0');
+    const response = await apiClient.get(`/appointments/slots/?month=${year}-${formattedMonth}`);
+    return response.data;
+  },
+
   bookSlot: async (date, time, reason = '') => {
     // Matches Backend: path("book/", BookAppointmentView.as_view())
     const response = await apiClient.post('/appointments/book/', {
@@ -80,6 +86,7 @@ export const reservationService = {
 
 // Named exports
 export const getAvailableSlots = (date) => reservationService.getAvailableSlots(date);
+export const getUnavailableDates = (year, month) => reservationService.getUnavailableDates(year, month);
 export const bookSlot = (date, time, reason) => reservationService.bookSlot(date, time, reason);
 export const getUserReservations = () => reservationService.getUserReservations();
 export const cancelReservation = (id) => reservationService.cancelReservation(id);

@@ -20,6 +20,7 @@ import JalaliCalendar from '../../ui/JalaliCalendar';
 import { ReasonChip, QUICK_REASONS } from '../../ui/AppointmentModal';
 import { reservationService } from '../../../api/reservationService';
 import useBodyScrollLock from '../../../hooks/useBodyScrollLock';
+import { useUnavailableDates } from '../../../hooks/useUnavailableDates';
 import { getApiErrorMessage } from '../../../utils/errorUtils';
 import {
   formatDateForApi,
@@ -79,6 +80,7 @@ const normalizeSlotsResponse = (data) => {
 export default function AdminManualBookingModal({ isOpen, onClose, onCreated }) {
   // Lock background scroll when modal is open
   useBodyScrollLock(isOpen);
+  const { isDateAvailable, fetchMonthDates, clearCache } = useUnavailableDates();
 
   const [mobileStep, setMobileStep] = useState(1); // 1 = Calendar/Date, 2 = Time & Patient Details
   const [selectedDate, setSelectedDate] = useState(null);
@@ -130,13 +132,15 @@ export default function AdminManualBookingModal({ isOpen, onClose, onCreated }) 
       setSubmitSuccess(false);
       setBookedData(null);
       setIsPatientHighlighted(false);
+    } else {
+      clearCache();
     }
     return () => {
       if (highlightTimeoutRef.current) {
         clearTimeout(highlightTimeoutRef.current);
       }
     };
-  }, [isOpen]);
+  }, [isOpen, clearCache]);
 
   // Fetch available slots from backend
   const fetchSlots = useCallback(async (date) => {
@@ -540,6 +544,8 @@ export default function AdminManualBookingModal({ isOpen, onClose, onCreated }) 
                     selectedDate={selectedDate}
                     onSelect={handleDayClick}
                     isDateDisabled={isUnavailable}
+                    isDateAvailable={isDateAvailable}
+                    onMonthChange={fetchMonthDates}
                   />
                 </div>
 
