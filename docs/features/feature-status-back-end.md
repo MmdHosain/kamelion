@@ -37,7 +37,7 @@
 | 15 | Role-based access control beyond admin/patient | ❌ Not Implemented |
 | 16 | Patient/admin patient-info editing | ✅ Completed |
 | 17 | Review / comment submission & moderation | ✅ Completed |
-| 18 | Medical articles & patient education module (`apps.articles`) | 📋 Documented & Ready for Dev |
+| 18 | Medical articles & patient education module (`apps.articles`) | ✅ Completed |
 
 ## Feature Details
 
@@ -111,8 +111,44 @@ Admins can edit a patient's `full_name` and/or `national_id` via `PUT`/`PATCH /a
 ### 17. Review / comment submission & moderation — ✅ Completed *(newly documented — pre-existing, not built this cycle, but previously missing from this document)*
 Public users (authenticated or not) can submit a review (`POST /api/reviews/`) with `text` and `rating` (1–5) required; it starts as `pending` and isn't visible on the public list (`GET /api/reviews/`) until an admin approves it (`PATCH /api/admin/reviews/<id>/` with `{"approved": true}`) or deletes it (`DELETE /api/admin/reviews/<id>/`). **Changed this cycle:** the `name` field is now optional — previously a review without a name was rejected.
 
-### 18. Medical articles & patient education module (`apps.articles`) — 📋 Documented & Ready for Dev
-Architecture and implementation guide created at [`docs/architecture/backend-articles-guide.md`](file:///e:/GitHub%20Repo/kamelion/docs/architecture/backend-articles-guide.md). Introduces `Category` and `Article` models with sanitized HTML content (`bleach`), WebP image optimization with Pillow, video embeds, and public/admin DRF endpoints.
+### 18. Articles / educational content CMS (`apps.articles`) — ✅ Completed *(new this cycle)*
+The backend for a medical-articles CMS, added from `backend-articles-guide-v2`.
+
+- **Models:** `Category` (`name`, `slug`, `description`) and `Article` (`title`, `slug`,
+  `excerpt`, `content`, `cover_image`, `video_embed_url`, `category`, `author`, `status`,
+  `reading_time_minutes`, `views_count`, `created_at`, `updated_at`, `published_at`).
+- **Content security:** article HTML is sanitized with `nh3` on write — `<script>`, inline
+  event handlers (`onclick`, …) and `javascript:` URLs are stripped; links get
+  `rel="noopener noreferrer"`; only `<iframe>` `src` values pointing at Aparat/YouTube survive.
+- **Images:** uploads are validated (extension, real content, ≤5 MB, ≤40 MP) and re-encoded to
+  WebP (max width 1600, EXIF rotation corrected, transparency preserved). Cover images go through
+  the same path.
+- **Publication semantics:** `published_at` is stamped the first time an article becomes
+  `published` and never overwritten; public lists are ordered by `-published_at, -created_at`.
+  `reading_time_minutes` is derived from the content (200 wpm, min 1) and ignored if sent.
+- **Ownership:** `author` uses `SET_NULL` — deleting a user account leaves their articles intact
+  (with `author: null`). The author on create is always the current admin.
+- **Public endpoints** (open; a bad/expired token cannot 401 them): `GET /api/articles/` (filter by
+  `?category=`/`?search=`, paginated), `GET /api/articles/<slug>/` (increments `views_count`;
+  Unicode slugs supported via `<str:slug>`), `GET /api/articles/categories/`.
+- **Admin endpoints** (`IsAdminUser`): full CRUD on articles, `toggle-status`, `upload-image`,
+  and category list/create/delete.
+- **Infrastructure:** added `Pillow` + `nh3` to `requirements.txt`, `MEDIA_URL`/`MEDIA_ROOT` to
+  settings, media static serving in DEBUG, and a `media_data` Docker volume.
+- **Tests:** `apps/articles/tests.py` covers the §8 checklist (content security, video validation,
+  public access, filtering/pagination, view counts, ordering, admin permissions/slug handling,
+  uploads, and deletion semantics).
+- **Not done:** the frontend (`ResourcesPage`, admin UI) still uses its hardcoded dataset —
+  wiring it to these endpoints is deferred to a later frontend task, by agreement.
+
+> ⚠️ **Environment note:** `Pillow` and `nh3` could not be installed in the environment where this
+> was written (no PyPI access), so `manage.py test` was **not** executed. `manage.py check` passes,
+> URL routing/model/index/on_delete wiring was verified, the initial migration was generated, and
+> the `nh3` API usage was confirmed against the official docs.
+
+> *(The earlier "📋 Documented & Ready for Dev" entry for this module — which described the
+> original guide using the now-deprecated `bleach` and a non-existent guide path — is
+> superseded by the entry above.)*
 
 ## Notes for Reviewers
 

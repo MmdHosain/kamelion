@@ -30,6 +30,7 @@ LOCAL_APPS = [
     'apps.comments',
     'apps.chat_gateway',
     'apps.common',
+    'apps.articles',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -123,6 +124,10 @@ CSRF_TRUSTED_ORIGINS = [
 # ── Static ────────────────────────────────────────────
 STATIC_URL = '/static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# ── Media (uploaded files, e.g. article images) ────────
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 # ── Logging ───────────────────────────────────────────
 # Django's own default logging config only sends request-error
