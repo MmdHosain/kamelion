@@ -1,6 +1,9 @@
 from rest_framework import serializers
-from .models import PatientProfile, PatientNote
-from .models import User
+from datetime import date
+
+from django.utils import timezone
+
+from .models import PatientNote, User
 
 
 class RequestOTPSerializer(serializers.Serializer):
@@ -20,6 +23,21 @@ class CompleteRegistrationSerializer(serializers.Serializer):
     signup_token = serializers.CharField(max_length=64)
     full_name = serializers.CharField(max_length=100)
     national_id = serializers.CharField(max_length=20)
+    # Optional: may be left out, null or blank.
+    sex = serializers.ChoiceField(
+        choices=User.SEX_CHOICES, required=False, allow_null=True, allow_blank=True
+    )
+    date_of_birth = serializers.DateField(required=False, allow_null=True)
+
+    def validate_date_of_birth(self, value):
+        if value is None:
+            return value
+        today = timezone.localdate()
+        if value > today:
+            raise serializers.ValidationError("Date of birth cannot be in the future.")
+        if value < date(today.year - 120, today.month, min(today.day, 28)):
+            raise serializers.ValidationError("Date of birth is not plausible.")
+        return value
 
 
 class AdminLoginSerializer(serializers.Serializer):
@@ -59,6 +77,7 @@ class PatientListSerializer(serializers.Serializer):
     last_appointment = serializers.DateField(allow_null=True)
     appointment_count = serializers.IntegerField()
     notes_count = serializers.IntegerField()
+    triage_level = serializers.CharField(allow_null=True)
 
 
 class PatientDetailSerializer(serializers.Serializer):
@@ -69,8 +88,8 @@ class PatientDetailSerializer(serializers.Serializer):
     full_name = serializers.CharField()
     phone_number = serializers.CharField()
     national_id = serializers.CharField(allow_null=True)
+    sex = serializers.CharField(allow_null=True)
     date_of_birth = serializers.DateField(allow_null=True)
-    address = serializers.CharField(allow_null=True)
     appointments = serializers.ListField()
     notes = PatientNoteSerializer(many=True)
 

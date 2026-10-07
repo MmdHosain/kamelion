@@ -13,7 +13,6 @@ from .serializers import (
     RefreshTokenSerializer,
 )
 from .services import request_otp, verify_otp, complete_registration
-from .selectors import get_patient_profile
 from .models import User
 from apps.common.panelchi import SmsProviderError
 from django.contrib.auth import authenticate
@@ -90,6 +89,8 @@ def _login_response(user):
             "phone_number": user.phone_number,
             "full_name": user.full_name,
             "national_id": user.national_id,
+            "sex": user.sex,
+            "date_of_birth": user.date_of_birth,
             "role": "admin" if user.is_staff else "patient"
         }
     })
@@ -107,8 +108,8 @@ class VerifyOTPView(APIView):
       (same shape as AdminLoginView: access/refresh/user).
     - First time seeing this phone number -> {"registration_required":
       true, "signup_token": "..."}. The frontend then collects
-      full_name + national_id and calls /auth/complete-registration
-      with that token.
+      full_name + national_id (plus optional sex and date_of_birth) and
+      calls /auth/complete-registration with that token.
     """
 
     authentication_classes = []
@@ -144,7 +145,9 @@ class VerifyOTPView(APIView):
 class CompleteRegistrationView(APIView):
     """
     Step 2 of login, first-time patients only.
-    POST /api/auth/complete-registration - {signup_token, full_name, national_id}
+    POST /api/auth/complete-registration
+    {signup_token, full_name, national_id, sex?, date_of_birth?}
+    sex is "female" or "male"; date_of_birth is YYYY-MM-DD. Both optional.
     """
 
     authentication_classes = []
@@ -160,6 +163,8 @@ class CompleteRegistrationView(APIView):
                 token=serializer.validated_data["signup_token"],
                 full_name=serializer.validated_data["full_name"],
                 national_id=serializer.validated_data["national_id"],
+                sex=serializer.validated_data.get("sex"),
+                date_of_birth=serializer.validated_data.get("date_of_birth"),
             )
 
         except ValueError as e:
@@ -187,6 +192,8 @@ class CurrentUserView(APIView):
             "phone_number": user.phone_number,
             "full_name": user.full_name,
             "national_id": user.national_id,
+            "sex": user.sex,
+            "date_of_birth": user.date_of_birth,
             "is_staff": user.is_staff,
             "is_superuser": user.is_superuser,
             "role": "admin" if user.is_staff else "patient"
