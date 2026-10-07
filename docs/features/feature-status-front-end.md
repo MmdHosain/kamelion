@@ -40,6 +40,7 @@
 | **FE-14** | داشبورد گزارشات تحلیلی و آمار کلینیک (Analytics) | 2026-02-22 | — | `GET /api/admin/stats` | ⚠️ آماده فرانت با Recharts / نیازمند سرویس آمار در بک‌اند |
 | **FE-15** | پنل کاربری بیمار برای مشاهده و لغو نوبت‌های خود | 2026-06-08 | **Feature 8, 9** | `GET /api/appointments/my/`<br>`POST /api/appointments/<id>/cancel/` | ✅ تکمیل و کاملاً متصل (مدال MyAppointmentsModal و قابلیت لغو) |
 | **FE-16** | تقویم کاری و نوبت‌های آتی پزشک (Doctor Agenda) | 2026-10-03 | **Feature 7b, 10** | `GET /api/admin/appointments/?date_from=&date_to=` | ✅ تکمیل و متصل (تقویم مینی دوگانه شمسی/میلادی، کارت‌های تایم‌لاین روزانه، دسترسی از سایدبار و تب نوبت‌ها) |
+| **FE-17** | پرتال مقالات آموزشی و سامانه نویسندگی ادمین (Articles CMS) | 2026-10-01 | **Feature 18** | `GET /api/articles/`<br>`GET /api/articles/<slug>/`<br>`GET/POST /api/admin/articles/`<br>`PUT/DELETE /api/admin/articles/<id>/`<br>`POST /api/admin/articles/upload-image/` | 📋 سند طراحی تصویب‌شده (Approved Specs PRD-FE-022 & PRD-FE-023) |
 
 ---
 

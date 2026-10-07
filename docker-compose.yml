@@ -35,6 +35,8 @@ services:
         condition: service_healthy
     expose:
       - "8000"
+    volumes:
+      - media_data:/app/media
 
   frontend:
     build:
@@ -49,3 +51,4 @@ services:
 
 volumes:
   postgres_data:
+  media_data:

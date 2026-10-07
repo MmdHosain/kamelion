@@ -2,7 +2,7 @@
 
 > This is a complete list of every route actually wired into `config/urls.py` (directly or via an included app `urls.py`), what each one expects as input, what it returns, and what it does internally. Global defaults: unless a view explicitly overrides them, DRF's default authentication is **JWT** (`Authorization: Bearer <token>`) and the default permission is **`IsAuthenticated`**.
 >
-> **Updated:** this revision reflects the pending-appointment approval flow, the reworked two-step OTP/registration login flow, the admin-vs-patient branch at login, admin editing of patient info, and the review/comment endpoints (previously undocumented).
+> **Updated:** this revision reflects the pending-appointment approval flow, the reworked two-step OTP/registration login flow, the admin-vs-patient branch at login, admin editing of patient info, the review/comment endpoints (previously undocumented), and the **new articles CMS** (`apps/articles`).
 
 ---
 
@@ -348,6 +348,76 @@ Unchanged.
 
 ---
 
+## Articles — `apps/articles` (public at `/api/articles/`, admin at `/api/admin/articles/`) — *new*
+
+A medical-articles CMS. Articles are authored in HTML, which is sanitized server-side
+(`nh3`) before storage; cover and inline images are validated and re-encoded to WebP
+(`Pillow`). Public endpoints are explicitly open (`AllowAny`, `authentication_classes = []`),
+so a missing or expired token never turns a public page into a `401`.
+
+**Model notes**
+- `Article.status` is `draft` (default) or `published`.
+- `published_at` is set automatically the **first time** an article becomes `published`,
+  and never overwritten afterwards. Public ordering is `-published_at, -created_at`.
+- `reading_time_minutes` is **derived from `content`** (200 words/min, minimum 1); any value
+  sent in the request body is ignored.
+- `author` uses `SET_NULL` and `author` is nullable — deleting a user account does not delete
+  their articles; the article then serializes with `author: null` / `author_name: ""`.
+- `cover_image` is a multipart file upload; requests that send a file must use
+  `multipart/form-data`.
+- `video_embed_url` accepts a plain URL **or** a pasted `<iframe>` snippet (only the `src` is
+  stored); only Aparat and YouTube hosts are allowed.
+
+### `GET /api/articles/`
+**Auth:** None (explicitly open)
+**Query params (all optional):** `?category=<slug>`, `?search=` (matches `title` + `excerpt`), `?page=`, `?page_size=` (max 50)
+**Response:** `200 OK` — DRF-paginated (`count`, `next`, `previous`, `results`):
+```json
+{ "results": [{ "id": 1, "title": "...", "slug": "...", "excerpt": "...", "cover_image": null, "category": {"id": 1, "name": "...", "slug": "..."}, "author_name": "...", "reading_time_minutes": 5, "created_at": "...", "published_at": "..." }] }
+```
+**What it does:** Returns only `published` articles, newest-published first.
+
+### `GET /api/articles/<slug>/`
+**Auth:** None (explicitly open)
+**Response:** `200 OK` — the list shape plus `content`, `video_embed_url`, `author` (`{id, full_name}` or `null`), `views_count`, and `updated_at`.
+**What it does:** Returns a single published article and increments `views_count` by 1 (each successful GET counts, including refreshes/bots — accepted at current scale). Draft slugs return `404`. `slug` is matched as a plain string (`<str:slug>`), so Persian/Unicode slugs work.
+
+### `GET /api/articles/categories/`
+**Auth:** None (explicitly open)
+**Response:** `200 OK` — plain array (not paginated) of `{id, name, slug, description}`.
+
+### `POST /api/admin/articles/` · `GET /api/admin/articles/`
+**Auth:** JWT (`IsAdminUser`)
+**List params (optional):** `?status=draft|published`, `?search=`, `?page=`, `?page_size=`
+**Create body:** JSON or `multipart/form-data` — `title`, `content` (HTML; sanitized), `slug?` (auto-generated unique if omitted; reserved values `categories`/`upload-image` rejected), `excerpt?`, `cover_image?` (file), `video_embed_url?`, `category?` (id), `status?` (`draft`/`published`).
+**Response:** `201 Created` — the written article. The author is always the **current user**.
+**Error response:** `400 Bad Request` — disallowed video host, reserved/duplicate slug, invalid image (wrong extension, fake content, >5 MB, or oversized dimensions).
+
+### `GET` / `PUT` / `PATCH` / `DELETE /api/admin/articles/<id>/`
+**Auth:** JWT (`IsAdminUser`) — retrieve / update / delete by integer id. Same body rules as create.
+
+### `PATCH /api/admin/articles/<id>/toggle-status/`
+**Auth:** JWT (`IsAdminUser`)
+**Response:** `200 OK` — `{"id": ..., "status": "draft"|"published", "published_at": ...}`. Flips between draft and published; the first flip to published stamps `published_at`.
+**Error response:** `404 Not Found` if the id does not exist.
+
+### `POST /api/admin/articles/upload-image/`
+**Auth:** JWT (`IsAdminUser`)
+**Body:** `multipart/form-data` — the file may be sent as either `image` or `file`.
+**Response:** `201 Created` — `{"url": "<absolute url>", "message": "..."}`. The stored file is always WebP with a random name.
+**Error response:** `400 Bad Request` — no file sent, or the upload fails image validation.
+
+### Categories (admin)
+| Method | Path | Auth | Purpose |
+|---|---|---|---|
+| GET | `/api/admin/articles/categories/` | JWT (admin) | List categories (unpaginated) |
+| POST | `/api/admin/articles/categories/` | JWT (admin) | Create a category (`name`, `slug`, `description?`) |
+| DELETE | `/api/admin/articles/categories/<id>/` | JWT (admin) | Delete a category (returns `204`; its articles become category-less) |
+
+**Storage:** uploaded files live under `MEDIA_ROOT` and are served as static files at `MEDIA_URL` (`/media/`, DEBUG only via `config/urls.py`). In production `media/` must be a persistent volume or external storage served by the web server.
+
+---
+
 ## Not implemented
 
 These exist as installed Django apps but currently expose no models, views, or URLs, and are not included in `config/urls.py`:
@@ -388,3 +458,12 @@ These exist as installed Django apps but currently expose no models, views, or U
 | GET | `/api/admin/reviews/` | JWT (admin) | — | List all reviews, including pending |
 | PATCH | `/api/admin/reviews/<id>/` | JWT (admin) | `{"approved": true/false}` | Approve or reject a review |
 | DELETE | `/api/admin/reviews/<id>/` | JWT (admin) | — | Delete a review |
+| GET | `/api/articles/` | None | `?category=`, `?search=`, `?page=`, `?page_size=` | List published articles |
+| GET | `/api/articles/<slug>/` | None | — | Article detail (+1 view); Unicode slugs supported |
+| GET | `/api/articles/categories/` | None | — | List article categories (unpaginated) |
+| GET/POST | `/api/admin/articles/` | JWT (admin) | `?status=`, `?search=` / article fields | List / create articles |
+| GET/PUT/PATCH/DELETE | `/api/admin/articles/<id>/` | JWT (admin) | article fields | Retrieve / update / delete an article |
+| PATCH | `/api/admin/articles/<id>/toggle-status/` | JWT (admin) | — | Toggle draft ↔ published |
+| POST | `/api/admin/articles/upload-image/` | JWT (admin) | multipart `image` or `file` | Validate + optimize upload → WebP URL |
+| GET/POST | `/api/admin/articles/categories/` | JWT (admin) | `name`, `slug`, `description?` | List / create categories |
+| DELETE | `/api/admin/articles/categories/<id>/` | JWT (admin) | — | Delete a category (`204`) |
