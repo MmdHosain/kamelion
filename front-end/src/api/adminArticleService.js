@@ -131,13 +131,20 @@ export const adminArticleService = {
    */
   createArticle: async (articleData) => {
     try {
-      const response = await apiClient.post('/admin/articles/', articleData);
+      const isFormData = typeof FormData !== 'undefined' && articleData instanceof FormData;
+      const response = await apiClient.post(
+        '/admin/articles/',
+        articleData,
+        isFormData ? { headers: { 'Content-Type': 'multipart/form-data' } } : {}
+      );
       return response.data;
     } catch (err) {
       console.warn('Backend /admin/articles/ offline, saving new article locally:', err?.message);
+      const isFormData = typeof FormData !== 'undefined' && articleData instanceof FormData;
+      const dataObj = isFormData ? Object.fromEntries(articleData.entries()) : articleData;
       const list = getLocalArticles();
       const newArticle = {
-        ...articleData,
+        ...dataObj,
         id: Date.now(),
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
@@ -155,16 +162,23 @@ export const adminArticleService = {
    */
   updateArticle: async (id, articleData) => {
     try {
-      const response = await apiClient.patch(`/admin/articles/${id}/`, articleData);
+      const isFormData = typeof FormData !== 'undefined' && articleData instanceof FormData;
+      const response = await apiClient.patch(
+        `/admin/articles/${id}/`,
+        articleData,
+        isFormData ? { headers: { 'Content-Type': 'multipart/form-data' } } : {}
+      );
       return response.data;
     } catch (err) {
       console.warn(`Backend /admin/articles/${id}/ offline, updating locally:`, err?.message);
+      const isFormData = typeof FormData !== 'undefined' && articleData instanceof FormData;
+      const dataObj = isFormData ? Object.fromEntries(articleData.entries()) : articleData;
       const list = getLocalArticles();
       const index = list.findIndex((a) => String(a.id) === String(id));
       if (index !== -1) {
         list[index] = {
           ...list[index],
-          ...articleData,
+          ...dataObj,
           updated_at: new Date().toISOString(),
         };
         saveLocalArticles(list);

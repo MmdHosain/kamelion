@@ -20,6 +20,7 @@ import SimpleRichEditor from '../../components/admin/articles/SimpleRichEditor';
 import CoverImageUploader from '../../components/admin/articles/CoverImageUploader';
 import FileTextImporter from '../../components/admin/articles/FileTextImporter';
 import CategoryManagerModal from '../../components/admin/articles/CategoryManagerModal';
+import ArticleMediaEmbed from '../../components/articles/ArticleMediaEmbed';
 import { useOfflineArticleSync } from '../../hooks/useOfflineArticleSync';
 
 const generateSlug = (text) => {
@@ -106,10 +107,10 @@ const AdminArticleEditor = () => {
     if (!data) return;
     setTitle(data.title || '');
     setSlug(data.slug || '');
-    setCategory(data.category || data.category_detail?.id || 1);
+    setCategory(data.category || data.category_detail?.id || '');
     setExcerpt(data.excerpt || '');
     setContent(data.content || '');
-    setCoverImage(data.cover_image || '');
+    setCoverImage(data.cover_image || null);
     setVideoEmbedUrl(data.video_embed_url || '');
     setIsSlugManual(Boolean(data.slug));
   };
@@ -136,20 +137,40 @@ const AdminArticleEditor = () => {
     setSubmitting(true);
     setFeedback(null);
 
-    const cleanText = content.replace(/<[^>]*>/g, ' ').trim();
-    const wordCount = cleanText ? cleanText.split(/\s+/).filter(Boolean).length : 0;
-    const readingTime = Math.max(1, Math.ceil(wordCount / 180));
+    const isNewFile = coverImage instanceof File;
+    let submissionData;
 
-    const articlePayload = {
+    if (isNewFile) {
+      const formData = new FormData();
+      formData.append('title', title.trim());
+      formData.append('content', content);
+      formData.append('status', targetStatus);
+      if (slug.trim()) formData.append('slug', slug.trim());
+      if (category) formData.append('category', Number(category));
+      if (excerpt.trim()) formData.append('excerpt', excerpt.trim());
+      if (videoEmbedUrl.trim()) formData.append('video_embed_url', videoEmbedUrl.trim());
+      formData.append('cover_image', coverImage);
+      submissionData = formData;
+    } else {
+      submissionData = {
+        title: title.trim(),
+        content,
+        status: targetStatus,
+      };
+      if (slug.trim()) submissionData.slug = slug.trim();
+      if (category) submissionData.category = Number(category);
+      if (excerpt.trim()) submissionData.excerpt = excerpt.trim();
+      if (videoEmbedUrl.trim()) submissionData.video_embed_url = videoEmbedUrl.trim();
+    }
+
+    const offlinePayload = {
       title: title.trim(),
       slug: slug.trim() || generateSlug(title),
-      category: Number(category) || 1,
+      category: category ? Number(category) : null,
       excerpt: excerpt.trim(),
       content,
-      cover_image: coverImage,
       video_embed_url: videoEmbedUrl.trim(),
       status: targetStatus,
-      reading_time_minutes: readingTime,
     };
 
     // If Offline: Save to disk and queue
@@ -157,7 +178,7 @@ const AdminArticleEditor = () => {
       const articleKey = isEditMode ? Number(id) : `new_${Date.now()}`;
       const offlineResult = saveOfflineDraft(
         articleKey,
-        articlePayload,
+        offlinePayload,
         isEditMode ? 'update' : 'create'
       );
 
@@ -172,14 +193,14 @@ const AdminArticleEditor = () => {
     // If Online: Submit to server
     try {
       if (isEditMode) {
-        await adminArticleService.updateArticle(id, articlePayload);
+        await adminArticleService.updateArticle(id, submissionData);
         clearOfflineDraft(id);
         setFeedback({
           type: 'success',
           text: targetStatus === 'published' ? 'مقاله با موفقیت در سایت منتشر شد.' : 'پیش‌نویس با موفقیت ذخیره شد.',
         });
       } else {
-        await adminArticleService.createArticle(articlePayload);
+        await adminArticleService.createArticle(submissionData);
         setFeedback({
           type: 'success',
           text: targetStatus === 'published' ? 'مقاله جدید با موفقیت منتشر گردید.' : 'پیش‌نویس مقاله جدید با موفقیت ذخیره شد.',
@@ -190,14 +211,35 @@ const AdminArticleEditor = () => {
         navigate('/admin/articles');
       }, 1500);
     } catch (err) {
-      console.error('Failed to save article to backend, saving offline:', err);
-      // Fallback to offline saving
-      const articleKey = isEditMode ? Number(id) : `new_${Date.now()}`;
-      saveOfflineDraft(articleKey, articlePayload, isEditMode ? 'update' : 'create');
-      setFeedback({
-        type: 'offline',
-        text: 'ارتباط با سرور برقرار نشد؛ مقاله با موفقیت در سیستم شما ذخیره گردید و پس از اتصال ارسال خواهد شد.',
-      });
+      console.error('Failed to save article to backend:', err);
+
+      const serverErrors = err.response?.data;
+      if (serverErrors && typeof serverErrors === 'object') {
+        const firstKey = Object.keys(serverErrors)[0];
+        const val = serverErrors[firstKey];
+        let errorMsg = typeof val === 'string' ? val : Array.isArray(val) ? val[0] : JSON.stringify(val);
+        if (serverErrors.detail) errorMsg = serverErrors.detail;
+        setFeedback({
+          type: 'error',
+          text: `خطا در اطلاعات ارسالی (${firstKey}): ${errorMsg}`,
+        });
+        return;
+      }
+
+      // Fallback to offline saving on actual network failure
+      if (!isOnline || err.code === 'ERR_NETWORK') {
+        const articleKey = isEditMode ? Number(id) : `new_${Date.now()}`;
+        saveOfflineDraft(articleKey, offlinePayload, isEditMode ? 'update' : 'create');
+        setFeedback({
+          type: 'offline',
+          text: 'ارتباط با سرور برقرار نشد؛ مقاله با موفقیت در سیستم شما ذخیره گردید و پس از اتصال ارسال خواهد شد.',
+        });
+      } else {
+        setFeedback({
+          type: 'error',
+          text: 'خطا در ثبت مقاله بر روی سرور. لطفاً مجدداً بررسی و تلاش نمایید.',
+        });
+      }
     } finally {
       setSubmitting(false);
     }
@@ -433,11 +475,16 @@ const AdminArticleEditor = () => {
             <input
               type="text"
               dir="ltr"
-              placeholder="https://www.aparat.com/v/..."
+              placeholder="https://www.aparat.com/v/... یا کد آی‌فریم"
               value={videoEmbedUrl}
               onChange={(e) => setVideoEmbedUrl(e.target.value)}
               className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-primary text-slate-700 font-mono"
             />
+            {videoEmbedUrl.trim() && (
+              <div className="mt-2">
+                <ArticleMediaEmbed videoUrl={videoEmbedUrl} title={title || 'پیش‌نمایش ویدیو'} />
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -21,6 +21,7 @@ import adminArticleService from '../../api/adminArticleService';
 import ArticleStatusBadge from '../../components/admin/articles/ArticleStatusBadge';
 import CategoryManagerModal from '../../components/admin/articles/CategoryManagerModal';
 import { useOfflineArticleSync } from '../../hooks/useOfflineArticleSync';
+import { formatMediaUrl } from '../../utils/mediaUtils';
 
 const AdminArticles = () => {
   const navigate = useNavigate();
@@ -273,7 +274,7 @@ const AdminArticles = () => {
                       <div className="w-14 h-10 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
                         {article.cover_image ? (
                           <img
-                            src={article.cover_image}
+                            src={formatMediaUrl(article.cover_image)}
                             alt=""
                             className="w-full h-full object-cover"
                           />

@@ -722,12 +722,14 @@
 4. **کارتابل ادمین (AdminArticles) و فرم ویرایش (AdminArticleEditor):**
    - جدول مدیریت مقالات با پیش‌نمایش، فیلتر وضعیت، جستجوی زنده، دکمه سوییچ سریع انتشار و دیالوگ تایید حذف.
    - فرم نگارش مقاله با تولید خودکار Slug، انتخاب دسته‌بندی، خلاصه مقاله، درگ‌وان‌دراپ تصویر شاخص و امبد ویدیو.
+   - ارسال تصاویر شاخص به‌صورت مستقیم با فرمت چندبخشی `multipart/form-data` منطبق بر فیلد `cover_image` در `ArticleAdminWriteSerializer` بک‌اند، و ارسال پی‌لود تمیز JSON در صورت عدم ارسال فایل باینری جدید.
 5. **پرتال عمومی مراجعین (ResourcesPage & ArticleDetailPage):**
    - ارتقای صفحه آرشیو به لیست پویا با فیلتر تب‌ها و سرچ دی‌بانس.
    - صفحه نمایش تکی مقاله همراه با Breadcrumb، سایدبار چسبان (TOC خودکار و کارت CTA نوبت‌دهی متصل به مدال رزرو)، امبد ویدیوی آپارات و گرید مقالات مرتبط.
+   - پروکسی معکوس مسیر `/media/` در Nginx جهت نمایش مستقیم تصاویر شاخص و مدیاهای ذخیره‌شده روی سرور.
 
 #### فایل‌های درگیر در فرانت‌اند
-- **سرویس‌ها و هوک‌ها:** `src/api/articleService.js`, `src/api/adminArticleService.js`, `src/hooks/useOfflineArticleSync.js`
+- **سرویس‌ها، ابزارها و هوک‌ها:** `src/api/articleService.js`, `src/api/adminArticleService.js`, `src/hooks/useOfflineArticleSync.js`, `src/utils/mediaUtils.js`
 - **کامپوننت‌های ادمین:** `src/components/admin/articles/SimpleRichEditor.jsx`, `src/components/admin/articles/FileTextImporter.jsx`, `src/components/admin/articles/CoverImageUploader.jsx`, `src/components/admin/articles/ArticleStatusBadge.jsx`
 - **صفحات ادمین:** `src/pages/admin/AdminArticles.jsx`, `src/pages/admin/AdminArticleEditor.jsx`, `src/components/admin/AdminNavConfig.js`, `src/pages/admin/AdminPage.jsx`
 - **کامپوننت‌های عمومی:** `src/components/articles/ArticleCard.jsx`, `src/components/articles/ArticleSidebar.jsx`, `src/components/articles/ArticleMediaEmbed.jsx`, `src/components/articles/ArticleRelatedGrid.jsx`

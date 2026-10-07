@@ -2,6 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Clock, Calendar, ArrowLeft, Eye } from 'lucide-react';
+import { formatMediaUrl } from '../../utils/mediaUtils';
 
 const ArticleCard = ({ article }) => {
   if (!article) return null;
@@ -17,7 +18,7 @@ const ArticleCard = ({ article }) => {
         <Link to={detailUrl} className="block relative aspect-video overflow-hidden bg-slate-100">
           {article.cover_image ? (
             <img
-              src={article.cover_image}
+              src={formatMediaUrl(article.cover_image)}
               alt={article.title}
               loading="lazy"
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"

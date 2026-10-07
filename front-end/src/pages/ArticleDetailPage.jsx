@@ -20,10 +20,12 @@ import articleService from '../api/articleService';
 import ArticleSidebar from '../components/articles/ArticleSidebar';
 import ArticleMediaEmbed from '../components/articles/ArticleMediaEmbed';
 import ArticleRelatedGrid from '../components/articles/ArticleRelatedGrid';
+import { formatMediaUrl, formatMediaHtml } from '../utils/mediaUtils';
 
-const sanitizeAndAddIdsToHeadings = (html) => {
-  if (!html) return { processedHtml: '', headings: [] };
+const sanitizeAndAddIdsToHeadings = (rawHtml) => {
+  if (!rawHtml) return { processedHtml: '', headings: [] };
 
+  const html = formatMediaHtml(rawHtml);
   const headings = [];
   let index = 0;
 
@@ -231,7 +233,7 @@ const ArticleDetailPage = ({ onOpenAppointment }) => {
         {article.cover_image && (
           <div className="mb-10 rounded-3xl overflow-hidden aspect-video max-h-[460px] w-full border border-primary/20 shadow-md">
             <img
-              src={article.cover_image}
+              src={formatMediaUrl(article.cover_image)}
               alt={article.title}
               className="w-full h-full object-cover"
             />

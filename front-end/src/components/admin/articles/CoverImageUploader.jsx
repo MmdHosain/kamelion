@@ -1,18 +1,31 @@
 // src/components/admin/articles/CoverImageUploader.jsx
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { UploadCloud, Image as ImageIcon, X, AlertCircle } from 'lucide-react';
-import adminArticleService from '../../../api/adminArticleService';
+import { formatMediaUrl } from '../../../utils/mediaUtils';
 
 const MAX_SIZE_MB = 5;
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
-const CoverImageUploader = ({ value = '', onChange }) => {
+const CoverImageUploader = ({ value = null, onChange }) => {
   const [isDragging, setIsDragging] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [previewUrl, setPreviewUrl] = useState('');
   const fileInputRef = useRef(null);
 
-  const processFile = async (file) => {
+  // Synchronize previewUrl with value prop
+  useEffect(() => {
+    if (!value) {
+      setPreviewUrl('');
+    } else if (value instanceof File) {
+      const objectUrl = URL.createObjectURL(value);
+      setPreviewUrl(objectUrl);
+      return () => URL.revokeObjectURL(objectUrl);
+    } else if (typeof value === 'string') {
+      setPreviewUrl(formatMediaUrl(value));
+    }
+  }, [value]);
+
+  const processFile = (file) => {
     setErrorMessage('');
 
     if (!ALLOWED_TYPES.includes(file.type)) {
@@ -25,19 +38,7 @@ const CoverImageUploader = ({ value = '', onChange }) => {
       return;
     }
 
-    setIsUploading(true);
-    try {
-      const res = await adminArticleService.uploadImage(file);
-      if (res?.url) {
-        onChange(res.url);
-      }
-    } catch (err) {
-      console.error('Error uploading cover image:', err);
-      // Fallback: local object URL
-      onChange(URL.createObjectURL(file));
-    } finally {
-      setIsUploading(false);
-    }
+    onChange(file);
   };
 
   const handleDrop = (e) => {
@@ -58,7 +59,7 @@ const CoverImageUploader = ({ value = '', onChange }) => {
 
   const handleRemove = (e) => {
     e.stopPropagation();
-    onChange('');
+    onChange(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -66,10 +67,10 @@ const CoverImageUploader = ({ value = '', onChange }) => {
 
   return (
     <div className="flex flex-col gap-2">
-      {value ? (
+      {previewUrl ? (
         <div className="relative group rounded-2xl overflow-hidden border border-primary/20 bg-slate-50 aspect-video max-h-64 shadow-xs">
           <img
-            src={value}
+            src={previewUrl}
             alt="تصویر شاخص مقاله"
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-102"
           />
@@ -104,16 +105,10 @@ const CoverImageUploader = ({ value = '', onChange }) => {
           }`}
         >
           <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mb-3">
-            {isUploading ? (
-              <UploadCloud className="w-6 h-6 animate-bounce" />
-            ) : (
-              <ImageIcon className="w-6 h-6" />
-            )}
+            <ImageIcon className="w-6 h-6" />
           </div>
           <p className="text-sm font-bold text-slate-700 mb-1">
-            {isUploading
-              ? 'در حال بارگذاری تصویر...'
-              : 'تصویر شاخص را بکشید و رها کنید یا کلیک نمایید'}
+            تصویر شاخص را بکشید و رها کنید یا کلیک نمایید
           </p>
           <p className="text-xs text-slate-400 font-medium">
             فرمت‌های مجاز: JPG, PNG, WebP (حداکثر ۵ مگابایت)
@@ -132,19 +127,6 @@ const CoverImageUploader = ({ value = '', onChange }) => {
           if (file) processFile(file);
         }}
       />
-
-      {/* Manual URL input fallback */}
-      <div className="flex items-center gap-2 mt-1">
-        <span className="text-xs text-slate-500 shrink-0 font-medium">یا درج مستقیم آدرس تصویر:</span>
-        <input
-          type="url"
-          dir="ltr"
-          placeholder="https://example.com/cover.webp"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          className="w-full text-xs px-3 py-1.5 border border-slate-200 rounded-xl focus:outline-none focus:border-primary bg-white text-slate-700"
-        />
-      </div>
 
       {errorMessage && (
         <div className="flex items-center gap-1.5 text-xs text-rose-600 bg-rose-50 border border-rose-200 px-3 py-2 rounded-xl mt-1">
