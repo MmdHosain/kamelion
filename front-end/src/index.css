@@ -332,3 +332,85 @@ body {
 .pink-halo-glow {
   animation: pinkHalo 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+/* ---------- Rich Text Content & Article Typography ---------- */
+.rich-text-content,
+.article-rich-content {
+  color: #334155;
+  line-height: 1.85;
+}
+
+.rich-text-content h2,
+.article-rich-content h2 {
+  font-size: 1.5rem !important;
+  font-weight: 800 !important;
+  color: #1e293b !important;
+  margin-top: 1.75rem !important;
+  margin-bottom: 0.75rem !important;
+  padding-bottom: 0.35rem !important;
+  border-bottom: 1.5px solid rgba(231, 84, 128, 0.25) !important;
+  line-height: 1.4 !important;
+}
+
+.rich-text-content h3,
+.article-rich-content h3 {
+  font-size: 1.25rem !important;
+  font-weight: 700 !important;
+  color: #334155 !important;
+  margin-top: 1.25rem !important;
+  margin-bottom: 0.5rem !important;
+  line-height: 1.4 !important;
+}
+
+.rich-text-content p,
+.article-rich-content p {
+  margin-bottom: 1rem !important;
+  line-height: 1.85 !important;
+  color: #334155 !important;
+}
+
+.rich-text-content ul,
+.article-rich-content ul {
+  list-style-type: disc !important;
+  padding-right: 1.5rem !important;
+  margin-bottom: 1rem !important;
+}
+
+.rich-text-content ol,
+.article-rich-content ol {
+  list-style-type: decimal !important;
+  padding-right: 1.5rem !important;
+  margin-bottom: 1rem !important;
+}
+
+.rich-text-content li,
+.article-rich-content li {
+  margin-bottom: 0.35rem !important;
+  line-height: 1.75 !important;
+}
+
+.rich-text-content blockquote,
+.article-rich-content blockquote {
+  border-right: 4px solid var(--primary) !important;
+  padding: 0.75rem 1.25rem !important;
+  background: rgba(231, 84, 128, 0.08) !important;
+  border-radius: 0.75rem 0 0 0.75rem !important;
+  font-style: italic !important;
+  margin: 1.25rem 0 !important;
+  color: #475569 !important;
+}
+
+.rich-text-content a,
+.article-rich-content a {
+  color: var(--primary) !important;
+  text-decoration: underline !important;
+  font-weight: 600 !important;
+}
+
+.rich-text-content img,
+.article-rich-content img {
+  max-width: 100% !important;
+  border-radius: 1rem !important;
+  margin: 1.25rem 0 !important;
+  border: 1px solid rgba(231, 84, 128, 0.2) !important;
+}

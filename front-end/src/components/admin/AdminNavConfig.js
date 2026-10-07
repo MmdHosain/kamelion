@@ -6,6 +6,7 @@ import {
   MessageSquare,
   Palette,
   Film,
+  BookOpen,
 } from 'lucide-react';
 
 export const ADMIN_NAV_ITEMS = [
@@ -18,6 +19,11 @@ export const ADMIN_NAV_ITEMS = [
     label: 'تقویم کاری و نوبت‌های آتی',
     icon: CalendarClock,
     path: '/admin/agenda',
+  },
+  {
+    label: 'مدیریت مقالات',
+    icon: BookOpen,
+    path: '/admin/articles',
   },
   {
     label: 'مدیریت ویدیوها',
