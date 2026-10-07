@@ -16,6 +16,7 @@ import AboutPage from './pages/AboutPage';
 import ServicesPage from './pages/ServicesPage';
 import FaqPage from './pages/FaqPage';
 import ResourcesPage from './pages/ResourcesPage';
+import ArticleDetailPage from './pages/ArticleDetailPage';
 import VideoPage from './pages/VideoPage';
 
 import AdminPage from './pages/admin/AdminPage';
@@ -86,6 +87,14 @@ const App = () => {
           element={<FaqPage onOpenChat={() => setOpenChat(true)} />}
         />
         <Route path="/resources" element={<ResourcesPage />} />
+        <Route
+          path="/resources/:slug"
+          element={<ArticleDetailPage onOpenAppointment={() => setOpenAppointment(true)} />}
+        />
+        <Route
+          path="/articles/:slug"
+          element={<ArticleDetailPage onOpenAppointment={() => setOpenAppointment(true)} />}
+        />
         <Route path="/video" element={<VideoPage />} />
         <Route path="/videos" element={<VideoPage />} />
 
