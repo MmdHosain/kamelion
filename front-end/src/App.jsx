@@ -13,7 +13,8 @@ import Footer from './components/layout/Footer';
 /* Pages */
 import HomePage from './pages/HomePage';
 import AboutPage from './pages/AboutPage';
-import ServicesPage from './pages/ServicesPage';
+import TherapeuticServicesPage from './pages/TherapeuticServicesPage';
+import AestheticServicesPage from './pages/AestheticServicesPage';
 import FaqPage from './pages/FaqPage';
 import ResourcesPage from './pages/ResourcesPage';
 import ArticleDetailPage from './pages/ArticleDetailPage';
@@ -79,8 +80,16 @@ const App = () => {
         />
         <Route path="/about" element={<AboutPage />} />
         <Route
+          path="/services/therapeutic"
+          element={<TherapeuticServicesPage onOpenAppointment={() => setOpenAppointment(true)} />}
+        />
+        <Route
+          path="/services/aesthetic"
+          element={<AestheticServicesPage onOpenAppointment={() => setOpenAppointment(true)} />}
+        />
+        <Route
           path="/services"
-          element={<ServicesPage onOpenAppointment={() => setOpenAppointment(true)} />}
+          element={<Navigate to="/services/therapeutic" replace />}
         />
         <Route
           path="/faq"

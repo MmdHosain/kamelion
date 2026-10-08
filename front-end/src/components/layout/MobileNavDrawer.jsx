@@ -216,16 +216,7 @@ const MobileNavDrawer = ({
               {servicesOpen && (
                 <div className="flex flex-col gap-1.5 p-2.5 border-t border-primary/10 bg-primary/[0.03] animate-fadeSlide">
                   <Link
-                    to="/services"
-                    onClick={handleLinkClick}
-                    className="flex items-center justify-between text-xs font-bold py-2.5 px-3.5 rounded-xl text-textDark hover:bg-white hover:text-primary transition-all"
-                  >
-                    <span>مشاهده تمام خدمات</span>
-                    <ArrowUpLeft size={13} className="text-primary/60" />
-                  </Link>
-
-                  <Link
-                    to="/services#beauty"
+                    to="/services/aesthetic"
                     onClick={handleLinkClick}
                     className="flex items-center gap-2.5 text-xs font-medium py-2.5 px-3.5 rounded-xl text-textDark/85 hover:bg-white hover:text-primary transition-all"
                   >
@@ -234,7 +225,7 @@ const MobileNavDrawer = ({
                   </Link>
 
                   <Link
-                    to="/services#treatment"
+                    to="/services/therapeutic"
                     onClick={handleLinkClick}
                     className="flex items-center gap-2.5 text-xs font-medium py-2.5 px-3.5 rounded-xl text-textDark/85 hover:bg-white hover:text-primary transition-all"
                   >
