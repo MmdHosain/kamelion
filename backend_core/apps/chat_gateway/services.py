@@ -67,8 +67,12 @@ def process_patient_message(session: ChatSession, text: str) -> dict:
     # Concurrency (§6): at most one request per session at a time. The row lock makes a second
     # request wait until the first has finished.
     with transaction.atomic():
-        locked = ChatSession.objects.select_for_update().select_related("user").get(pk=session.pk)
-
+        locked = (
+                    ChatSession.objects
+                    .select_for_update(of=("self",))
+                    .select_related("user")
+                    .get(pk=session.pk)
+                )
         latest = _latest_unanswered_user_message(locked)
         if latest is None or latest.pk != message.pk:
             raise MessageSuperseded()
