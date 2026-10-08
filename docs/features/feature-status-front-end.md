@@ -27,7 +27,7 @@
 | **FE-01** | ساختار عمومی و نوار ناوبری شیشه‌ای (Layout & Nav) | 2026-02-12 | — | عمومی / کلاینت‌ساید (بررسی استیت لاگین و نقش ادمین) | ✅ تکمیل و فعال |
 | **FE-02** | صفحات عمومی معرفی پزشک و خدمات کلینیک | 2026-02-12 | — | کلاینت‌ساید / محتوای پزشکی ثابت | ✅ تکمیل و فعال |
 | **FE-03** | سیستم احراز هویت پیامکی بیمار (Patient OTP Auth) | 2026-02-13 | **Feature 1, 2b, 3b** | `POST /api/auth/request-otp`<br>`POST /api/auth/verify-otp`<br>`POST /api/auth/complete-registration`<br>`POST /api/auth/refresh`<br>`GET /api/auth/me` | 🟡 آماده در شاخه refactor-17 / نیازمند ادغام در develop |
-| **FE-04** | ویجت و کپسول شناور تریاژ هوشمند (AI Smart Triage) | 2026-02-13 | **Feature 12** | `POST /api/chat/message` | ⚠️ آماده فرانت / سناریو محلی فعال |
+| **FE-04** | ویجت و کپسول شناور تریاژ هوشمند (AI Smart Triage) | 2026-02-13 | **Feature 12** | `POST /api/chat/message`<br>`GET /api/admin/patients/<id>/triage_level/`<br>`GET /api/admin/patients/<id>/chats/` | ✅ تکمیل و کاملاً متصل (احراز هویت بیمار، مدیریت پایدار نشست، کد URG، دکمه رزرو و پنل تریاژ ادمین) |
 | **FE-05** | احراز هویت و گارد دسترسی پنل ادمین (Admin Auth) | 2026-02-22 | **Feature 2, 2b, 15** | `POST /api/auth/admin/login` | ✅ تکمیل و متصل |
 | **FE-06** | مدیریت شیفت‌های هفتگی پزشک توسط ادمین (Shifts) | 2026-03-08 | **Feature 4** | `GET /api/admin/slots/`<br>`PUT /api/admin/slots/bulk/`<br>`POST/PUT/DELETE /api/admin/slots/<id>/` | ✅ تکمیل و متصل |
 | **FE-07** | مدیریت تعطیلات و استثنائات کلینیک (Exceptions) | 2026-03-13 | **Feature 5** | `GET /api/admin/exceptions/`<br>`PUT /api/admin/exceptions/bulk/`<br>`POST/DELETE /api/admin/exceptions/<id>/` | ✅ تکمیل و متصل |
@@ -191,45 +191,55 @@
 
 ### FE-04: ویجت و کپسول شناور تریاژ هوشمند پزشکی (AI Smart Triage)
 - **دسته‌بندی:** Clinical AI & Patient Assistance
-- **وضعیت فعلی:** ⚠️ آماده در فرانت با موتور سناریوی محلی (Fallback Active)
-- **تطابق با بک‌اند:** معادل **Feature 12** (`apps.chat_gateway` / FastAPI) در `feature-status-back-end.md`
+- **وضعیت فعلی:** ✅ تکمیل و کاملاً متصل (Connected & Working)
+- **تطابق با بک‌اند:** معادل **Feature 12** (`apps.chat_gateway` در Django REST Framework) و اندپوینت‌های تریاژ ادمین در `feature-status-back-end.md` و `tmp/api-endpoints33.md`
 
 #### سیر تکاملی و تاریخچه کامیت‌ها (Commit Evolution & Fixes)
 1. **کامیت اولیه (Inception):** `73be04f` (2026-02-13) — *(feat): demo chats for presentation* — کپسول اولیه چت در پایین صفحه با سناریوهای دمو.
 2. **بهبود رابط کاربری در موبایل (UI Fix):** `e58f5ce` (2026-08-17) — *(fix(chat/phone):change ui for chat box)* — بهینه‌سازی ارتفاع و پدینگ کادر چت در نمایشگرهای لمسی.
 3. **اصلاح موقعیت قرارگیری (Positioning Fix):** `c31aa24` (2026-08-17) — *(fix(chat):center chat position)* — قرارگیری دقیق در مرکز پایین صفحه به صورت Floating.
-4. **انتزاع سرویس شبکه و موتور دوگانه (Architecture Upgrade):** `3bb1669` / `2884c37` (2026-08-28):
-   - معرفی سرویس شبکه `src/api/chatService.js`.
-   - معماری Dual-Engine: ارسال به اندپوینت تریاژ هوشمند، و در صورت عدم اتصال یا تاخیر سرور، سوئیچ آنی به موتور ارزیابی علائم محلی (`chatScenarios.js`) با قابلیت تشخیص کدهای اورژانسی (`EMG-XXXX`) و پیشنهاد رزرو نوبت.
+4. **انتزاع سرویس شبکه و موتور دوگانه:** `3bb1669` / `2884c37` (2026-08-28) — معرفی ساختار اولیه سرویس چت.
+5. **اتصال کامل به گیت‌وی جدید بک‌اند و بازسازی ماژولار (SDD & Gateway Integration):** (2026-10-08):
+   - تفکیک ماژولار بر اساس اصل Anti-Bloat: استخراج `ChatMessageItem.jsx`، `ChatPillButton.jsx`، `ChatQuickPrompts.jsx` و سبک‌سازی فایل اصلی به زیر ۲۳۰ خط.
+   - ایجاد هوک اختصاصی `src/hooks/useChatSession.js` با مدیریت پایدار `sessionId` در `sessionStorage` جهت حفظ زنجیره کانتکست بیمار.
+   - اعمال گارد احراز هویت بیمار (`useAuthStore`) و هدایت به مدال OTP با توجه به الزام بک‌اند.
+   - مپ کردن دقیق فیلدهای پاسخ بک‌اند (`booking_offer`، `emergency_code` با فرمت `URG-`، سطوح ۵‌گانه تریاژ و فال‌بک آفلاین).
+   - افزودن کامپوننت‌های پنل ادمین: `TriageLevelBadge.jsx` در جدول بیماران و `PatientTriageSection.jsx` در مدال پرونده بیمار جهت مشاهده سوابق مکالمات و خلاصه تریاژ.
 
 #### فایل‌های درگیر در فرانت‌اند
-- کامپوننت‌ها: `src/components/chat/FloatingChatWidget.jsx`, `ChatContainer.jsx`, `ChatHeader.jsx`, `ChatMessages.jsx`, `ChatInput.jsx`, `ChatSuggestions.jsx`, `ResumeButton.jsx`
-- سرویس و داده‌ها: `src/api/chatService.js`, `src/data/chatScenarios.js`, `src/data/chatSuggestions.js`
-- هوک‌ها: `src/hooks/useChat.js`, `src/hooks/useAutoScroll.js`
+- کامپوننت‌های عمومی: `src/components/chat/FloatingChatWidget.jsx`, `ChatPillButton.jsx`, `ChatMessageItem.jsx`, `ChatQuickPrompts.jsx`
+- کامپوننت‌های ادمین: `src/components/admin/patients/TriageLevelBadge.jsx`, `PatientTriageSection.jsx`, `PatientsList.jsx`, `PatientDetailModal.jsx`
+- سرویس و داده‌ها: `src/api/chatService.js`, `src/api/admin.js`
+- هوک‌ها: `src/hooks/useChatSession.js`, `src/hooks/useBodyScrollLock.js`, `src/hooks/useFooterOverlap.js`
 
 #### مشخصات کامل قرارداد با بک‌اند (API Contract & Schemas)
 - **متد و آدرس:** `POST /api/chat/message`
-- **دسترسی:** عمومی یا هدر احراز هویت اختیاری
+- **دسترسی:** نیازمند توکن احراز هویت بیمار (`Authorization: Bearer <access>`)
 - **بدنه درخواست (Request Body):**
 ```json
 {
   "message": "علائم درد در پستان چپ و ترشح غیرطبیعی",
-  "session_id": "session_1724839200000",
-  "context": {}
+  "session_id": "sess_1724839200000_abc123"
 }
 ```
 - **پاسخ مورد انتظار (Response):**
 ```json
 {
-  "reply": "علائم ذکر شده نیازمند معاینه و سونوگرافی فوری است.",
-  "is_emergency": true,
-  "emergency_code": "EMG-4812",
-  "show_booking": true
+  "reply": "علائم ذکر شده نیازمند معاینه و سونوگرافی است.",
+  "triage_level": "urgent | high_priority | low_priority | unknown | out_of_scope",
+  "booking_offer": true,
+  "emergency_code": "URG-K7M2QX یا null",
+  "fallback": false
 }
 ```
 
-#### تحلیل گپ و اقدامات مورد نیاز (Gaps & Action Items)
-- فرانت‌اند به طور کامل آماده ارتباط با سرویس هوش مصنوعی است. در بک‌اند، اپلیکیشن `chat_gateway` و تنظیمات اتصال به سرور FastAPI هنوز در وضعیت `In Progress` است و مدل‌ها یا مسیرهای آن پیاده‌سازی نشده‌اند. در شرایط فعلی، فرانت‌اند با تکیه بر موتور Fallback بدون خطا به سوالات مراجعین پاسخ می‌دهد.
+- **اندپوینت‌های ادمین:**
+  - `GET /api/admin/patients/` (حاوی فیلد `triage_level` برای هر بیمار)
+  - `GET /api/admin/patients/<id>/triage_level/` (آخرین سطح تریاژ، خلاصه کادر درمان و کد اورژانس)
+  - `GET /api/admin/patients/<id>/chats/` (لیست جلسات چت بیمار و پیام‌های گفتگوی کامل)
+
+#### وضعیت نهایی
+- فرانت‌اند و بک‌اند ۱۰۰٪ متصل و تست بیلد پروداکشن (`npm run build`) با موفقیت انجام شد.
 
 ---
 

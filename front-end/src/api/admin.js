@@ -88,11 +88,29 @@ export const adminApi = {
 
   getChatProfiles: async () => {
     try {
-      const response = await apiClient.get('/admin/chat-profiles');
-      return extractResults(response.data);
+      const response = await apiClient.get('/admin/patients/');
+      const patients = extractResults(response.data);
+      return patients
+        .filter((p) => p.triage_level)
+        .map((p) => ({
+          id: p.id,
+          name: p.full_name || 'بیمار',
+          lastMessage: `سطح تریاژ: ${p.triage_level}`,
+          totalMessages: p.appointment_count || 0,
+        }));
     } catch {
       return [];
     }
+  },
+
+  getPatientTriageLevel: async (patientId) => {
+    const response = await apiClient.get(`/admin/patients/${patientId}/triage_level/`);
+    return response.data;
+  },
+
+  getPatientChats: async (patientId, params = {}) => {
+    const response = await apiClient.get(`/admin/patients/${patientId}/chats/`, { params });
+    return response.data;
   },
 
   getPatients: async (params = {}) => {

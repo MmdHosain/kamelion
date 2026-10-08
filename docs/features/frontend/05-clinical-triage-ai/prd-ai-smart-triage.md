@@ -6,13 +6,17 @@
 ### ۱. مشخصات سند (Document Metadata)
 - **شناسه سند:** `PRD-FE-011`
 - **ماژول:** تریاژ هوشمند و مشاوره ترغیبی (Clinical AI Triage)
-- **وضعیت پیاده‌سازی:** 🟡 پیاده‌سازی تعاملی در کلاینت (در انتظار اتصال کامل به FastAPI `chat_gateway`)
+- **وضعیت پیاده‌سازی:** 🟢 متصل به درگاه چت و تریاژ سرور (`/api/chat/message` و اندپوینت‌های ادمین)
 - **کامپوننت‌های فرانت‌اند:**
-  - کپسول شناور و پنجره چت: [`src/components/chat/FloatingChatWidget.jsx`](file:///e:/GitHub%20Repo/kamelion/front-end/src/components/chat/FloatingChatWidget.jsx)
-  - اجزای فرعی چت: [`src/components/chat/ChatContainer.jsx`](file:///e:/GitHub%20Repo/kamelion/front-end/src/components/chat/ChatContainer.jsx), [`ChatMessages.jsx`](file:///e:/GitHub%20Repo/kamelion/front-end/src/components/chat/ChatMessages.jsx), [`ChatSuggestions.jsx`](file:///e:/GitHub%20Repo/kamelion/front-end/src/components/chat/ChatSuggestions.jsx)
-  - سناریوهای آماده تریاژ: [`src/data/chatScenarios.js`](file:///e:/GitHub%20Repo/kamelion/front-end/src/data/chatScenarios.js)
+  - پنجره اصلی چت: [`src/components/chat/FloatingChatWidget.jsx`](file:///e:/GitHub%20Repo/kamelion/front-end/src/components/chat/FloatingChatWidget.jsx)
+  - کپسول و دکمه شناور: [`src/components/chat/ChatPillButton.jsx`](file:///e:/GitHub%20Repo/kamelion/front-end/src/components/chat/ChatPillButton.jsx)
+  - حباب پیام‌ها و کارت‌های اضطراری: [`src/components/chat/ChatMessageItem.jsx`](file:///e:/GitHub%20Repo/kamelion/front-end/src/components/chat/ChatMessageItem.jsx)
+  - پرامپت‌های پیشنهادی: [`src/components/chat/ChatQuickPrompts.jsx`](file:///e:/GitHub%20Repo/kamelion/front-end/src/components/chat/ChatQuickPrompts.jsx)
+  - بخش تریاژ پرونده ادمین: [`src/components/admin/patients/PatientTriageSection.jsx`](file:///e:/GitHub%20Repo/kamelion/front-end/src/components/admin/patients/PatientTriageSection.jsx)
+  - نشانگر سطح تریاژ: [`src/components/admin/patients/TriageLevelBadge.jsx`](file:///e:/GitHub%20Repo/kamelion/front-end/src/components/admin/patients/TriageLevelBadge.jsx)
   - سرویس چت: [`src/api/chatService.js`](file:///e:/GitHub%20Repo/kamelion/front-end/src/api/chatService.js)
-  - هوک‌های اختصاصی: [`src/hooks/useBodyScrollLock.js`](file:///e:/GitHub%20Repo/kamelion/front-end/src/hooks/useBodyScrollLock.js), [`src/hooks/useFooterOverlap.js`](file:///e:/GitHub%20Repo/kamelion/front-end/src/hooks/useFooterOverlap.js)
+  - هوک مدیریت نشست و چت: [`src/hooks/useChatSession.js`](file:///e:/GitHub%20Repo/kamelion/front-end/src/hooks/useChatSession.js)
+  - هوک‌های فرعی: [`src/hooks/useBodyScrollLock.js`](file:///e:/GitHub%20Repo/kamelion/front-end/src/hooks/useBodyScrollLock.js), [`src/hooks/useFooterOverlap.js`](file:///e:/GitHub%20Repo/kamelion/front-end/src/hooks/useFooterOverlap.js)
 
 ---
 
@@ -56,17 +60,17 @@ graph TD
    - «بررسی جواب ماموگرافی و سونوگرافی».
    - «رزرو نوبت ویزیت با پزشک» (مستقیماً `onOpenAppointment` را صدا می‌زند).
 4. **تولید کد بحرانی (Emergency Code):**
-   - تولید کد یکتا مثل `EMG-8421` برای بیماران اورژانسی جهت ارائه مستقیم به منشی یا اورژانس کلینیک با دکمه کپی کد در کلیپ‌بورد.
+   - دریافت کد یکتا با فرمت استاندارد `URG-XXXXXX` از درگاه تریاژ سرور برای بیماران با سطح `urgent` جهت ارائه مستقیم به منشی یا اورژانس کلینیک با دکمه کپی کد در کلیپ‌بورد و تماس فوری.
 
 ---
 
 ### ۵. مشخصات رابط کاربری و تجربه کاربری (UI/UX)
 - حباب‌های گفتگوی تمایزیافته: حباب‌های کاربر (گرادیانت رنگ اصلی کلینیک) و حباب‌های روبات هوشمند (سفید نیمه‌شفاف با سایه ملایم).
 - نشانگر تایپ سه‌نقطه‌ای انیمیشنی (`isTyping`) هنگام پردازش پاسخ.
-- کارت‌های اقدام درون‌متنی (Interactive Action Cards) شامل دکمه بنفش رزرو نوبت و دکمه قرمز تماس اضطراری.
+- کارت‌های اقدام درون‌متنی (Interactive Action Cards) شامل دکمه بنفش رزرو نوبت (`booking_offer`) و دکمه قرمز تماس اضطراری با کد یکتا.
 
 ---
 
-### ۶. وضعیت فعلی و نیازمندی اتصال بک‌اند (Current Status & Gap)
-- **وضعیت کلاینت:** ۱۰۰٪ تعاملی، با سناریوهای لوکال و تصمیم‌گیری مبتنی بر کلمات کلیدی بالینی کار می‌کند.
-- **شکاف توسعه (Backend Gap):** ماژول فرانت هم‌اکنون به سرور هوش مصنوعی لاگین نمی‌شود؛ پس از تکمیل سرویس `chat_gateway` در FastAPI، متد `chatService.sendMessage` با قابلیت پاسخ جریانی (Streaming LLM Response) و ذخیره پروفایل تریاژ در پرونده ادمین فعال خواهد شد.
+### ۶. وضعیت اتصال بک‌اند و توسعه (Backend Integration Status)
+- **وضعیت اتصال:** ۱۰۰٪ متصل به اندپوینت `POST /api/chat/message` با مدیریت احراز هویت بیمار (JWT)، مدیریت شناسه پایدار نشست (`session_id`)، دریافت سطوح ۵‌گانه تریاژ و پاسخ فالبک سرور.
+- **پنل ادمین:** متصل به اندپوینت‌های `GET /api/admin/patients/` (برچسب سطح تریاژ)، `GET /api/admin/patients/<id>/triage_level/` (خلاصه بالینی و کد ارجاع) و `GET /api/admin/patients/<id>/chats/` (سوابق کامل مکالمات بیمار).
