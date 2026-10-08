@@ -25,6 +25,7 @@ import { getApiErrorMessage } from '../../../utils/errorUtils';
 import { toPersianDigits, formatJalaliDisplay } from '../../../utils/jalaliDateUtils';
 import { getStatusConfig } from '../reservations/AppointmentDetailModal';
 import ExpandableReason from './ExpandableReason';
+import PatientTriageSection from './PatientTriageSection';
 import useBodyScrollLock from '../../../hooks/useBodyScrollLock';
 
 const formatJalaliDate = (dateStr) => {
@@ -59,15 +60,6 @@ const formatNoteDate = (isoOrText) => {
   }
   return isoOrText;
 };
-
-// AI Profile fields config with Persian labels
-const AI_FIELDS = [
-  { label: 'سطح ریسک', key: 'riskLevel' },
-  { label: 'بیماری زمینه‌ای', key: 'chronicCondition' },
-  { label: 'توصیه پزشکی', key: 'recommendation' },
-  { label: 'پایبندی به درمان و دارو', key: 'medAdherence' },
-  { label: 'سبک زندگی', key: 'lifestyle' },
-];
 
 const PatientDetailModal = ({
   patient,
@@ -380,45 +372,8 @@ const PatientDetailModal = ({
             </div>
           </div>
 
-          {/* Column 2: AI Clinical Indicators (شاخص‌های تریاژ هوشمند) */}
-          <div className="bg-gray-50/50 border border-gray-200/80 rounded-2xl flex flex-col p-4 gap-3 shadow-inner w-full min-w-0 overflow-hidden">
-            <div className="flex items-center justify-between border-b border-gray-200/60 pb-2">
-              <h3 className="text-xs font-bold text-gray-700 flex items-center gap-1.5">
-                <Activity size={15} className="text-primary" />
-                شاخص‌های تریاژ و ارزیابی هوش مصنوعی
-              </h3>
-            </div>
-
-            <div className="flex-1 overflow-y-auto chat-scroll space-y-2.5 max-h-[300px] min-h-[140px] pr-1">
-              {AI_FIELDS.map(({ label, key }, i) => {
-                const val = aiProfile[key];
-                return (
-                  <div
-                    key={key}
-                    className="p-3 bg-white border border-gray-100 rounded-xl flex flex-col gap-1 shadow-sm"
-                  >
-                    <span className="text-[11px] text-gray-400 font-medium">{label}</span>
-                    <span
-                      className={`text-xs font-bold ${
-                        key === 'riskLevel' && val === 'بالا'
-                          ? 'text-red-600'
-                          : key === 'riskLevel' && val === 'متوسط'
-                          ? 'text-amber-600'
-                          : 'text-gray-800'
-                      }`}
-                    >
-                      {val || '—'}
-                    </span>
-                  </div>
-                );
-              })}
-
-              <div className="p-3 bg-primary/5 border border-primary/15 rounded-xl text-[11px] text-primary-dark font-medium flex items-center gap-2">
-                <Shield size={14} className="shrink-0 text-primary" />
-                <span>تحلیل‌های هوش مصنوعی صرفاً نقش دستیار تریاژ و غربالگری را دارند.</span>
-              </div>
-            </div>
-          </div>
+          {/* Column 2: Clinical Triage & AI Conversation History */}
+          <PatientTriageSection patientId={effectivePatient.id || patientId} />
 
           {/* Column 3: Appointment History (تاریخچه نوبت‌ها) */}
           <div className="bg-gray-50/50 border border-gray-200/80 rounded-2xl flex flex-col p-4 gap-3 shadow-inner w-full min-w-0 overflow-hidden">
