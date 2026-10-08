@@ -87,9 +87,18 @@ SIMPLE_JWT = {
 # Base URL of the AI Service, without the /v1 path. HTTPS in production.
 AI_SERVICE_BASE_URL = config('AI_SERVICE_BASE_URL', default='')
 
-# Private key used to sign requests to the AI Service. Never commit it, never log it.
-# In .env it is stored on ONE line, with \n instead of real line breaks.
-AI_SERVICE_SIGNING_KEY = config('AI_SERVICE_SIGNING_KEY', default='').replace('\\n', '\n')
+# API key for the AI Service (sent as `Authorization: Bearer <key>`). Server-side only:
+# never commit it, never log it, never send it to a browser or app. Load it from the
+# environment / secret manager. One key per environment.
+AI_SERVICE_API_KEY = config('AI_SERVICE_API_KEY', default='')
+
+# The AI Service uses a certificate from its own private CA. This is the PEM file of that CA
+# (public, safe to commit). Certificate verification is never turned off. Leave empty only if
+# the service is later moved behind a publicly trusted certificate.
+AI_SERVICE_CA_BUNDLE = config(
+    'AI_SERVICE_CA_BUNDLE',
+    default=str(BASE_DIR / 'certs' / 'kamelion-ai-ca.crt'),
+)
 
 # API.md §7.2: 30 s client timeout, one retry after 2 s.
 AI_SERVICE_TIMEOUT = config('AI_SERVICE_TIMEOUT', default=30, cast=int)

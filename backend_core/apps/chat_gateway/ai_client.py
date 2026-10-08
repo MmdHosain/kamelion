@@ -4,9 +4,10 @@ HTTP client for the AI Service (API.md §3, §4, §7).
 Only this module talks to the AI Service. It does no database work.
 """
 import logging
+import ssl
 import time
 import uuid
-import hashlib, json, jwt
+from functools import lru_cache
 
 import httpx
 from django.conf import settings
@@ -19,29 +20,33 @@ logger = logging.getLogger(__name__)
 class AIServiceError(Exception):
     """The call failed and the caller must use the fallback (§7.3)."""
 
+@lru_cache(maxsize=4)
+def _ssl_context(ca_bundle: str) -> ssl.SSLContext:
+    """
+    TLS context that trusts ONLY the AI Service's private CA. Verification stays on.
+    Built once per process: loading the file on every request would be wasteful.
+    """
+    return ssl.create_default_context(cafile=ca_bundle)
+
+
+def _verify():
+    """The `verify` argument for httpx: the private CA if configured, else system CAs."""
+    ca_bundle = settings.AI_SERVICE_CA_BUNDLE
+    return _ssl_context(ca_bundle) if ca_bundle else True
+
+
 def _post(payload: dict) -> httpx.Response:
     request_id = str(uuid.uuid4())
     url = f"{settings.AI_SERVICE_BASE_URL.rstrip('/')}/v1/chat"
-
-    body = json.dumps(payload, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
-    now = int(time.time())
-    token = jwt.encode(
-        {
-            "iss": "kamelion-backend",
-            "iat": now,
-            "exp": now + 60,
-            "jti": str(uuid.uuid4()),
-            "body_sha256": hashlib.sha256(body).hexdigest(),
-        },
-        settings.AI_SERVICE_SIGNING_KEY,
-        algorithm="EdDSA",
-    )
     headers = {
-        "Authorization": f"Bearer {token}",
+        # The key is never logged: only status codes, request IDs and error codes are.
+        "Authorization": f"Bearer {settings.AI_SERVICE_API_KEY}",
         "Content-Type": "application/json",
         "X-Request-ID": request_id,
     }
-    response = httpx.post(url, content=body, headers=headers, timeout=settings.AI_SERVICE_TIMEOUT)
+    response = httpx.post(
+        url, json=payload, headers=headers, timeout=settings.AI_SERVICE_TIMEOUT, verify=_verify(),
+    )
     response.request_id = response.headers.get("X-Request-ID", request_id)
     return response
 

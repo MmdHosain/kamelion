@@ -26,6 +26,11 @@ def err(status, code="internal_error"):
     return httpx.Response(status, json={"error": {"code": code, "message": "m", "request_id": "r"}})
 
 
+@override_settings(
+    AI_SERVICE_BASE_URL="https://ai.test",
+    AI_SERVICE_API_KEY="test-key",
+    AI_SERVICE_CA_BUNDLE="",
+)
 class ChatTestCase(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(phone_number="09129990000")
@@ -55,6 +60,7 @@ class RequestContractTests(ChatTestCase):
         self.assertEqual(kwargs["headers"]["Content-Type"], "application/json")
         self.assertTrue(kwargs["headers"]["X-Request-ID"])
         self.assertEqual(kwargs["timeout"], settings.AI_SERVICE_TIMEOUT)
+        self.assertIs(kwargs["verify"], True)  # verification is never disabled
 
         body = kwargs["json"]
         self.assertEqual(set(body), {"session_id", "message", "history", "triage", "patient"})
@@ -331,8 +337,18 @@ class ConcurrencyAndOwnershipTests(ChatTestCase):
 
 
 class ClientUnitTests(SimpleTestCase):
+    def test_private_ca_bundle_is_shipped_and_used_for_verification(self):
+        import os, ssl
+        from config import settings as project_settings
+        self.assertTrue(os.path.isfile(project_settings.AI_SERVICE_CA_BUNDLE))
+        with override_settings(AI_SERVICE_CA_BUNDLE=project_settings.AI_SERVICE_CA_BUNDLE):
+            ctx = ai_client._verify()
+        self.assertIsInstance(ctx, ssl.SSLContext)
+        self.assertEqual(ctx.verify_mode, ssl.CERT_REQUIRED)
+        self.assertTrue(ctx.check_hostname)
+
     def test_settings_present(self):
-        for name in ("AI_SERVICE_BASE_URL", "AI_SERVICE_API_KEY", "AI_SERVICE_TIMEOUT", "AI_SERVICE_RETRY_DELAY", "CLINIC_PHONE_NUMBER"):
+        for name in ("AI_SERVICE_BASE_URL", "AI_SERVICE_API_KEY", "AI_SERVICE_CA_BUNDLE", "AI_SERVICE_TIMEOUT", "AI_SERVICE_RETRY_DELAY", "CLINIC_PHONE_NUMBER"):
             self.assertTrue(hasattr(settings, name))
 
     def test_default_timeout_is_30_seconds(self):

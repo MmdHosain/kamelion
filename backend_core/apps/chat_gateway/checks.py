@@ -1,3 +1,5 @@
+import os
+
 from django.conf import settings
 from django.core.checks import Warning, register
 
@@ -11,17 +13,18 @@ def check_ai_service_settings(app_configs, **kwargs):
             id="chat_gateway.W001",
         ))
 
-    key = settings.AI_SERVICE_SIGNING_KEY
-    if not key:
+    if not settings.AI_SERVICE_API_KEY:
         problems.append(Warning(
-            "AI_SERVICE_SIGNING_KEY is not set: requests to the AI Service cannot be signed, "
-            "so every chat message will get the fallback reply.",
+            "AI_SERVICE_API_KEY is not set: every request to the AI Service would be rejected "
+            "with 401, so every chat message will get the fallback reply.",
             id="chat_gateway.W002",
         ))
-    elif "BEGIN PRIVATE KEY" not in key or "END PRIVATE KEY" not in key:
+
+    ca_bundle = settings.AI_SERVICE_CA_BUNDLE
+    if ca_bundle and not os.path.isfile(ca_bundle):
         problems.append(Warning(
-            "AI_SERVICE_SIGNING_KEY does not look like a PEM private key. In .env it must be on "
-            "one line with \\n between the lines.",
+            f"AI_SERVICE_CA_BUNDLE points to {ca_bundle!r}, which does not exist: TLS to the "
+            "AI Service will fail and every chat message will get the fallback reply.",
             id="chat_gateway.W005",
         ))
 
