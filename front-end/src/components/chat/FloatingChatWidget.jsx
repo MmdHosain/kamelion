@@ -1,57 +1,24 @@
+// src/components/chat/FloatingChatWidget.jsx
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   Bot,
   Send,
   X,
-  PhoneCall,
-  Copy,
-  Check,
-  AlertTriangle,
   Sparkles,
   Calendar,
-  Stethoscope,
-  Activity,
-  HeartPulse,
   HelpCircle,
   ChevronDown,
+  AlertCircle,
 } from 'lucide-react';
-import { chatService } from '../../api/chatService';
 import useBodyScrollLock from '../../hooks/useBodyScrollLock';
 import useFooterOverlap from '../../hooks/useFooterOverlap';
+import useChatSession from '../../hooks/useChatSession';
+import ChatPillButton from './ChatPillButton';
+import ChatMessageItem from './ChatMessageItem';
+import { QUICK_PROMPTS } from './ChatQuickPrompts';
 
-const QUICK_PROMPTS = [
-  { text: 'درد یا خونریزی شدید دارم', icon: AlertTriangle, isUrgent: true },
-  { text: 'توده جدید در سینه لمس کرده‌ام', icon: Activity },
-  { text: 'مشاوره جراحی ماموپلاستی و زیبایی', icon: Sparkles },
-  { text: 'بررسی جواب ماموگرافی و سونوگرافی', icon: Stethoscope },
-  { text: 'مراقبت‌های بعد از جراحی', icon: HeartPulse },
-  { text: 'رزرو نوبت ویزیت با پزشک', icon: Calendar },
-];
-
-const ROTATING_PLACEHOLDERS = [
-  'علائم خود را بنویسید (درد سینه، لمس توده)...',
-  'سوال درباره جراحی ماموپلاستی، پروتز یا لیفت...',
-  'بررسی جواب سونوگرافی یا ماموگرافی...',
-  'علت ترشحات یا تغییر شکل سینه...',
-];
-
-const INITIAL_BOT_MESSAGES = [
-  {
-    id: 1,
-    sender: 'bot',
-    text: 'سلام! من دستیار هوشمند تریاژ مطب دکتر معشوری هستم. لطفاً دلیل مراجعه، علائم یا سوال خود را بنویسید تا شما را راهنمایی کنم.',
-    time: 'اکنون',
-  },
-];
-
-const FloatingChatWidget = ({ isOpen, onToggle, onOpenAppointment }) => {
-  const [messages, setMessages] = useState(INITIAL_BOT_MESSAGES);
-  const [floatingInput, setFloatingInput] = useState('');
+export const FloatingChatWidget = ({ isOpen, onToggle, onOpenAppointment }) => {
   const [modalInput, setModalInput] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
-  const [copiedCode, setCopiedCode] = useState(null);
-  const [placeholderIndex, setPlaceholderIndex] = useState(0);
-  const [isMinimized, setIsMinimized] = useState(false);
   const [isUserScrolledUp, setIsUserScrolledUp] = useState(false);
 
   const chatMessagesContainerRef = useRef(null);
@@ -59,10 +26,19 @@ const FloatingChatWidget = ({ isOpen, onToggle, onOpenAppointment }) => {
   // 1. Lock background page body scroll when chat modal is open
   useBodyScrollLock(isOpen);
 
-  // 2. Track footer overlap to morph into FAB earlier before reaching footer (180px ahead) and stay lifted above it
+  // 2. Track footer overlap to morph into FAB earlier before reaching footer and stay lifted above it
   const { isFooterVisible, bottomOffset } = useFooterOverlap('site-footer', 24, 180);
 
-  // 2. Close on ESC key
+  // 3. Connect to chat session hook
+  const {
+    messages,
+    isTyping,
+    errorNotice,
+    sendUserMessage,
+    clearErrorNotice,
+  } = useChatSession();
+
+  // Close on ESC key
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape' && isOpen && onToggle) {
@@ -73,15 +49,7 @@ const FloatingChatWidget = ({ isOpen, onToggle, onOpenAppointment }) => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onToggle]);
 
-  // Rotate placeholder text smoothly
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setPlaceholderIndex((prev) => (prev + 1) % ROTATING_PLACEHOLDERS.length);
-    }, 4000);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Isolated container scroll to bottom (NEVER scrolls background window)
+  // Isolated container scroll to bottom
   const scrollToBottom = useCallback((behavior = 'smooth') => {
     if (chatMessagesContainerRef.current) {
       chatMessagesContainerRef.current.scrollTo({
@@ -99,7 +67,7 @@ const FloatingChatWidget = ({ isOpen, onToggle, onOpenAppointment }) => {
     setIsUserScrolledUp(distanceFromBottom > 90);
   };
 
-  // Immediate scroll on modal open without jumping window
+  // Immediate scroll on modal open
   useEffect(() => {
     if (isOpen) {
       const timer = setTimeout(() => {
@@ -117,249 +85,31 @@ const FloatingChatWidget = ({ isOpen, onToggle, onOpenAppointment }) => {
   }, [messages, isTyping, isOpen, isUserScrolledUp, scrollToBottom]);
 
   const handleSendMessage = useCallback(
-    async (textToSend) => {
-      const text = (textToSend || floatingInput || modalInput).trim();
+    (textToSend) => {
+      const text = (textToSend || modalInput).trim();
       if (!text) return;
 
-      const currentTime = new Intl.DateTimeFormat('fa-IR', {
-        hour: '2-digit',
-        minute: '2-digit',
-      }).format(new Date());
-
-      // Add user message
-      const userMsg = {
-        id: performance.now(),
-        sender: 'user',
-        text,
-        time: currentTime,
-      };
-
-      setMessages((prev) => [...prev, userMsg]);
-      setFloatingInput('');
-      setModalInput('');
-
-      // When sending a message, ensure user is pulled to the latest message
-      setIsUserScrolledUp(false);
-
-      // Ensure modal opens immediately
       if (!isOpen && onToggle) {
         onToggle();
       }
 
-      setIsTyping(true);
-
-      try {
-        // 1. Attempt live API response
-        const apiResponse = await chatService.sendMessage(text);
-        if (apiResponse?.reply) {
-          setIsTyping(false);
-          setMessages((prev) => [
-            ...prev,
-            {
-              id: performance.now() + 1,
-              sender: 'bot',
-              text: apiResponse.reply,
-              isEmergency: apiResponse.isEmergency,
-              emergencyCode: apiResponse.emergencyCode,
-              showBookingAction: apiResponse.showBookingAction,
-              time: currentTime,
-            },
-          ]);
-          return;
-        }
-      } catch {
-        // API call failed or offline — continue to local rule engine fallback
-      }
-
-      // 2. Local heuristic rule engine fallback
-      setTimeout(() => {
-        setIsTyping(false);
-        const lower = text.toLowerCase();
-
-        if (
-          lower.includes('خونریزی') ||
-          lower.includes('درد شدید') ||
-          lower.includes('اورژانس') ||
-          lower.includes('عفونت حاد') ||
-          lower.includes('تب بالا') ||
-          lower.includes('ترشح خونی')
-        ) {
-          const emergencyCode = `EMG-${Math.floor(1000 + Math.random() * 9000)}`;
-          setMessages((prev) => [
-            ...prev,
-            {
-              id: performance.now() + 1,
-              sender: 'bot',
-              text: 'بر اساس علائم وارد شده، وضعیت شما نیازمند بررسی دقیق توسط پزشک ارزیابی شد. لطفاً با شماره مطب تماس گرفته و کد تریاژ زیر را اعلام فرمایید:',
-              isEmergency: true,
-              emergencyCode,
-              time: currentTime,
-            },
-          ]);
-        } else if (
-          lower.includes('توده') ||
-          lower.includes('سونوگرافی') ||
-          lower.includes('ماموگرافی') ||
-          lower.includes('درد') ||
-          lower.includes('چکاپ')
-        ) {
-          setMessages((prev) => [
-            ...prev,
-            {
-              id: performance.now() + 1,
-              sender: 'bot',
-              text: 'بررسی ضایعات و توده‌های پستان نیازمند معاینه بالینی دقیق و مشاهده گرافی‌ها توسط سرکار خانم دکتر معشوری است. پیشنهاد می‌شود وقت ویزیت رزرو فرموده و تمامی مدارک قبلی را همراه داشته باشید.',
-              showBookingAction: true,
-              time: currentTime,
-            },
-          ]);
-        } else if (
-          lower.includes('پروتز') ||
-          lower.includes('لیفت') ||
-          lower.includes('ماموپلاستی') ||
-          lower.includes('زیبایی') ||
-          lower.includes('هزینه')
-        ) {
-          setMessages((prev) => [
-            ...prev,
-            {
-              id: performance.now() + 1,
-              sender: 'bot',
-              text: 'در جراحی‌های زیبایی و ماموپلاستی، بررسی بافت سینه و تقارن در جلسه مشاوره اولیه حضوری انجام می‌پذیرد تا مناسب‌ترین متد جراحی تعیین شود.',
-              showBookingAction: true,
-              time: currentTime,
-            },
-          ]);
-        } else {
-          setMessages((prev) => [
-            ...prev,
-            {
-              id: performance.now() + 1,
-              sender: 'bot',
-              text: 'پیام شما دریافت شد. در صورت نیاز به راهنمایی بیشتر می‌توانید با شماره تلفن مطب تماس گرفته یا نوبت حضوری دریافت فرمایید.',
-              showBookingAction: true,
-              time: currentTime,
-            },
-          ]);
-        }
-      }, 750);
+      setModalInput('');
+      setIsUserScrolledUp(false);
+      sendUserMessage(text);
     },
-    [floatingInput, modalInput, isOpen, onToggle]
+    [modalInput, isOpen, onToggle, sendUserMessage]
   );
-
-  const copyCode = (code) => {
-    navigator.clipboard.writeText(code);
-    setCopiedCode(code);
-    setTimeout(() => setCopiedCode(null), 2500);
-  };
 
   return (
     <>
-      {/* ── 1A. Compact Floating FAB when Approaching/Reaching Footer (Lifted cleanly above footer) ── */}
-      {!isOpen && isFooterVisible && (
-        <div
-          style={{ bottom: `${bottomOffset}px` }}
-          className="fixed left-4 sm:left-6 z-[90] transition-[bottom] duration-150 ease-out animate-scaleUp pointer-events-auto"
-        >
-          <button
-            type="button"
-            onClick={() => onToggle && onToggle()}
-            className="group bg-gradient-to-br from-primary to-primary-dark hover:brightness-110 text-white p-3 sm:p-3.5 rounded-full shadow-[0_12px_35px_-5px_rgba(231,84,128,0.5)] border-2 border-white/90 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center gap-2 cursor-pointer"
-            aria-label="گفتگو با دستیار هوشمند تریاژ"
-            title="دستیار هوشمند تریاژ مطب"
-          >
-            <div className="relative flex items-center justify-center">
-              <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-white group-hover:rotate-12 transition-transform" />
-              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-primary animate-pulse"></span>
-            </div>
-            <span className="hidden sm:inline-block text-xs font-black tracking-wide pr-1">
-              دستیار هوشمند تریاژ
-            </span>
-          </button>
-        </div>
-      )}
-
-      {/* ── 1B. Floating Slim Chat Capsule at Bottom Center (Normal Page Scroll) ── */}
-      {!isOpen && !isFooterVisible && (
-        <div className="fixed bottom-3 sm:bottom-6 left-0 right-0 z-[90] pointer-events-none px-3 sm:px-4 flex justify-center pb-[calc(0.5rem+env(safe-area-inset-bottom))] animate-fadeIn">
-          <div className="w-full max-w-lg md:max-w-2xl pointer-events-auto transition-all duration-300">
-            {isMinimized ? (
-              /* Minimized Pill */
-              <div className="flex justify-center">
-                <button
-                  type="button"
-                  onClick={() => setIsMinimized(false)}
-                  className="bg-white/95 backdrop-blur-xl border-2 border-primary/30 text-primary hover:bg-primary hover:text-white px-4 py-2 sm:px-5 sm:py-2.5 rounded-full text-xs font-black shadow-2xl flex items-center gap-2 transition-all hover:scale-105 cursor-pointer"
-                >
-                  <Sparkles size={15} />
-                  <span>دستیار هوشمند تریاژ</span>
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                </button>
-              </div>
-            ) : (
-              <div className="flex flex-col gap-1.5 sm:gap-2">
-                {/* Quick Suggestion Chips */}
-                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 px-1 chat-scroll justify-start sm:justify-center">
-                  {QUICK_PROMPTS.slice(0, 3).map((prompt, i) => (
-                    <button
-                      key={i}
-                      type="button"
-                      onClick={() => handleSendMessage(prompt.text)}
-                      className={`whitespace-nowrap px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full text-[10px] sm:text-[11px] font-bold border backdrop-blur-md shadow-xs transition-all duration-200 hover:scale-102 shrink-0 cursor-pointer ${
-                        prompt.isUrgent
-                          ? 'bg-red-500/15 border-red-500/35 text-red-700 hover:bg-red-500 hover:text-white'
-                          : 'bg-white/90 border-primary/25 text-textDark/85 hover:bg-primary hover:text-white hover:border-transparent'
-                      }`}
-                    >
-                      {prompt.text}
-                    </button>
-                  ))}
-
-                  {/* Minimize Button */}
-                  <button
-                    type="button"
-                    onClick={() => setIsMinimized(true)}
-                    className="p-1 rounded-full text-textDark/40 hover:text-textDark hover:bg-white/80 transition-colors shrink-0 cursor-pointer"
-                    title="کوچک کردن"
-                    aria-label="کوچک کردن ویجت"
-                  >
-                    <X size={14} />
-                  </button>
-                </div>
-
-                {/* Main Slim Capsule Input Bar */}
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    handleSendMessage();
-                  }}
-                  className="bg-white/95 backdrop-blur-2xl border-2 border-primary/35 rounded-full p-1 sm:p-1.5 pr-3.5 sm:pr-4 pl-1 sm:pl-1.5 shadow-2xl shadow-primary/25 flex items-center gap-1.5 sm:gap-2 transition-all hover:border-primary/60 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/25"
-                >
-                  <div className="text-primary shrink-0 animate-pulse flex items-center">
-                    <Sparkles size={18} className="sm:w-5 sm:h-5" />
-                  </div>
-
-                  <input
-                    type="text"
-                    value={floatingInput}
-                    onChange={(e) => setFloatingInput(e.target.value)}
-                    placeholder={ROTATING_PLACEHOLDERS[placeholderIndex]}
-                    className="flex-1 bg-transparent border-none outline-none text-xs sm:text-sm text-textDark placeholder:text-textDark/45 font-medium min-w-0"
-                  />
-
-                  <button
-                    type="submit"
-                    aria-label="ارسال و شروع چت"
-                    className="bg-gradient-to-r from-primary to-primary-dark text-white rounded-full w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center transition-all hover:scale-105 shrink-0 shadow-md shadow-primary/30 cursor-pointer"
-                  >
-                    <Send size={14} className="rotate-180 ml-0.5 sm:w-4 sm:h-4" />
-                  </button>
-                </form>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      {/* ── 1. Floating Pill & Bottom FAB ── */}
+      <ChatPillButton
+        isOpen={isOpen}
+        onToggle={onToggle}
+        onSubmitText={handleSendMessage}
+        isFooterVisible={isFooterVisible}
+        bottomOffset={bottomOffset}
+      />
 
       {/* ── 2. Full-Width / Full-Screen Popup Chat Modal ── */}
       {isOpen && (
@@ -422,7 +172,14 @@ const FloatingChatWidget = ({ isOpen, onToggle, onOpenAppointment }) => {
                       <button
                         key={i}
                         type="button"
-                        onClick={() => handleSendMessage(prompt.text)}
+                        onClick={() => {
+                          if (prompt.isBooking && onOpenAppointment) {
+                            onToggle();
+                            onOpenAppointment();
+                          } else {
+                            handleSendMessage(prompt.text);
+                          }
+                        }}
                         className={`text-right p-3 rounded-2xl text-xs font-bold border transition-all flex items-start gap-2.5 cursor-pointer ${
                           prompt.isUrgent
                             ? 'bg-red-500/10 border-red-500/30 text-red-700 hover:bg-red-500/20'
@@ -459,8 +216,15 @@ const FloatingChatWidget = ({ isOpen, onToggle, onOpenAppointment }) => {
                     <button
                       key={i}
                       type="button"
-                      onClick={() => handleSendMessage(prompt.text)}
-                      className={`whitespace-nowrap px-3 py-1 rounded-full text-[11px] font-bold border shrink-0 transition-all ${
+                      onClick={() => {
+                        if (prompt.isBooking && onOpenAppointment) {
+                          onToggle();
+                          onOpenAppointment();
+                        } else {
+                          handleSendMessage(prompt.text);
+                        }
+                      }}
+                      className={`whitespace-nowrap px-3 py-1 rounded-full text-[11px] font-bold border shrink-0 transition-all cursor-pointer ${
                         prompt.isUrgent
                           ? 'bg-red-500/10 border-red-500/30 text-red-600'
                           : 'bg-white/80 border-primary/20 text-textDark'
@@ -471,6 +235,23 @@ const FloatingChatWidget = ({ isOpen, onToggle, onOpenAppointment }) => {
                   ))}
                 </div>
 
+                {/* Error Notice Banner */}
+                {errorNotice && (
+                  <div className="bg-amber-500/15 border-b border-amber-500/30 px-4 py-2 flex items-center justify-between text-xs text-amber-800 font-bold shrink-0">
+                    <div className="flex items-center gap-2">
+                      <AlertCircle size={15} className="text-amber-600 shrink-0" />
+                      <span>{errorNotice}</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={clearErrorNotice}
+                      className="p-1 hover:bg-amber-500/20 rounded-lg cursor-pointer"
+                    >
+                      <X size={13} />
+                    </button>
+                  </div>
+                )}
+
                 {/* Messages List (Isolated container scroll) */}
                 <div
                   ref={chatMessagesContainerRef}
@@ -479,79 +260,12 @@ const FloatingChatWidget = ({ isOpen, onToggle, onOpenAppointment }) => {
                   style={{ overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch' }}
                 >
                   {messages.map((msg) => (
-                    <div
+                    <ChatMessageItem
                       key={msg.id}
-                      className={`flex flex-col mb-2 ${
-                        msg.sender === 'user' ? 'items-start' : 'items-end'
-                      }`}
-                    >
-                      <div
-                        className={`p-3.5 sm:p-4 md:p-5 rounded-2xl sm:rounded-3xl max-w-[90%] sm:max-w-[80%] text-xs sm:text-sm md:text-base leading-relaxed flex flex-col gap-1.5 ${
-                          msg.sender === 'user'
-                            ? 'bg-primary text-white rounded-tr-sm shadow-md font-medium'
-                            : 'bg-white/90 border border-primary/20 text-textDark rounded-tl-sm shadow-xs font-medium'
-                        }`}
-                      >
-                        <div>{msg.text}</div>
-
-                        {/* Emergency Code Box */}
-                        {msg.isEmergency && (
-                          <div className="bg-red-500/15 border border-red-500/30 p-3.5 sm:p-5 rounded-2xl mt-3 sm:mt-4 text-center backdrop-blur-md">
-                            <div className="flex items-center justify-center gap-1.5 text-red-600 font-black text-xs sm:text-base mb-1.5 sm:mb-2">
-                              <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5" />
-                              کد تریاژ اورژانس صادر شد
-                            </div>
-                            <div className="text-xl sm:text-3xl font-mono font-black text-red-600 bg-white py-1.5 sm:py-2 rounded-2xl shadow-inner mb-2.5 sm:mb-3 tracking-widest">
-                              {msg.emergencyCode}
-                            </div>
-                            <div className="flex gap-2">
-                              <button
-                                type="button"
-                                onClick={() => copyCode(msg.emergencyCode)}
-                                className="flex-1 bg-white hover:bg-red-50 border border-red-200 text-red-600 py-2 sm:py-2.5 rounded-xl transition-all text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 cursor-pointer"
-                              >
-                                {copiedCode === msg.emergencyCode ? (
-                                  <>
-                                    <Check className="w-4 h-4" />
-                                    کپی شد!
-                                  </>
-                                ) : (
-                                  <>
-                                    <Copy className="w-4 h-4" />
-                                    کپی کد
-                                  </>
-                                )}
-                              </button>
-                              <a
-                                href="tel:02112345678"
-                                className="flex-1 bg-primary hover:bg-primary-dark text-white py-2 sm:py-2.5 rounded-xl transition-all text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 shadow-md shadow-primary/20 no-underline"
-                              >
-                                <PhoneCall className="w-4 h-4" />
-                                تماس با مطب
-                              </a>
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Booking CTA Button */}
-                        {msg.showBookingAction && (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              onToggle();
-                              if (onOpenAppointment) onOpenAppointment();
-                            }}
-                            className="mt-3 w-full bg-primary hover:bg-primary-dark text-white font-bold py-2.5 px-4 rounded-xl text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md shadow-primary/20 transition-all cursor-pointer"
-                          >
-                            <Calendar className="w-4 h-4" />
-                            مشاهده تقویم و رزرو وقت ویزیت حضوری
-                          </button>
-                        )}
-                      </div>
-                      <span className="text-[11px] px-2 mt-0.5 font-bold text-white/70">
-                        {msg.time}
-                      </span>
-                    </div>
+                      message={msg}
+                      onOpenAppointment={onOpenAppointment}
+                      onToggleChat={onToggle}
+                    />
                   ))}
 
                   {isTyping && (
@@ -595,12 +309,14 @@ const FloatingChatWidget = ({ isOpen, onToggle, onOpenAppointment }) => {
                       placeholder="علائم، پرسش پزشکی یا دلیل مراجعه خود را بنویسید..."
                       value={modalInput}
                       onChange={(e) => setModalInput(e.target.value)}
-                      className="flex-1 bg-white border border-primary/30 shadow-inner rounded-xl sm:rounded-2xl px-3.5 sm:px-4 py-2.5 sm:py-3 text-sm md:text-sm text-textDark focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all placeholder-textDark/45 font-medium"
+                      disabled={isTyping}
+                      className="flex-1 bg-white border border-primary/30 shadow-inner rounded-xl sm:rounded-2xl px-3.5 sm:px-4 py-2.5 sm:py-3 text-sm md:text-sm text-textDark focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-textDark/45 font-medium disabled:opacity-60"
                     />
                     <button
                       type="submit"
+                      disabled={isTyping || !modalInput.trim()}
                       aria-label="ارسال پیام"
-                      className="bg-primary hover:bg-primary-dark text-white rounded-xl sm:rounded-2xl w-10 h-10 sm:w-11 sm:h-11 md:w-12 md:h-12 flex items-center justify-center transition-transform hover:scale-105 shrink-0 shadow-md shadow-primary/30 cursor-pointer"
+                      className="bg-primary hover:bg-primary-dark text-white rounded-xl sm:rounded-2xl w-10 h-10 sm:w-11 sm:h-11 md:w-12 md:h-12 flex items-center justify-center transition-transform hover:scale-105 shrink-0 shadow-md shadow-primary/30 cursor-pointer disabled:opacity-50 disabled:hover:scale-100 disabled:cursor-not-allowed"
                     >
                       <Send className="w-4 h-4 rotate-180" />
                     </button>
