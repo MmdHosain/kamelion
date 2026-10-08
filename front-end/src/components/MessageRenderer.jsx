@@ -5,8 +5,12 @@ import Slider from './ui/Slider/Slider'; // Adjust path if necessary
 
 const MessageRenderer = ({ message, onCtaAction }) => {
   if (!message) return null;
-  const { type, content, role, payload } = message;
+  const { type, content, role, payload, timestamp } = message;
   const isUser = role === 'user';
+
+  const timeString = timestamp
+    ? new Date(timestamp).toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' })
+    : new Date().toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' });
 
   /* ===============================
   Slider Message
@@ -17,22 +21,25 @@ const MessageRenderer = ({ message, onCtaAction }) => {
       : payload?.items || [];
 
     return (
-      <div className={`flex flex-col mb-4 ${isUser ? 'items-end' : 'items-start'}`}>
+      <div className={`flex flex-col mb-4 ${isUser ? 'items-start' : 'items-end'}`}>
         {content && (
           <div
-            className="
+            className={`
               animate-messageIn
-              bg-dark text-lightText
               px-4 py-3
-              rounded-2xl rounded-tl-md
+              rounded-2xl
               max-w-[85%]
               text-sm leading-6
               mb-2
-              border border-primary/20
               shadow-sm
-            "
+              flex flex-col gap-1
+              ${isUser ? 'bg-primary text-white rounded-tr-md' : 'bg-dark text-lightText rounded-tl-md border border-primary/20'}
+            `}
           >
-            {content}
+            <div>{content}</div>
+            <div className={`text-[10px] opacity-70 ${isUser ? 'text-left' : 'text-right'}`}>
+              {timeString}
+            </div>
           </div>
         )}
         <div className="w-full max-w-full overflow-hidden">
@@ -47,7 +54,7 @@ const MessageRenderer = ({ message, onCtaAction }) => {
   =============================== */
   if (type === 'text') {
     return (
-      <div className={`flex w-full mb-4 ${isUser ? 'justify-end' : 'justify-start'}`}>
+      <div className={`flex w-full mb-4 ${isUser ? 'justify-start' : 'justify-end'}`}>
         <div
           className={`
             animate-messageIn
@@ -55,22 +62,18 @@ const MessageRenderer = ({ message, onCtaAction }) => {
             text-sm leading-6
             transition-all duration-200 ease-out
             hover:shadow-md
+            flex flex-col gap-1
             ${
               isUser
-                ? `
-                  bg-primary text-white
-                  rounded-2xl rounded-br-md
-                  shadow-sm
-                `
-                : `
-                  bg-dark text-lightText
-                  rounded-2xl rounded-tl-md
-                  border border-primary/20
-                `
+                ? 'bg-primary text-white rounded-2xl rounded-tr-md shadow-sm'
+                : 'bg-dark text-lightText rounded-2xl rounded-tl-md border border-primary/20'
             }
           `}
         >
-          {content}
+          <div>{content}</div>
+          <div className={`text-[10px] opacity-70 ${isUser ? 'text-left' : 'text-right'}`}>
+            {timeString}
+          </div>
         </div>
       </div>
     );
@@ -81,16 +84,18 @@ const MessageRenderer = ({ message, onCtaAction }) => {
   =============================== */
   if (type === 'form') {
     return (
-      <div className="flex w-full mb-4 justify-start">
+      <div className={`flex w-full mb-4 ${isUser ? 'justify-start' : 'justify-end'}`}>
         <div
-          className="
+          className={`
             animate-messageIn
             bg-darkGray
             border border-white/10
             p-4
-            rounded-2xl rounded-tl-none
+            rounded-2xl
             w-3/4
-          "
+            flex flex-col gap-1
+            ${isUser ? 'rounded-tr-md' : 'rounded-tl-md'}
+          `}
         >
           <p className="text-white text-sm mb-3">
             لطفا اطلاعات زیر را وارد کنید:
@@ -125,6 +130,9 @@ const MessageRenderer = ({ message, onCtaAction }) => {
           >
             {payload?.submitLabel || 'ثبت'}
           </button>
+          <div className={`text-[10px] opacity-70 mt-1 ${isUser ? 'text-left' : 'text-right'} text-white/70`}>
+            {timeString}
+          </div>
         </div>
       </div>
     );
@@ -135,8 +143,8 @@ const MessageRenderer = ({ message, onCtaAction }) => {
   =============================== */
   if (type === 'cta') {
     return (
-      <div className="flex w-full mb-4 justify-start">
-        <div className="bg-dark border border-primary/20 p-4 rounded-2xl rounded-tl-md max-w-[85%]">
+      <div className={`flex w-full mb-4 ${isUser ? 'justify-start' : 'justify-end'}`}>
+        <div className={`bg-dark border border-primary/20 p-4 rounded-2xl max-w-[85%] flex flex-col gap-1 ${isUser ? 'rounded-tr-md' : 'rounded-tl-md'}`}>
           <p className="text-lightText text-sm mb-3 leading-6">
             {content}
           </p>
@@ -146,6 +154,9 @@ const MessageRenderer = ({ message, onCtaAction }) => {
           >
             {payload?.buttonLabel || 'ادامه'}
           </button>
+          <div className={`text-[10px] opacity-70 mt-1 ${isUser ? 'text-left' : 'text-right'} text-lightText`}>
+            {timeString}
+          </div>
         </div>
       </div>
     );

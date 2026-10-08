@@ -13,9 +13,11 @@ import Footer from './components/layout/Footer';
 /* Pages */
 import HomePage from './pages/HomePage';
 import AboutPage from './pages/AboutPage';
-import ServicesPage from './pages/ServicesPage';
+import TherapeuticServicesPage from './pages/TherapeuticServicesPage';
+import AestheticServicesPage from './pages/AestheticServicesPage';
 import FaqPage from './pages/FaqPage';
 import ResourcesPage from './pages/ResourcesPage';
+import ArticleDetailPage from './pages/ArticleDetailPage';
 import VideoPage from './pages/VideoPage';
 
 import AdminPage from './pages/admin/AdminPage';
@@ -78,14 +80,30 @@ const App = () => {
         />
         <Route path="/about" element={<AboutPage />} />
         <Route
+          path="/services/therapeutic"
+          element={<TherapeuticServicesPage onOpenAppointment={() => setOpenAppointment(true)} />}
+        />
+        <Route
+          path="/services/aesthetic"
+          element={<AestheticServicesPage onOpenAppointment={() => setOpenAppointment(true)} />}
+        />
+        <Route
           path="/services"
-          element={<ServicesPage onOpenAppointment={() => setOpenAppointment(true)} />}
+          element={<Navigate to="/services/therapeutic" replace />}
         />
         <Route
           path="/faq"
           element={<FaqPage onOpenChat={() => setOpenChat(true)} />}
         />
         <Route path="/resources" element={<ResourcesPage />} />
+        <Route
+          path="/resources/:slug"
+          element={<ArticleDetailPage onOpenAppointment={() => setOpenAppointment(true)} />}
+        />
+        <Route
+          path="/articles/:slug"
+          element={<ArticleDetailPage onOpenAppointment={() => setOpenAppointment(true)} />}
+        />
         <Route path="/video" element={<VideoPage />} />
         <Route path="/videos" element={<VideoPage />} />
 

@@ -1,9 +1,13 @@
 import React from 'react';
-import { Award, GraduationCap, BookOpen, Stethoscope, CheckCircle2, ShieldCheck, HeartPulse } from 'lucide-react';
+import { Award, GraduationCap, BookOpen, Stethoscope, CheckCircle2, ShieldCheck, HeartPulse, ArrowLeft } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const AboutPage = () => {
   return (
-    <main className="flex-grow flex flex-col items-center w-full pt-28 md:pt-32 pb-20">
+    <main 
+      className="flex-grow flex flex-col items-center w-full pt-28 md:pt-32 pb-20"
+      style={{ animation: 'fadeIn 0.6s ease-out forwards' }}
+    >
       <div className="glass-panel fade-section is-visible">
         {/* Top Header */}
         <div className="text-center mb-10">
@@ -91,12 +95,23 @@ const AboutPage = () => {
         </div>
 
         {/* Philosophy */}
-        <div className="bg-gradient-to-r from-primary/15 to-primary-dark/15 border border-primary/30 p-6 md:p-8 rounded-3xl text-center">
+        <div className="bg-gradient-to-r from-primary/15 to-primary-dark/15 border border-primary/30 p-6 md:p-8 rounded-3xl text-center mb-8">
           <HeartPulse className="w-10 h-10 text-primary mx-auto mb-3" />
           <h4 className="text-xl font-bold text-textDark mb-2">تعهد به آرامش و سلامت شما</h4>
           <p className="text-textDark/80 max-w-2xl mx-auto text-sm md:text-base leading-relaxed">
             «هدف ما تنها درمان بیماری نیست، بلکه حفظ کیفیت زندگی، اعتماد به نفس و آرامش خاطر هر یک از مراجعین در محیطی حرفه‌ای و امن است.»
           </p>
+        </div>
+
+        {/* Back to Home Button */}
+        <div className="flex justify-center mt-4 pb-4">
+          <Link
+            to="/"
+            className="flex items-center gap-2 text-primary hover:text-primary-dark font-bold bg-white/70 px-6 py-3 rounded-full border border-primary/30 hover:border-primary/60 transition-all shadow-sm hover:shadow-md"
+          >
+            بازگشت به صفحه اصلی
+            <ArrowLeft className="w-5 h-5" />
+          </Link>
         </div>
       </div>
     </main>

@@ -8,8 +8,9 @@
 - **ماژول:** پرتال خدمات تخصصی پزشکی (Medical Services Catalog)
 - **وضعیت پیاده‌سازی:** ✅ پیاده‌سازی کامل (Completed)
 - **کامپوننت‌های فرانت‌اند:**
-  - صفحه خدمات: [`src/pages/ServicesPage.jsx`](file:///e:/GitHub%20Repo/kamelion/front-end/src/pages/ServicesPage.jsx)
-  - بخش معرفی خدمات در صفحه اصلی: [`src/components/sections/ServicesSection.jsx`](file:///e:/GitHub%20Repo/kamelion/front-end/src/components/sections/ServicesSection.jsx)
+  - صفحه خدمات درمانی: `src/pages/TherapeuticServicesPage.jsx`
+  - صفحه خدمات زیبایی: `src/pages/AestheticServicesPage.jsx`
+  - بخش معرفی خدمات در صفحه اصلی: `src/components/sections/ServicesSection.jsx`
 
 ---
 

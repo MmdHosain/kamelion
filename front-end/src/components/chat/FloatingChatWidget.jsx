@@ -481,18 +481,18 @@ const FloatingChatWidget = ({ isOpen, onToggle, onOpenAppointment }) => {
                   {messages.map((msg) => (
                     <div
                       key={msg.id}
-                      className={`flex flex-col ${
-                        msg.sender === 'user' ? 'items-end' : 'items-start'
+                      className={`flex flex-col mb-2 ${
+                        msg.sender === 'user' ? 'items-start' : 'items-end'
                       }`}
                     >
                       <div
-                        className={`p-3.5 sm:p-4 md:p-5 rounded-2xl sm:rounded-3xl max-w-[90%] sm:max-w-[80%] text-xs sm:text-sm md:text-base leading-relaxed ${
+                        className={`p-3.5 sm:p-4 md:p-5 rounded-2xl sm:rounded-3xl max-w-[90%] sm:max-w-[80%] text-xs sm:text-sm md:text-base leading-relaxed flex flex-col gap-1.5 ${
                           msg.sender === 'user'
-                            ? 'bg-primary text-white rounded-tl-sm shadow-md font-medium'
-                            : 'bg-white/90 border border-primary/20 text-textDark rounded-tr-sm shadow-xs font-medium'
+                            ? 'bg-primary text-white rounded-tr-sm shadow-md font-medium'
+                            : 'bg-white/90 border border-primary/20 text-textDark rounded-tl-sm shadow-xs font-medium'
                         }`}
                       >
-                        {msg.text}
+                        <div>{msg.text}</div>
 
                         {/* Emergency Code Box */}
                         {msg.isEmergency && (
@@ -548,14 +548,14 @@ const FloatingChatWidget = ({ isOpen, onToggle, onOpenAppointment }) => {
                           </button>
                         )}
                       </div>
-                      <span className="text-[10px] sm:text-[11px] text-textDark/45 px-2 mt-1 font-mono">
+                      <span className="text-[11px] px-2 mt-0.5 font-bold text-white/70">
                         {msg.time}
                       </span>
                     </div>
                   ))}
 
                   {isTyping && (
-                    <div className="bg-white/85 border border-primary/20 p-3 rounded-2xl rounded-tr-sm self-start shadow-xs flex items-center justify-center gap-1.5 w-14 h-10">
+                    <div className="bg-white/85 border border-primary/20 p-3 rounded-2xl rounded-tl-sm self-end shadow-xs flex items-center justify-center gap-1.5 w-14 h-10">
                       <span className="w-2 h-2 bg-primary/60 rounded-full animate-bounce"></span>
                       <span
                         className="w-2 h-2 bg-primary/60 rounded-full animate-bounce"

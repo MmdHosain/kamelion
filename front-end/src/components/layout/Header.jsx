@@ -60,9 +60,9 @@ const Header = ({ onOpenAppointment, onOpenChat, onOpenMyAppointments }) => {
             {/* خدمات Dropdown */}
             <div className="group relative">
               <Link
-                to="/services"
+                to="/services/therapeutic"
                 className={`hover:text-primary transition-colors text-sm font-bold flex items-center gap-1 ${
-                  location.pathname === '/services' ? 'text-primary' : 'text-textDark/80'
+                  location.pathname.startsWith('/services') ? 'text-primary' : 'text-textDark/80'
                 }`}
               >
                 خدمات
@@ -70,13 +70,13 @@ const Header = ({ onOpenAppointment, onOpenChat, onOpenMyAppointments }) => {
               </Link>
               <div className="hidden group-hover:block absolute top-full right-0 bg-white/95 backdrop-blur-xl border border-primary/20 min-w-[190px] rounded-2xl py-2 mt-2 shadow-2xl transition-all before:content-[''] before:absolute before:-top-3 before:left-0 before:right-0 before:h-3">
                 <Link
-                  to="/services#beauty"
+                  to="/services/aesthetic"
                   className="block px-5 py-2.5 text-sm text-textDark/85 hover:text-primary hover:bg-bgLight/50 transition-colors font-medium"
                 >
                   جراحی‌های زیبایی پستان
                 </Link>
                 <Link
-                  to="/services#treatment"
+                  to="/services/therapeutic"
                   className="block px-5 py-2.5 text-sm text-textDark/85 hover:text-primary hover:bg-bgLight/50 transition-colors font-medium"
                 >
                   درمان بیماری‌ها و انکولوژی
