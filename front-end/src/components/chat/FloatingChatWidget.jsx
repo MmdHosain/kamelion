@@ -548,7 +548,7 @@ const FloatingChatWidget = ({ isOpen, onToggle, onOpenAppointment }) => {
                           </button>
                         )}
                       </div>
-                      <span className={`text-[10px] sm:text-[11px] px-2 mt-1 font-mono ${msg.sender === 'user' ? 'text-primary/70' : 'text-textDark/60'}`}>
+                      <span className={`text-[11px] px-2 mt-0.5 font-bold ${msg.sender === 'user' ? 'text-primary' : 'text-textDark/70'}`}>
                         {msg.time}
                       </span>
                     </div>
