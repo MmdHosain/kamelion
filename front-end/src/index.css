@@ -414,3 +414,12 @@ body {
   margin: 1.25rem 0 !important;
   border: 1px solid rgba(231, 84, 128, 0.2) !important;
 }
+
+/* Fix iOS auto-zoom issue for form elements */
+@supports (-webkit-touch-callout: none) {
+  input,
+  textarea,
+  select {
+    font-size: 16px;
+  }
+}
