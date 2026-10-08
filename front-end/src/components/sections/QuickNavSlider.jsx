@@ -2,22 +2,15 @@ import React, { useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Home, UserCheck, Activity, Stethoscope, HelpCircle, BookOpen, ChevronLeft, ChevronRight, ArrowLeft } from 'lucide-react';
 
+import imgCard02 from '../../assets/images/cards/card-02.jpg';
+import imgCard03 from '../../assets/images/cards/card-03.jpg';
+import imgCard04 from '../../assets/images/cards/card-04.jpg';
+import imgCard05 from '../../assets/images/cards/card-05.jpg';
+import imgCard06 from '../../assets/images/cards/card-06.jpg';
+
 const CARDS_DATA = [
   {
-    id: '01',
-    index: '۰۱',
-    title: 'خانه و معرفی مطب',
-    desc: 'نمای کلی مطب، معرفی سریع خدمات و مسیر دسترسی به همه بخش‌های سایت.',
-    link: '#hero',
-    isExternal: false,
-    icon: Home,
-    c1: '#e75480',
-    c2: '#ba2d63',
-    pattern: 'dots',
-  },
-  {
     id: '02',
-    index: '۰۲',
     title: 'آشنایی با پزشک',
     desc: 'سابقه تحصیلی، تخصص‌ها، عضویت‌های علمی و تجربه بالینی در یک نگاه.',
     link: '/about',
@@ -26,10 +19,11 @@ const CARDS_DATA = [
     c1: '#b685c2',
     c2: '#9a68a6',
     pattern: 'lines',
+    buttonText: 'مشاهده بیوگرافی',
+    image: imgCard02,
   },
   {
     id: '03',
-    index: '۰۳',
     title: 'خدمات درمانی و انکولوژی',
     desc: 'روش‌های درمان تخصصی بیماری‌های پستان، از تشخیص اولیه تا مراقبت‌های کامل.',
     link: '/services',
@@ -38,10 +32,11 @@ const CARDS_DATA = [
     c1: '#e885a5',
     c2: '#cc6386',
     pattern: 'dots',
+    buttonText: 'مشاهده خدمات',
+    image: imgCard03,
   },
   {
     id: '04',
-    index: '۰۴',
     title: 'جراحی‌های زیبایی و ترمیمی',
     desc: 'ماموپلاستی، لیفت، پروتز و بازسازی پستان با مدرن‌ترین متدهای روز.',
     link: '/services',
@@ -50,10 +45,11 @@ const CARDS_DATA = [
     c1: '#d0a0d6',
     c2: '#ad76b5',
     pattern: 'cross',
+    buttonText: 'مشاهده خدمات',
+    image: imgCard04,
   },
   {
     id: '05',
-    index: '۰۵',
     title: 'سوالات متداول مراجعین',
     desc: 'پاسخ کوتاه و شفاف به پرتکرارترین پرسش‌های بیماران پیش از مراجعه و جراحی.',
     link: '/faq',
@@ -62,10 +58,11 @@ const CARDS_DATA = [
     c1: '#7d4a99',
     c2: '#5c3373',
     pattern: 'dots',
+    buttonText: 'مشاهده سوالات',
+    image: imgCard05,
   },
   {
     id: '06',
-    index: '۰۶',
     title: 'مطالب و مقالات آموزشی',
     desc: 'مقاله‌های علمی، خودآزمایی ماهانه و راهنماهای کاربردی برای آگاهی و پیشگیری.',
     link: '/resources',
@@ -74,6 +71,8 @@ const CARDS_DATA = [
     c1: '#a3365a',
     c2: '#7a2441',
     pattern: 'lines',
+    buttonText: 'مشاهده مقالات',
+    image: imgCard06,
   },
 ];
 
@@ -177,12 +176,15 @@ const QuickNavSlider = () => {
                 className="card"
                 style={{ '--c1': card.c1, '--c2': card.c2 }}
               >
-                <div className="visual">
+                <div className="visual overflow-hidden">
                   <span className="glow"></span>
-                  <svg className="pattern" aria-hidden="true">
-                    <rect width="100%" height="100%" fill={`url(#${card.pattern})`} />
-                  </svg>
-                  <span className="index">{card.index}</span>
+                  {card.image ? (
+                    <img src={card.image} alt={card.title} className="w-full h-full object-cover mix-blend-overlay opacity-60" />
+                  ) : (
+                    <svg className="pattern" aria-hidden="true">
+                      <rect width="100%" height="100%" fill={`url(#${card.pattern})`} />
+                    </svg>
+                  )}
                 </div>
 
                 <div className="badge">
@@ -193,7 +195,7 @@ const QuickNavSlider = () => {
                   <h2>{card.title}</h2>
                   <p>{card.desc}</p>
                   <span className="more">
-                    ورود به صفحه
+                    {card.buttonText}
                     <ArrowLeft className="w-4 h-4 mr-1" />
                   </span>
                 </div>
