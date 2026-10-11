@@ -2,7 +2,7 @@
 
 > This is a complete list of every route actually wired into `config/urls.py` (directly or via an included app `urls.py`), what each one expects as input, what it returns, and what it does internally. Global defaults: unless a view explicitly overrides them, DRF's default authentication is **JWT** (`Authorization: Bearer <token>`) and the default permission is **`IsAuthenticated`**.
 >
-> **Updated:** this revision reflects the pending-appointment approval flow, the reworked two-step OTP/registration login flow, the admin-vs-patient branch at login, admin editing of patient info, the review/comment endpoints (previously undocumented), and the **new articles CMS** (`apps/articles`).
+> **Updated:** this revision reflects the pending-appointment approval flow, the reworked two-step OTP/registration login flow, the admin-vs-patient branch at login, admin editing of patient info, the review/comment endpoints (previously undocumented), the **new articles CMS** (`apps/articles`), and the **disapproval reason** added to the reservation-disapprove flow (`disapproval_reason` field, required `reason` on `/disapprove/`, sent to the patient in the rejection SMS).
 
 ---
 
@@ -151,10 +151,12 @@ No slots table is persisted — everything here is computed per request from the
   "appointment_time": "09:00:00",
   "status": "pending",
   "reason": "string",
+  "disapproval_reason": "",
   "created_at": "...",
   "updated_at": "..."
 }
 ```
+*(New field: `disapproval_reason` is part of every `Appointment` object. It is `""` unless an admin disapproved the reservation, in which case it holds the admin's written reason.)*
 **Error response:** `400 Bad Request` — `{ "detail": "Selected time slot is not available." }`
 **What it does:** Re-derives available slots for the requested date (same logic as `GET /slots/`) inside a database transaction, and if the requested time is among them, creates the `Appointment` for `request.user`.
 
@@ -163,7 +165,7 @@ No slots table is persisted — everything here is computed per request from the
 ### `GET /api/appointments/my/`
 **Auth:** JWT required (`IsAuthenticated`)
 **Request body:** None
-**Response:** `200 OK` — array of the current user's appointments (same shape as above, `status` may now be `pending`, `scheduled`, `cancelled_user`, `cancelled_admin`, or `visited`), ordered by `-appointment_date`. **Not paginated.**
+**Response:** `200 OK` — array of the current user's appointments (same shape as above, `status` may now be `pending`, `scheduled`, `cancelled_user`, `cancelled_admin`, or `visited`), ordered by `-appointment_date`. **Not paginated.** ⚠️ **Changed:** each item now includes `disapproval_reason`, so the patient app can show why a reservation was disapproved (`status: "cancelled_admin"`).
 **What it does:** Returns every appointment (any status) belonging to `request.user`.
 
 ### `POST /api/appointments/<int:pk>/cancel/`
@@ -290,21 +292,39 @@ Validation (via `DoctorAvailabilityBulkSerializer`) checks each schedule in the 
 | `status` | string | No | *(new)* Filter by exact status — e.g. `?status=pending` to list only reservations awaiting approval |
 | `page`, `page_size` | int | No | Pagination (`page_size` max 100, default 10) |
 
-**Response:** `200 OK` — a paginated DRF response (`count`, `next`, `previous`, `results`), each result in the `AppointmentSerializer` shape shown earlier (including `full_name`/`phone_number` of the booking patient, and `status` which may now be `pending`).
+**Response:** `200 OK` — a paginated DRF response (`count`, `next`, `previous`, `results`), each result in the `AppointmentSerializer` shape shown earlier (including `full_name`/`phone_number` of the booking patient, `status` which may now be `pending`, and the new `disapproval_reason`).
 **What it does:** Lists **every** appointment in the system (not scoped to one user), ordered newest-first by default. If `search` is supplied, it's split into whitespace-separated terms and each term must match (case-insensitively, `icontains`) the patient's `full_name` or `phone_number`; results are then re-ranked so exact matches and fuller matches surface first (via an annotated `rank`, ordered `-rank, -id`). If `status` is supplied, results are additionally filtered to that exact status value. Uses `select_related("user")` to avoid N+1 queries when serializing `full_name`/`phone_number`.
 
 ### `PUT` / `PATCH /api/admin/appointments/<id>/`
-Unchanged — partial update of any appointment field, including `status` directly (e.g. `{"status": "scheduled"}` works too, as an alternative to the dedicated approve/disapprove endpoints below).
+Partial update of any appointment field, including `status` directly (e.g. `{"status": "scheduled"}` works too, as an alternative to the dedicated approve/disapprove endpoints below). `disapproval_reason` is now a writable field.
+
+⚠️ **Changed:** when a `pending` appointment is moved to `cancelled_admin` this way, `disapproval_reason` is **required**:
+```json
+{ "status": "cancelled_admin", "disapproval_reason": "Doctor is unavailable that day" }
+```
+**Error response:** `400 Bad Request` — `{ "disapproval_reason": ["A reason is required to disapprove an appointment."] }` if it is missing or blank. The patient is sent the approval/rejection SMS automatically when a `pending` appointment moves to `scheduled` / `cancelled_admin` through this endpoint, same as with the dedicated endpoints.
 
 ### `POST /api/admin/appointments/<id>/approve/` — *new*
 **Response:** `200 OK` — the updated `Appointment` (now `status: "scheduled"`).
 **Error response:** `400 Bad Request` — `{ "detail": "Only pending appointments can be approved." }` if the appointment isn't currently `pending`.
 **What it does:** Moves a `pending` appointment to `scheduled`, confirming it.
 
-### `POST /api/admin/appointments/<id>/disapprove/` — *new*
-**Response:** `200 OK` — the updated `Appointment` (now `status: "cancelled_admin"`).
-**Error response:** `400 Bad Request` — `{ "detail": "Only pending appointments can be disapproved." }` if the appointment isn't currently `pending`.
-**What it does:** Moves a `pending` appointment to `cancelled_admin`, freeing its slot back up for other bookings.
+### `POST /api/admin/appointments/<id>/disapprove/` — *new* · ⚠️ **updated: now requires a reason**
+**Request body:**
+```json
+{ "reason": "Doctor is unavailable that day" }
+```
+`reason` — string, **required**, not blank, max 500 characters.
+
+**Response:** `200 OK` — the updated `Appointment` (now `status: "cancelled_admin"`, with `disapproval_reason` set to the submitted reason).
+**Error responses:**
+- `400 Bad Request` — `{ "reason": ["This field is required."] }` (or `"This field may not be blank."`) if the reason is missing or blank.
+- `400 Bad Request` — `{ "detail": "Only pending appointments can be disapproved." }` if the appointment isn't currently `pending`.
+- `404 Not Found` — `{ "detail": "Appointment not found" }`.
+
+**What it does:** Moves a `pending` appointment to `cancelled_admin`, stores the reason in `Appointment.disapproval_reason`, frees the slot back up for other bookings, and sends the patient the rejection SMS through PanelChi (`PANELCHI_PATTERN_APPOINTMENT_REJECTED`). The pattern variables sent are `full_name`, `time`, `date` and **`reason`** (the new one — the pattern's text must contain `%reason%`; the variable name is the `REASON_VARIABLE` constant in `apps/appointments/notifications.py`). The SMS never blocks the decision: if PanelChi fails, the disapproval is still saved and the error is only logged.
+
+> Removed: the Django admin bulk action "Disapprove selected pending appointments" — a bulk action has no way to ask for a reason. Disapproving is done through this endpoint (or the `PUT` above).
 
 ### `POST /api/admin/appointments/create/`
 Unchanged in request/response shape. Booking made this way (an admin entering a walk-in/phone booking on a patient's behalf) is created directly as `status: "scheduled"` — it does **not** go through the pending/approval step, since the admin creating it is already the approver.
@@ -447,9 +467,9 @@ These exist as installed Django apps but currently expose no models, views, or U
 | GET/PUT/PATCH/DELETE | `/api/admin/exceptions/<id>/` | JWT (admin) | `AvailabilityException` fields | Retrieve / update / delete an exception |
 | PUT | `/api/admin/exceptions/bulk/` | JWT (admin) | `{ exceptions: [...] }` | Replace-all closed dates |
 | GET | `/api/admin/appointments/` | JWT (admin) | `?search=`, `?status=`, `?page=`, `?page_size=` | Paginated, searchable, status-filterable list of all appointments |
-| PUT/PATCH | `/api/admin/appointments/<id>/` | JWT (admin) | any `Appointment` field | Update an appointment (e.g. status directly) |
+| PUT/PATCH | `/api/admin/appointments/<id>/` | JWT (admin) | any `Appointment` field; `disapproval_reason` required when setting `pending` → `cancelled_admin` | Update an appointment (e.g. status directly) |
 | POST | `/api/admin/appointments/<id>/approve/` | JWT (admin) | — | Approve a pending appointment → `scheduled` |
-| POST | `/api/admin/appointments/<id>/disapprove/` | JWT (admin) | — | Disapprove a pending appointment → `cancelled_admin` |
+| POST | `/api/admin/appointments/<id>/disapprove/` | JWT (admin) | `{ "reason": "..." }` (required) | Disapprove a pending appointment → `cancelled_admin`; saves the reason and sends it in the rejection SMS |
 | POST | `/api/admin/appointments/create/` | JWT (admin) | `full_name`, `phone_number`, `date`, `time`, `reason?` | Walk-in booking, created directly as `scheduled` |
 | GET | `/api/admin/patients/` | JWT (admin) | `?search=` | List patients |
 | GET | `/api/admin/patients/<id>/` | JWT (admin) | — | Full patient dossier |
