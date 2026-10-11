@@ -7,7 +7,7 @@
 #   approved -> PANELCHI_PATTERN_APPOINTMENT_APPROVED
 #       "%full_name% گرامی، نوبت شما ... در تاریخ %time% %date% ثبت شد ..."
 #   rejected -> PANELCHI_PATTERN_APPOINTMENT_REJECTED
-#       "%full_name% گرامی، درخواست نوبت شما ... در تاریخ %time% %date% پذیرفته نشد ..."
+#       "%full_name% گرامی، درخواست نوبت شما ... در تاریخ %time% %date% پذیرفته نشد ... %reason%"
 
 import logging
 
@@ -24,6 +24,8 @@ logger = logging.getLogger(__name__)
 NAME_VARIABLE = "full_name"
 TIME_VARIABLE = "time"
 DATE_VARIABLE = "date"
+# Only used by the rejected pattern: %reason% = the admin's disapproval reason.
+REASON_VARIABLE = "reason"
 
 
 def _jalali_date(date) -> str:
@@ -60,15 +62,19 @@ def send_appointment_decision_sms(appointment, approved: bool) -> bool:
         else settings.PANELCHI_PATTERN_APPOINTMENT_REJECTED
     )
 
+    variables = {
+        NAME_VARIABLE: name,
+        TIME_VARIABLE: time_text,
+        DATE_VARIABLE: date_text,
+    }
+    if not approved:
+        variables[REASON_VARIABLE] = appointment.disapproval_reason
+
     try:
         send_pattern_sms(
             pattern=pattern,
             recipient=user.phone_number,
-            variables={
-                NAME_VARIABLE: name,
-                TIME_VARIABLE: time_text,
-                DATE_VARIABLE: date_text,
-            },
+            variables=variables,
         )
     except SmsProviderError as e:
         logger.error(

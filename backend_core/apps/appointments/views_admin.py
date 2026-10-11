@@ -15,6 +15,7 @@ from .serializers import (
     AppointmentSerializer,
     AdminBookAppointmentSerializer,
     AdminAppointmentFilterSerializer,
+    DisapproveAppointmentSerializer,
 )
 from .services import admin_book_appointment, approve_appointment, disapprove_appointment
 from .pagination import AppointmentPagination
@@ -209,9 +210,10 @@ class AdminApproveAppointmentView(APIView):
 
 class AdminDisapproveAppointmentView(APIView):
     """
-    POST /api/admin/appointments/<id>/disapprove/
+    POST /api/admin/appointments/<id>/disapprove/   body: {"reason": "..."}
     Rejects a pending appointment, moving it to "cancelled_admin"
-    and freeing up its slot.
+    and freeing up its slot. The reason is required, saved on the
+    appointment and sent to the patient in the rejection SMS.
     """
     permission_classes = [IsAdminUser]
 
@@ -221,8 +223,11 @@ class AdminDisapproveAppointmentView(APIView):
         except Appointment.DoesNotExist:
             return Response({"detail": "Appointment not found"}, status=status.HTTP_404_NOT_FOUND)
 
+        serializer = DisapproveAppointmentSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
         try:
-            disapprove_appointment(appointment)
+            disapprove_appointment(appointment, serializer.validated_data["reason"])
         except ValueError as e:
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 

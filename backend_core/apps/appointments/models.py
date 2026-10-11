@@ -160,6 +160,11 @@ class Appointment(models.Model):
         default=PENDING
     )
 
+    # Why the admin/doctor disapproved this request. Only filled when
+    # status is cancelled_admin; it is also sent to the patient in the
+    # rejection SMS.
+    disapproval_reason = models.TextField(blank=True, default="")
+
     # Automatically recorded timestamps
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -206,4 +211,3 @@ class Appointment(models.Model):
         slot) - either awaiting admin review or already approved.
         """
         return self.status in (self.PENDING, self.SCHEDULED)
-

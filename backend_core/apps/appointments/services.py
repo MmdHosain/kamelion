@@ -294,16 +294,24 @@ def approve_appointment(appointment):
     return appointment
 
 
-def disapprove_appointment(appointment):
+def disapprove_appointment(appointment, reason):
     """
     Admin disapproves a pending appointment, freeing up its slot.
+    The reason is stored on the appointment and sent to the patient
+    in the rejection SMS.
     """
+
+    reason = (reason or "").strip()
 
     if appointment.status != Appointment.PENDING:
         raise ValueError("Only pending appointments can be disapproved.")
 
+    if not reason:
+        raise ValueError("A reason is required to disapprove an appointment.")
+
     appointment.status = Appointment.CANCELLED_BY_ADMIN
-    appointment.save(update_fields=["status"])
+    appointment.disapproval_reason = reason
+    appointment.save(update_fields=["status", "disapproval_reason"])
 
     send_appointment_decision_sms(appointment, approved=False)
 
