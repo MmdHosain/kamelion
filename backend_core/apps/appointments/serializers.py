@@ -105,6 +105,17 @@ class AdminBookAppointmentSerializer(serializers.Serializer):
         return value
 
 
+class DisapproveAppointmentSerializer(serializers.Serializer):
+    """Body of POST /api/admin/appointments/<id>/disapprove/"""
+    reason = serializers.CharField(max_length=500)
+
+    def validate_reason(self, value):
+        value = value.strip()
+        if not value:
+            raise serializers.ValidationError("Reason cannot be empty.")
+        return value
+
+
 class DoctorAvailabilitySerializer(serializers.ModelSerializer):
     class Meta:
         model = DoctorAvailability
@@ -195,9 +206,27 @@ class AppointmentSerializer(serializers.ModelSerializer):
             "appointment_time",
             "status",
             "reason",
+            "disapproval_reason",
             "created_at",
             "updated_at",
         ]
+        extra_kwargs = {"disapproval_reason": {"required": False}}
+
+    def validate(self, attrs):
+        # The admin panel can also disapprove through PUT (status =
+        # cancelled_admin); that path needs a reason too.
+        if (
+            self.instance is not None
+            and self.instance.status == Appointment.PENDING
+            and attrs.get("status") == Appointment.CANCELLED_BY_ADMIN
+        ):
+            reason = (attrs.get("disapproval_reason") or "").strip()
+            if not reason:
+                raise serializers.ValidationError(
+                    {"disapproval_reason": "A reason is required to disapprove an appointment."}
+                )
+            attrs["disapproval_reason"] = reason
+        return attrs
 
     def get_full_name(self, obj):
         # Fall back to phone number so the admin table never shows
