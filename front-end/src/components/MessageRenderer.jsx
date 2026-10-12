@@ -1,12 +1,19 @@
 // src/components/MessageRenderer.jsx
 import React from 'react';
-// Import Slider component from its correct location
-import Slider from './ui/Slider/Slider'; // Adjust path if necessary
+import Slider from './ui/Slider/Slider';
+import TypingIndicator from './chat/TypingIndicator';
 
 const MessageRenderer = ({ message, onCtaAction }) => {
   if (!message) return null;
   const { type, content, role, payload, timestamp } = message;
   const isUser = role === 'user';
+
+  /* ===============================
+  Typing Waiting State
+  =============================== */
+  if (type === 'typing') {
+    return <TypingIndicator />;
+  }
 
   const timeString = timestamp
     ? new Date(timestamp).toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' })

@@ -333,6 +333,82 @@ body {
   animation: pinkHalo 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+/* ---------- Modern Chat Typing Indicator Animation ---------- */
+@keyframes chatTypingBounce {
+  0%, 60%, 100% {
+    transform: translateY(0) scale(0.82);
+    opacity: 0.35;
+  }
+  30% {
+    transform: translateY(-6px) scale(1.15);
+    opacity: 1;
+  }
+}
+
+.chat-typing-dot {
+  display: inline-block;
+  animation: chatTypingBounce 1.35s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+  will-change: transform, opacity;
+}
+
+.chat-typing-dot-1 {
+  animation-delay: 0s;
+}
+
+.chat-typing-dot-2 {
+  animation-delay: 0.18s;
+}
+
+.chat-typing-dot-3 {
+  animation-delay: 0.36s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chat-typing-dot {
+    animation: chatTypingPulseReduced 1.4s ease-in-out infinite;
+  }
+  @keyframes chatTypingPulseReduced {
+    0%, 100% {
+      opacity: 0.3;
+      transform: none;
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.05);
+    }
+  }
+}
+
+@keyframes messageIn {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.97);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-messageIn {
+  animation: messageIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeSlide {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeSlide {
+  animation: fadeSlide 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
 /* ---------- Rich Text Content & Article Typography ---------- */
 .rich-text-content,
 .article-rich-content {

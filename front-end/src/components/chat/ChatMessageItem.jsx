@@ -10,6 +10,7 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
+export { TypingIndicator } from './TypingIndicator';
 
 const CLINIC_PHONE = '02112345678';
 

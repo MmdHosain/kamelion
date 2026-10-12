@@ -13,13 +13,14 @@ const ChatContainer = ({
   handleCtaAction,
   onOpenSignup,
   onMinimize,
-  onOpenAppointment // ✅ جدید
+  onOpenAppointment,
+  isTyping = false,
 }) => {
   const handleSuggestionClick = (text) => {
     handleSendMessage(text);
   };
 
-  // ✅ هندل کردن CTA برای نوبت‌دهی
+  // هندل کردن CTA برای نوبت‌دهی
   const handleCtaWithAppointment = (payload) => {
     if (payload.action === 'open_appointment') {
       onOpenAppointment();
@@ -44,6 +45,7 @@ const ChatContainer = ({
               onCtaAction={handleCtaWithAppointment}
               onOpenSignup={onOpenSignup}
               onSendMessage={handleSuggestionClick}
+              isTyping={isTyping}
             />
           </div>
           <div className="p-4 bg-chatBg-300 border-t border-primary/30">

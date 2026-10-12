@@ -15,6 +15,7 @@ import useFooterOverlap from '../../hooks/useFooterOverlap';
 import useChatSession from '../../hooks/useChatSession';
 import ChatPillButton from './ChatPillButton';
 import ChatMessageItem from './ChatMessageItem';
+import TypingIndicator from './TypingIndicator';
 import { QUICK_PROMPTS } from './ChatQuickPrompts';
 
 export const FloatingChatWidget = ({ isOpen, onToggle, onOpenAppointment }) => {
@@ -268,19 +269,7 @@ export const FloatingChatWidget = ({ isOpen, onToggle, onOpenAppointment }) => {
                     />
                   ))}
 
-                  {isTyping && (
-                    <div className="bg-white/85 border border-primary/20 p-3 rounded-2xl rounded-tl-sm self-end shadow-xs flex items-center justify-center gap-1.5 w-14 h-10">
-                      <span className="w-2 h-2 bg-primary/60 rounded-full animate-bounce"></span>
-                      <span
-                        className="w-2 h-2 bg-primary/60 rounded-full animate-bounce"
-                        style={{ animationDelay: '0.15s' }}
-                      ></span>
-                      <span
-                        className="w-2 h-2 bg-primary/60 rounded-full animate-bounce"
-                        style={{ animationDelay: '0.3s' }}
-                      ></span>
-                    </div>
-                  )}
+                  {isTyping && <TypingIndicator />}
 
                   {/* Scroll to bottom button if user scrolled up */}
                   {isUserScrolledUp && (
