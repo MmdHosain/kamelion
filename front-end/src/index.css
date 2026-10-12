@@ -409,6 +409,55 @@ body {
   animation: fadeSlide 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+/* ---------- Typewriter Word Fade-in & Cursor Animation ---------- */
+@keyframes wordFadeIn {
+  0% {
+    opacity: 0;
+    filter: blur(2px);
+    transform: translateY(3px);
+  }
+  100% {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0);
+  }
+}
+
+.animate-wordFadeIn {
+  display: inline;
+  animation: wordFadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: opacity, transform, filter;
+}
+
+@keyframes cursorPulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+  50% {
+    opacity: 0.2;
+    transform: scaleY(0.85);
+  }
+}
+
+.animate-cursorPulse {
+  animation: cursorPulse 0.8s ease-in-out infinite;
+  will-change: opacity, transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-wordFadeIn {
+    animation: none;
+    opacity: 1;
+    filter: none;
+    transform: none;
+  }
+  .animate-cursorPulse {
+    animation: none;
+    opacity: 0.8;
+  }
+}
+
 /* ---------- Rich Text Content & Article Typography ---------- */
 .rich-text-content,
 .article-rich-content {

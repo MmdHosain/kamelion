@@ -23,6 +23,7 @@ export const FloatingChatWidget = ({ isOpen, onToggle, onOpenAppointment }) => {
   const [isUserScrolledUp, setIsUserScrolledUp] = useState(false);
 
   const chatMessagesContainerRef = useRef(null);
+  const lastScrollTimeRef = useRef(0);
 
   // 1. Lock background page body scroll when chat modal is open
   useBodyScrollLock(isOpen);
@@ -65,8 +66,22 @@ export const FloatingChatWidget = ({ isOpen, onToggle, onOpenAppointment }) => {
     if (!chatMessagesContainerRef.current) return;
     const { scrollTop, scrollHeight, clientHeight } = chatMessagesContainerRef.current;
     const distanceFromBottom = scrollHeight - (scrollTop + clientHeight);
-    setIsUserScrolledUp(distanceFromBottom > 90);
+    setIsUserScrolledUp(distanceFromBottom > 85);
   };
+
+  // Smooth auto-scroll tracking triggered as words reveal
+  const handleScrollOnWord = useCallback((force = false) => {
+    if (!isOpen || isUserScrolledUp || !chatMessagesContainerRef.current) return;
+    const now = performance.now();
+    // Throttle smooth scroll updates to ~50ms to keep 60fps fluidity
+    if (force || now - lastScrollTimeRef.current > 50) {
+      lastScrollTimeRef.current = now;
+      chatMessagesContainerRef.current.scrollTo({
+        top: chatMessagesContainerRef.current.scrollHeight,
+        behavior: 'smooth',
+      });
+    }
+  }, [isOpen, isUserScrolledUp]);
 
   // Immediate scroll on modal open
   useEffect(() => {
@@ -266,9 +281,11 @@ export const FloatingChatWidget = ({ isOpen, onToggle, onOpenAppointment }) => {
                       message={msg}
                       onOpenAppointment={onOpenAppointment}
                       onToggleChat={onToggle}
+                      onScrollToBottom={handleScrollOnWord}
                     />
                   ))}
 
+                  {/* Loading Dots Indicator while awaiting backend AI generation */}
                   {isTyping && <TypingIndicator />}
 
                   {/* Scroll to bottom button if user scrolled up */}
