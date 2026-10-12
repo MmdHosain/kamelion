@@ -1,12 +1,58 @@
 // src/components/MessageRenderer.jsx
 import React from 'react';
-// Import Slider component from its correct location
-import Slider from './ui/Slider/Slider'; // Adjust path if necessary
+import Slider from './ui/Slider/Slider';
+import TypingIndicator from './chat/TypingIndicator';
+import { useTypewriter } from '../hooks/useTypewriter';
 
-const MessageRenderer = ({ message, onCtaAction }) => {
+const StreamableTextContent = ({ content, isUser, isNew, onScrollToBottom }) => {
+  const { chunks, displayedCount, isTyping, revealAll } = useTypewriter({
+    text: content || '',
+    enabled: Boolean(!isUser && isNew),
+    onWordRevealed: onScrollToBottom,
+    onComplete: () => onScrollToBottom?.(true),
+  });
+
+  if (isUser || !isNew) {
+    return <div>{content}</div>;
+  }
+
+  return (
+    <div
+      className="select-text whitespace-pre-line leading-6 cursor-pointer"
+      onClick={isTyping ? revealAll : undefined}
+    >
+      {chunks.slice(0, displayedCount).map((chunk, idx) => {
+        const isRecent = isTyping && idx >= displayedCount - 3;
+        return (
+          <span
+            key={idx}
+            className={isRecent ? 'animate-wordFadeIn inline' : 'inline'}
+          >
+            {chunk}
+          </span>
+        );
+      })}
+      {isTyping && (
+        <span
+          className="inline-block w-1.5 h-3.5 bg-primary rounded-full mr-1 align-middle animate-cursorPulse"
+          aria-hidden="true"
+        />
+      )}
+    </div>
+  );
+};
+
+const MessageRenderer = ({ message, onCtaAction, onScrollToBottom }) => {
   if (!message) return null;
   const { type, content, role, payload, timestamp } = message;
   const isUser = role === 'user';
+
+  /* ===============================
+  Typing Waiting State
+  =============================== */
+  if (type === 'typing') {
+    return <TypingIndicator />;
+  }
 
   const timeString = timestamp
     ? new Date(timestamp).toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' })
@@ -70,7 +116,12 @@ const MessageRenderer = ({ message, onCtaAction }) => {
             }
           `}
         >
-          <div>{content}</div>
+          <StreamableTextContent
+            content={content}
+            isUser={isUser}
+            isNew={message.isNew}
+            onScrollToBottom={onScrollToBottom}
+          />
           <div className={`text-[10px] opacity-70 ${isUser ? 'text-left' : 'text-right'}`}>
             {timeString}
           </div>
