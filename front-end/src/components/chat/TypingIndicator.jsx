@@ -4,8 +4,6 @@ import { Bot } from 'lucide-react';
 
 export const TypingIndicator = ({
   showAvatar = true,
-  showLabel = true,
-  label = 'دستیار در حال بررسی و نگارش پاسخ...',
   className = '',
 }) => {
   return (
@@ -28,18 +26,8 @@ export const TypingIndicator = ({
           <span className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-gradient-to-br from-primary to-primary-dark shadow-[0_0_8px_rgba(231,84,128,0.35)] chat-typing-dot chat-typing-dot-3" />
         </div>
 
-        {showLabel && (
-          <span className="text-[11px] sm:text-xs font-bold text-textDark/60 select-none hidden sm:inline-block pr-1">
-            {label}
-          </span>
-        )}
-
-        <span className="sr-only">در حال نگارش پاسخ...</span>
+        <span className="sr-only">دستیار هوشمند در حال پاسخ‌گویی است</span>
       </div>
-
-      <span className="text-[10px] sm:text-[11px] px-2 mt-0.5 font-bold text-textDark/50">
-        در حال بررسی...
-      </span>
     </div>
   );
 };

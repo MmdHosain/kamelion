@@ -81,12 +81,6 @@ export const ChatMessageItem = ({
                 دستیار هوشمند تریاژ
               </span>
             </div>
-            {isTypingActive && (
-              <span className="text-[10px] text-primary font-bold flex items-center gap-1.5 animate-pulse">
-                <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-                در حال نگارش پاسخ...
-              </span>
-            )}
           </div>
         )}
 
