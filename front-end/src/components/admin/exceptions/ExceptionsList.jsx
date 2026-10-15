@@ -1,176 +1,29 @@
 // src/components/admin/exceptions/ExceptionsList.jsx
-import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import React from 'react';
 import {
   Trash2,
   Plus,
-  Save,
   CalendarOff,
   AlertCircle,
   CheckCircle2,
   Loader2,
-  Info,
 } from 'lucide-react';
 import CustomDateRangePicker, { fromYMD } from './CustomDateRangePicker';
-import {
-  getAdminExceptions,
-  bulkSaveAdminExceptions,
-} from '../../../api/schedules';
 import { toPersianDigits } from '../../../utils/jalaliDateUtils';
+import { useAdminExceptions } from '../../../hooks/useAdminExceptions';
 
-const newException = () => ({
-  id: crypto.randomUUID(),
-  startDate: '',
-  endDate: '',
-  note: '',
-});
-
-const normalizeBackendExceptions = (rows = []) =>
-  rows.map((row) => ({
-    id: row.id,
-    startDate: row.start_date || '',
-    endDate: row.end_date || '',
-    note: row.reason || '',
-  }));
-
-const buildBackendExceptions = (exceptions = []) =>
-  exceptions
-    .filter((ex) => ex.startDate && ex.endDate)
-    .map((ex) => {
-      const payload = {
-        start_date: ex.startDate,
-        end_date: ex.endDate,
-        reason: ex.note || '',
-      };
-
-      if (Number.isInteger(ex.id)) {
-        payload.id = ex.id;
-      }
-
-      return payload;
-    });
-
-export default function ExceptionsList() {
-  const [exceptions, setExceptions] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
-  const [saveStatus, setSaveStatus] = useState('idle'); // 'idle' | 'saving' | 'saved' | 'error'
-
-  const loadExceptions = useCallback(async () => {
-    setLoading(true);
-    setError('');
-
-    try {
-      const data = await getAdminExceptions();
-      setExceptions(normalizeBackendExceptions(Array.isArray(data) ? data : []));
-    } catch (err) {
-      console.error('[loadExceptions] Failed:', err);
-      setError('بارگذاری تعطیلات و استثنائات با خطا مواجه شد. لطفاً دوباره تلاش نمایید.');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadExceptions();
-  }, [loadExceptions]);
-
-  const handleAdd = useCallback(() => {
-    setExceptions((prev) => [...prev, newException()]);
-    setError('');
-  }, []);
-
-  const handleChange = useCallback((id, field, value) => {
-    setExceptions((prev) =>
-      prev.map((ex) => (ex.id === id ? { ...ex, [field]: value } : ex))
-    );
-  }, []);
-
-  const handleDateChange = useCallback((id, startDate, endDate) => {
-    setExceptions((prev) =>
-      prev.map((ex) => (ex.id === id ? { ...ex, startDate, endDate } : ex))
-    );
-  }, []);
-
-  const handleDelete = useCallback((id) => {
-    setExceptions((prev) => prev.filter((ex) => ex.id !== id));
-  }, []);
-
-  const validateExceptions = useCallback(() => {
-    for (const ex of exceptions) {
-      if (!ex.startDate || !ex.endDate) {
-        return 'برای هر بازه تعطیلی، انتخاب هر دو تاریخ شروع و پایان الزامی است.';
-      }
-
-      if (ex.endDate < ex.startDate) {
-        return 'تاریخ پایان تعطیلی باید بعد یا مساوی با تاریخ شروع باشد.';
-      }
-
-      if ((ex.note || '').length > 255) {
-        return 'توضیحات یا علت تعطیلی نباید بیشتر از ۲۵۵ کاراکتر باشد.';
-      }
-    }
-
-    return null;
-  }, [exceptions]);
-
-  const handleSave = useCallback(async () => {
-    const validationError = validateExceptions();
-
-    if (validationError) {
-      setError(validationError);
-      setSaveStatus('error');
-      setTimeout(() => setSaveStatus('idle'), 3500);
-      return;
-    }
-
-    setSaving(true);
-    setSaveStatus('saving');
-    setError('');
-    setSuccessMessage('');
-
-    try {
-      const payload = buildBackendExceptions(exceptions);
-      const saved = await bulkSaveAdminExceptions(payload);
-
-      setExceptions(normalizeBackendExceptions(Array.isArray(saved) ? saved : []));
-
-      setSaveStatus('saved');
-      setSuccessMessage('تغییرات تعطیلات و استثنائات با موفقیت ذخیره شد.');
-      setTimeout(() => {
-        setSaveStatus('idle');
-        setSuccessMessage('');
-      }, 3000);
-    } catch (err) {
-      console.error('[saveExceptions] Failed:', err);
-
-      const errorMessage =
-        err?.response?.data?.detail ||
-        err?.response?.data?.exceptions?.[0] ||
-        err?.response?.data?.non_field_errors?.[0] ||
-        'ذخیره تغییرات با خطا مواجه شد. لطفاً اتصال اینترنت را بررسی کنید.';
-
-      setError(errorMessage);
-      setSaveStatus('error');
-      setTimeout(() => setSaveStatus('idle'), 3500);
-    } finally {
-      setSaving(false);
-    }
-  }, [exceptions, validateExceptions]);
-
-  const saveConfig = useMemo(() => {
-    switch (saveStatus) {
-      case 'saving':
-        return { label: 'در حال ذخیره‌سازی...', bg: 'bg-primary/80 text-white' };
-      case 'saved':
-        return { label: 'با موفقیت ذخیره شد ✓', bg: 'bg-emerald-600 text-white' };
-      case 'error':
-        return { label: 'خطا در ذخیره — تلاش مجدد', bg: 'bg-rose-600 text-white' };
-      default:
-        return { label: 'ذخیره تغییرات استثنائات', bg: 'bg-primary hover:bg-primary-dark text-white' };
-    }
-  }, [saveStatus]);
+export default function ExceptionsList(props) {
+  const internalHook = useAdminExceptions();
+  const {
+    exceptions,
+    loading,
+    error,
+    successMessage,
+    handleAdd,
+    handleChange,
+    handleDateChange,
+    handleDelete,
+  } = props?.exceptions !== undefined ? props : internalHook;
 
   if (loading) {
     return (
@@ -185,7 +38,7 @@ export default function ExceptionsList() {
 
   return (
     <div className="flex flex-col gap-6 pt-1">
-      {/* Top Banner & Action Controls */}
+      {/* Top Banner & Info */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white/70 backdrop-blur-md p-4 rounded-3xl border border-primary/15 shadow-sm">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
@@ -204,27 +57,6 @@ export default function ExceptionsList() {
               در روزهای مشخص‌شده، تمامی اسلات‌های ویزیت برای بیماران مسدود خواهد شد.
             </p>
           </div>
-        </div>
-
-        <div className="flex items-center gap-2.5 self-start sm:self-auto shrink-0">
-          <button
-            type="button"
-            onClick={handleAdd}
-            className="flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-white border border-primary/20 hover:border-primary text-primary text-xs md:text-sm font-bold shadow-sm hover:shadow transition-all cursor-pointer"
-          >
-            <Plus size={16} />
-            <span>افزودن بازه جدید</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={saving}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl text-xs md:text-sm font-bold shadow-md transition-all duration-200 cursor-pointer disabled:opacity-50 ${saveConfig.bg}`}
-          >
-            <Save size={16} className={saving ? 'animate-spin' : ''} />
-            <span>{saveConfig.label}</span>
-          </button>
         </div>
       </div>
 

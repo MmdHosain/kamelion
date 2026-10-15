@@ -10,6 +10,7 @@
 - **کامپوننت‌های فرانت‌اند:**
   - لیست استثنائات زمانی: [`src/components/admin/exceptions/ExceptionsList.jsx`](file:///e:/GitHub%20Repo/kamelion/front-end/src/components/admin/exceptions/ExceptionsList.jsx)
   - انتخابگر بازه تاریخ: [`src/components/admin/exceptions/CustomDateRangePicker.jsx`](file:///e:/GitHub%20Repo/kamelion/front-end/src/components/admin/exceptions/CustomDateRangePicker.jsx)
+  - هوک مدیریت استیت و ذخیره‌سازی: [`src/hooks/useAdminExceptions.js`](file:///e:/GitHub%20Repo/kamelion/front-end/src/hooks/useAdminExceptions.js)
 - **سرویس‌های وب:**
   - سرویس استثنائات ادمین: [`src/api/schedules.js`](file:///e:/GitHub%20Repo/kamelion/front-end/src/api/schedules.js)
 
@@ -34,9 +35,12 @@
 3. **طراحی بصری یکپارچه و تقویم شمسی جلالی:**
    - تقویم پاپ‌اور کاملاً بومی جلالی با نام ماه‌های فارسی، روزهای هفته فارسی (`ش` تا `ج`) و اعداد فارسی.
    - کارت‌های گلس‌پنل شکیل و هماهنگ با تب زمان‌بندی هفتگی (`ScheduleCard.jsx`) با محاسبه خودکار طول تعطیلی به روز.
-4. **حذف و ویرایش سریع:**
+4. **حذف و ویرایش سریع و افزودن بازه:**
    - آیکون سطل زباله `Trash2` برای حذف آسان استثنائات.
-5. **ذخیره‌سازی دسته‌جمعی (Bulk Save):**
+   - دکمه دایره‌ای شناور با آیکون `Plus` و متن راهنما در پایین لیست کارت‌ها جهت افزودن بازه تعطیلی جدید (کاملاً یکپارچه و منطبق با الگوی تب زمان‌بندی هفتگی).
+5. **ذخیره‌سازی دسته‌جمعی یکپارچه در هدر (Unified Header Bulk Save):**
+   - دکمه ذخیره در بالای صفحه اصلی صفحه مدیریت هم‌راستا با عنوان و به شکل یکدست با تب زمان‌بندی هفتگی تعبیه شده است.
+   - مدیریت استیت‌ها و فراخوانی وب‌سرویس از طریق هوک مجزای [`useAdminExceptions.js`](file:///e:/GitHub%20Repo/kamelion/front-end/src/hooks/useAdminExceptions.js) انجام می‌گیرد.
    - تفکیک رکوردهای دیتابیسی قدیمی (شناسه‌های عددی) از ردیف‌های جدید کلاینت (`crypto.randomUUID()`) و ارسال یکپارچه به بک‌اند در قالب ISO `YYYY-MM-DD`.
 
 ---

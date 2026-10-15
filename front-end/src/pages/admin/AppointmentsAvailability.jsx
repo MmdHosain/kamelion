@@ -3,6 +3,7 @@ import { Plus, Save, Calendar, Clock, AlertCircle, CheckCircle2 } from 'lucide-r
 import ScheduleCard from '../../components/admin/availability/ScheduleCard';
 import ReservationsList from '../../components/admin/reservations/ReservationsList';
 import ExceptionsList from '../../components/admin/exceptions/ExceptionsList';
+import { useAdminExceptions } from '../../hooks/useAdminExceptions';
 import {
   getAdminSlots,
   bulkSaveAdminSlots,
@@ -108,6 +109,8 @@ const AppointmentsAvailability = () => {
   const [saveStatus, setSaveStatus] = useState('idle');
   const [loadError, setLoadError] = useState('');
   const [schedules, setSchedules] = useState([]);
+
+  const exceptionsHook = useAdminExceptions();
 
   const dragItem = useRef(null);
   const dragOverItem = useRef(null);
@@ -233,6 +236,18 @@ const AppointmentsAvailability = () => {
             <span>{saveLabel}</span>
           </button>
         )}
+
+        {activeTab === 'Exceptions' && (
+          <button
+            type="button"
+            onClick={exceptionsHook.handleSave}
+            disabled={exceptionsHook.saving}
+            className={`flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-bold text-sm shadow-md transition-all duration-200 cursor-pointer disabled:opacity-60 ${exceptionsHook.saveBg}`}
+          >
+            <Save size={16} className={exceptionsHook.saving ? 'animate-spin' : ''} />
+            <span>{exceptionsHook.saveLabel}</span>
+          </button>
+        )}
       </div>
 
       {/* Tabs */}
@@ -293,7 +308,7 @@ const AppointmentsAvailability = () => {
         )}
 
         {activeTab === 'Reservations' && <ReservationsList />}
-        {activeTab === 'Exceptions' && <ExceptionsList />}
+        {activeTab === 'Exceptions' && <ExceptionsList {...exceptionsHook} />}
       </div>
     </div>
   );
