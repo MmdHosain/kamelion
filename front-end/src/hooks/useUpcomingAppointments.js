@@ -238,6 +238,7 @@ export function useUpcomingAppointments() {
     searchQuery,
     setSearchQuery,
     groupedByDay,
+    filteredAppointments,
     totalCount: filteredAppointments.length,
     summary,
     loading,

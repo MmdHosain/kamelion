@@ -236,7 +236,7 @@ const AppointmentsAvailability = () => {
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 chat-scroll">
+      <div className="flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar">
         {TABS.map((tab) => (
           <button
             key={tab.id}

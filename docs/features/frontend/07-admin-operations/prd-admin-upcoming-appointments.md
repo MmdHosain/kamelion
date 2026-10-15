@@ -63,7 +63,7 @@
   - کلیدهای اقدام: «تایید و اعمال» و «انصراف / بستن».
 
 #### ۳. نوار چیپ‌های دسترسی سریع (`UpcomingQuickPresets.jsx`)
-- ارائه دکمه‌های فیلتر بازه بدون نیاز به باز کردن پاپ‌اور تقویم:
+- ارائه دکمه‌های فیلتر بازه بدون نیاز به باز کردن پاپ‌اور تقویم (دارای اسکرول لمسی افقی ریسپانسیو و اسکرول‌بار کاملاً مخفی `no-scrollbar` جهت حفظ زیبایی بصری و یکپارچگی گلس پنل):
   - **امروز (Today):** نوبت‌های امروز پزشک
   - **فردا (Tomorrow):** نوبت‌های روز بعد
   - **۳ روز آینده (Next 3 Days):** مناسب برای برنامه‌ریزی فوری مطب
@@ -104,14 +104,19 @@ front-end/src/
 ├── pages/admin/
 │   └── DoctorAgendaPage.jsx               # صفحه اصلی تقویم کاری پزشک (< 120 خط)
 ├── components/admin/upcoming/
-│   ├── UpcomingAppointmentsContainer.jsx  # بدنه هماهنگ‌کننده فیلترها و لیست (< 200 خط)
+│   ├── UpcomingAppointmentsContainer.jsx  # بدنه هماهنگ‌کننده فیلترها و لیست (< 250 خط)
 │   ├── DualCalendarRangePicker.jsx        # مینی‌تقویم پاپ‌اور دوگانه شمسی/میلادی (< 250 خط)
 │   ├── UpcomingQuickPresets.jsx           # دکمه‌های میانبر زمانی (< 80 خط)
+│   ├── UpcomingViewSwitcher.jsx           # نوار سوئیچر چندحالته نماهای تقویم (< 80 خط)
 │   ├── UpcomingDayGroup.jsx               # سرتیتر و لیست مراجعین یک روز خاص (< 120 خط)
 │   ├── UpcomingPatientCard.jsx            # کارت مستقل بیمار و تایم‌لاین (< 150 خط)
+│   ├── UpcomingTableView.jsx              # نمای جدول فشرده بالینی (< 180 خط)
+│   ├── UpcomingCalendarGridView.jsx       # نمای تقویم شبکه‌ای ۳۰ روزه با سایدبار کشویی (< 260 خط)
+│   ├── UpcomingTimelineView.jsx           # نمای تایم‌لاین ساعتی شیفت مطب (< 190 خط)
+│   ├── UpcomingSplitView.jsx              # نمای دوپنله Master-Detail همزمان (< 160 خط)
 │   └── UpcomingEmptyState.jsx             # کامپوننت نمای خالی (< 70 خط)
 ├── hooks/
-│   └── useUpcomingAppointments.js         # هوک سفارشی فچ و مدیریت استیت بازه (< 130 خط)
+│   └── useUpcomingAppointments.js         # هوک سفارشی فچ و مدیریت استیت بازه (< 150 خط)
 └── api/
     └── reservationService.js              # استفاده از getAdminReservations موجود
 ```
