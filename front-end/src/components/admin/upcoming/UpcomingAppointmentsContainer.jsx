@@ -157,13 +157,13 @@ export default function UpcomingAppointmentsContainer() {
       </div>
 
       {/* Filter, View Switcher & Search Bar */}
-      <div className="relative z-20 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+      <div className="relative z-20 flex flex-col md:flex-row md:items-center justify-between gap-3">
         {/* Status Tabs */}
-        <div className="flex items-center gap-1.5 bg-white/80 border border-primary/15 p-1 rounded-2xl self-start">
+        <div className="flex items-center gap-1 bg-white/80 backdrop-blur-sm border border-primary/15 p-1 rounded-2xl self-start overflow-x-auto no-scrollbar shadow-sm">
           <button
             type="button"
             onClick={() => setStatusFilter('all')}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
               statusFilter === 'all'
                 ? 'bg-primary text-white shadow-sm'
                 : 'text-textDark/70 hover:text-textDark'
@@ -174,7 +174,7 @@ export default function UpcomingAppointmentsContainer() {
           <button
             type="button"
             onClick={() => setStatusFilter('scheduled')}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
               statusFilter === 'scheduled'
                 ? 'bg-emerald-600 text-white shadow-sm'
                 : 'text-textDark/70 hover:text-textDark'
@@ -185,7 +185,7 @@ export default function UpcomingAppointmentsContainer() {
           <button
             type="button"
             onClick={() => setStatusFilter('pending')}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
               statusFilter === 'pending'
                 ? 'bg-amber-500 text-white shadow-sm'
                 : 'text-textDark/70 hover:text-textDark'
@@ -196,20 +196,20 @@ export default function UpcomingAppointmentsContainer() {
         </div>
 
         {/* View Switcher and Live Search Input */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+        <div className="flex items-center gap-2.5 w-full md:w-auto">
           <UpcomingViewSwitcher
             currentView={viewMode}
             onChangeView={handleViewModeChange}
           />
 
-          <div className="relative w-full sm:w-64">
+          <div className="relative flex-1 md:w-64">
             <Search size={16} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-textDark/40 pointer-events-none" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="جستجوی نام، تلفن یا کد ملی..."
-              className="w-full pl-3 pr-9 py-2 bg-white rounded-2xl border border-primary/15 focus:border-primary focus:ring-2 focus:ring-primary/20 text-xs md:text-sm font-semibold text-textDark placeholder:text-textDark/40 transition-all outline-none"
+              className="w-full pl-3 pr-9 py-2 bg-white rounded-2xl border border-primary/15 focus:border-primary focus:ring-2 focus:ring-primary/20 text-xs md:text-sm font-semibold text-textDark placeholder:text-textDark/40 transition-all outline-none shadow-sm"
             />
           </div>
         </div>
