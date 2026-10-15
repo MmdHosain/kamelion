@@ -1,5 +1,5 @@
 // src/hooks/useChatSession.js
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { chatService } from '../api/chatService';
 import useAuthStore from '../store/authStore';
 
@@ -23,6 +23,7 @@ const INITIAL_BOT_MESSAGES = [
     sender: 'bot',
     text: 'سلام! من دستیار هوشمند تریاژ مطب دکتر معشوری هستم. لطفاً دلیل مراجعه، علائم یا سوال خود را بنویسید تا شما را راهنمایی کنم.',
     time: 'اکنون',
+    isNew: false,
   },
 ];
 
@@ -79,6 +80,7 @@ export const useChatSession = () => {
             text: 'برای دریافت پاسخ از دستیار تریاژ و ذخیره سوابق پزشکی، لطفاً ابتدا وارد حساب کاربری خود شوید.',
             requiresAuth: true,
             time,
+            isNew: true,
           },
         ]);
         if (openAuthModal) {
@@ -117,6 +119,7 @@ export const useChatSession = () => {
             isEmergency: res.isEmergency,
             showBookingAction: res.showBookingAction,
             time: getCurrentTimeDisplay(),
+            isNew: true,
           },
         ]);
       } catch (err) {
@@ -131,6 +134,7 @@ export const useChatSession = () => {
               text: 'نشست کاربری شما منقضی شده است. لطفاً مجدداً وارد حساب کاربری شوید.',
               requiresAuth: true,
               time: getCurrentTimeDisplay(),
+              isNew: true,
             },
           ]);
           if (openAuthModal) openAuthModal();
@@ -153,6 +157,7 @@ export const useChatSession = () => {
               text: fallbackText,
               fallback: true,
               time: getCurrentTimeDisplay(),
+              isNew: true,
             },
           ]);
         }

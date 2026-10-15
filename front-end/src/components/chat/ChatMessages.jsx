@@ -2,9 +2,15 @@
 import React from 'react';
 import ChatSuggestions from './ChatSuggestions';
 import MessageRenderer from '../MessageRenderer';
+import TypingIndicator from './TypingIndicator';
 
-const ChatMessages = ({ messages, onCtaAction, onOpenSignup, onSendMessage }) => {
-
+const ChatMessages = ({
+  messages,
+  onCtaAction,
+  onOpenSignup,
+  onSendMessage,
+  isTyping,
+}) => {
   if (messages.length === 0) {
     return (
       <div className="h-full flex flex-col items-center justify-center text-mutedText text-sm">
@@ -25,13 +31,13 @@ const ChatMessages = ({ messages, onCtaAction, onOpenSignup, onSendMessage }) =>
   return (
     <div className="space-y-4">
       {messages.map((msg, i) => (
-<MessageRenderer
-  key={i}
-  message={msg}
-  onCtaAction={onCtaAction}
-/>
-
+        <MessageRenderer
+          key={i}
+          message={msg}
+          onCtaAction={onCtaAction}
+        />
       ))}
+      {isTyping && <TypingIndicator />}
     </div>
   );
 };
