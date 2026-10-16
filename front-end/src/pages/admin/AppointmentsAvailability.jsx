@@ -212,15 +212,15 @@ const AppointmentsAvailability = () => {
   }[saveStatus];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3.5 sm:space-y-6">
       {/* Header & Tabs */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-primary/15 pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-4 border-b border-primary/15 pb-2.5 sm:pb-4">
         <div>
-          <h1 className="text-xl md:text-2xl font-black text-primary flex items-center gap-2.5">
-            <Calendar className="w-6 h-6" />
+          <h1 className="text-base sm:text-xl md:text-2xl font-black text-primary flex items-center gap-2">
+            <Calendar className="w-5 h-5 sm:w-6 sm:h-6" />
             مدیریت زمان‌بندی و نوبت‌های پزشک
           </h1>
-          <p className="text-xs md:text-sm text-textDark/70 font-medium mt-0.5">
+          <p className="text-[11px] sm:text-xs md:text-sm text-textDark/70 font-medium mt-0.5">
             تنظیم ساعات حضور، روزهای کاری و بازه‌های زمانی ویزیت
           </p>
         </div>
@@ -230,9 +230,9 @@ const AppointmentsAvailability = () => {
             type="button"
             onClick={saveSettings}
             disabled={saveStatus === 'saving'}
-            className={`flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-bold text-sm shadow-md transition-all duration-200 cursor-pointer ${saveBg}`}
+            className={`flex items-center justify-center gap-2 px-3.5 py-2 sm:px-6 sm:py-3 rounded-xl sm:rounded-2xl font-bold text-xs sm:text-sm shadow-md transition-all duration-200 cursor-pointer ${saveBg}`}
           >
-            <Save size={16} />
+            <Save size={15} />
             <span>{saveLabel}</span>
           </button>
         )}
@@ -242,21 +242,21 @@ const AppointmentsAvailability = () => {
             type="button"
             onClick={exceptionsHook.handleSave}
             disabled={exceptionsHook.saving}
-            className={`flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-bold text-sm shadow-md transition-all duration-200 cursor-pointer disabled:opacity-60 ${exceptionsHook.saveBg}`}
+            className={`flex items-center justify-center gap-2 px-3.5 py-2 sm:px-6 sm:py-3 rounded-xl sm:rounded-2xl font-bold text-xs sm:text-sm shadow-md transition-all duration-200 cursor-pointer disabled:opacity-60 ${exceptionsHook.saveBg}`}
           >
-            <Save size={16} className={exceptionsHook.saving ? 'animate-spin' : ''} />
+            <Save size={15} className={exceptionsHook.saving ? 'animate-spin' : ''} />
             <span>{exceptionsHook.saveLabel}</span>
           </button>
         )}
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar">
+      <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-1.5 sm:pb-2 no-scrollbar">
         {TABS.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`px-5 py-2.5 rounded-2xl text-xs md:text-sm font-bold whitespace-nowrap transition-all duration-200 cursor-pointer ${
+            className={`px-3 py-1.5 sm:px-5 sm:py-2.5 rounded-xl sm:rounded-2xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all duration-200 cursor-pointer ${
               activeTab === tab.id
                 ? 'bg-primary text-white shadow-md shadow-primary/25'
                 : 'bg-white/70 hover:bg-white text-textDark/80 border border-primary/15'
@@ -268,17 +268,17 @@ const AppointmentsAvailability = () => {
       </div>
 
       {/* Content Area */}
-      <div className="pt-2">
+      <div className="pt-1 sm:pt-2">
         {activeTab === 'Availability' && (
-          <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-3.5 sm:gap-6">
             {loadError && (
-              <div className="rounded-2xl bg-red-50 border border-red-200 text-red-700 px-4 py-3 text-xs md:text-sm font-bold flex items-center gap-2">
+              <div className="rounded-2xl bg-red-50 border border-red-200 text-red-700 px-3.5 py-2.5 sm:px-4 sm:py-3 text-xs sm:text-sm font-bold flex items-center gap-2">
                 <AlertCircle className="w-4 h-4 shrink-0" />
                 <span>{loadError}</span>
               </div>
             )}
 
-            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {schedules.map((schedule, index) => (
                 <ScheduleCard
                   key={schedule.id}
@@ -293,16 +293,16 @@ const AppointmentsAvailability = () => {
               ))}
             </div>
 
-            <div className="flex flex-col items-center justify-center py-6 gap-2">
+            <div className="flex flex-col items-center justify-center py-4 sm:py-6 gap-1.5 sm:gap-2">
               <button
                 type="button"
                 onClick={handleAddSchedule}
                 aria-label="افزودن بازه زمانی جدید"
-                className="w-14 h-14 rounded-full bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/30 hover:bg-primary-dark hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
+                className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/30 hover:bg-primary-dark hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
               >
-                <Plus size={28} strokeWidth={2.5} />
+                <Plus size={24} strokeWidth={2.5} />
               </button>
-              <span className="text-xs font-bold text-textDark/60">افزودن شیفت کاری جدید</span>
+              <span className="text-[11px] sm:text-xs font-bold text-textDark/60">افزودن شیفت کاری جدید</span>
             </div>
           </div>
         )}

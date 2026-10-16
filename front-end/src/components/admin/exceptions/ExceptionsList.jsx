@@ -37,23 +37,23 @@ export default function ExceptionsList(props) {
   }
 
   return (
-    <div className="flex flex-col gap-6 pt-1">
+    <div className="flex flex-col gap-3.5 sm:gap-6 pt-1">
       {/* Top Banner & Info */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white/70 backdrop-blur-md p-4 rounded-3xl border border-primary/15 shadow-sm">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
-            <CalendarOff size={20} />
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-4 bg-white/70 backdrop-blur-md p-2.5 sm:p-4 rounded-2xl sm:rounded-3xl border border-primary/15 shadow-sm">
+        <div className="flex items-center gap-2.5 sm:gap-3">
+          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+            <CalendarOff size={18} />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-sm md:text-base font-black text-textDark">
+              <h2 className="text-xs sm:text-sm md:text-base font-black text-textDark">
                 تعطیلات رسمی و روزهای استثناء
               </h2>
-              <span className="px-2 py-0.5 rounded-lg text-xs font-bold bg-primary/10 text-primary">
+              <span className="px-2 py-0.5 rounded-lg text-[10px] sm:text-xs font-bold bg-primary/10 text-primary">
                 {toPersianDigits(exceptions.length)} بازه
               </span>
             </div>
-            <p className="text-xs text-textDark/60 font-medium mt-0.5">
+            <p className="text-[11px] sm:text-xs text-textDark/60 font-medium mt-0.5">
               در روزهای مشخص‌شده، تمامی اسلات‌های ویزیت برای بیماران مسدود خواهد شد.
             </p>
           </div>
@@ -101,8 +101,8 @@ export default function ExceptionsList(props) {
           </button>
         </div>
       ) : (
-        <div className="flex flex-col gap-6">
-          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="flex flex-col gap-3.5 sm:gap-6">
+          <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {exceptions.map((ex, idx) => {
               // Calculate duration in days
               let daysDuration = 0;
@@ -117,22 +117,22 @@ export default function ExceptionsList(props) {
               return (
                 <div
                   key={ex.id}
-                  className="bg-white/90 backdrop-blur-md rounded-3xl border border-primary/20 p-5 shadow-sm hover:shadow-md hover:border-primary/40 transition-all flex flex-col justify-between gap-4 group"
+                  className="bg-white/90 backdrop-blur-md rounded-2xl sm:rounded-3xl border border-primary/20 p-3.5 sm:p-5 shadow-sm hover:shadow-md hover:border-primary/40 transition-all flex flex-col justify-between gap-3 sm:gap-4 group"
                 >
                   {/* Card Header */}
-                  <div className="flex items-center justify-between border-b border-primary/10 pb-3">
+                  <div className="flex items-center justify-between border-b border-primary/10 pb-2 sm:pb-3">
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shrink-0">
+                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shrink-0">
                         {toPersianDigits(idx + 1)}
                       </div>
-                      <span className="text-xs md:text-sm font-black text-textDark">
+                      <span className="text-xs sm:text-sm font-black text-textDark">
                         تعطیلی مطب
                       </span>
                     </div>
 
                     <div className="flex items-center gap-2">
                       {daysDuration > 0 && (
-                        <span className="px-2 py-0.5 rounded-lg text-[11px] font-black bg-rose-50 text-rose-700 border border-rose-200">
+                        <span className="px-2 py-0.5 rounded-lg text-[10px] sm:text-[11px] font-black bg-rose-50 text-rose-700 border border-rose-200">
                           {toPersianDigits(daysDuration)} روز
                         </span>
                       )}
@@ -184,16 +184,16 @@ export default function ExceptionsList(props) {
           </div>
 
           {/* Bottom circular add button */}
-          <div className="flex flex-col items-center justify-center py-6 gap-2">
+          <div className="flex flex-col items-center justify-center py-4 sm:py-6 gap-1.5 sm:gap-2">
             <button
               type="button"
               onClick={handleAdd}
               aria-label="افزودن بازه تعطیلی جدید"
-              className="w-14 h-14 rounded-full bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/30 hover:bg-primary-dark hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
+              className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/30 hover:bg-primary-dark hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
             >
-              <Plus size={28} strokeWidth={2.5} />
+              <Plus size={24} strokeWidth={2.5} />
             </button>
-            <span className="text-xs font-bold text-textDark/60">افزودن بازه تعطیلی جدید</span>
+            <span className="text-[11px] sm:text-xs font-bold text-textDark/60">افزودن بازه تعطیلی جدید</span>
           </div>
         </div>
       )}
