@@ -1,3 +1,4 @@
+
 name: Build and Push Kamelion Images
 
 on:
@@ -26,6 +27,10 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Use official npm registry in CI
+        run: |
+          sed -i 's|https://mirror-npm.runflare.com/|https://registry.npmjs.org/|g' front-end/package-lock.json
 
       - name: Build and push backend
         uses: docker/build-push-action@v6
