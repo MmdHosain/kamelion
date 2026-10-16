@@ -51,3 +51,34 @@ jobs:
           tags: |
             ghcr.io/mmdhosain/kamelion-frontend:latest
             ghcr.io/mmdhosain/kamelion-frontend:${{ github.sha }}
+  
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v1.2.0
+        env:
+          GHCR_READ_TOKEN: ${{ secrets.GHCR_READ_TOKEN }}
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT }}
+          envs: GHCR_READ_TOKEN
+          script: |
+            set -e
+            cd ~/deploy
+
+            printf '%s' "$GHCR_READ_TOKEN" | docker login ghcr.io -u MmdHosain --password-stdin
+
+            docker pull ghcr.io/mmdhosain/kamelion-backend:latest
+            docker pull ghcr.io/mmdhosain/kamelion-frontend:latest
+
+            docker tag ghcr.io/mmdhosain/kamelion-backend:latest kamelion-backend:latest
+            docker tag ghcr.io/mmdhosain/kamelion-frontend:latest kamelion-frontend:latest
+
+            docker compose up -d backend frontend
+
+            docker logout ghcr.io
