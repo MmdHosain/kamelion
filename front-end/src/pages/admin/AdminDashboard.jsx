@@ -69,20 +69,20 @@ const AdminDashboard = () => {
   const pendingPercentage = statusPieData[1]?.value || (100 - completedPercentage);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3.5 sm:space-y-6">
       {/* Header */}
-      <div className="border-b border-primary/15 pb-4 flex justify-between items-center">
+      <div className="border-b border-primary/15 pb-3 sm:pb-4 flex flex-col sm:flex-row justify-between sm:items-center gap-3 sm:gap-4">
         <div>
-          <h1 className="text-xl md:text-2xl font-black text-primary flex items-center gap-2.5">
-            <Activity className="w-6 h-6" />
+          <h1 className="text-lg sm:text-xl md:text-2xl font-black text-primary flex items-center gap-2">
+            <Activity className="w-5 h-5 sm:w-6 sm:h-6" />
             داشبورد آمار و گزارشات کلینیک
           </h1>
-          <p className="text-xs md:text-sm text-textDark/70 font-medium mt-0.5">
+          <p className="text-[11px] sm:text-xs md:text-sm text-textDark/70 font-medium mt-0.5">
             نمای کلی مراجعات، ویزیت‌های موفق، بازدهی سیستم تریاژ و آمار ماهانه
           </p>
         </div>
         {isLoading && (
-          <div className="flex items-center gap-2 text-primary text-xs font-bold bg-primary/10 px-3 py-1.5 rounded-xl">
+          <div className="flex items-center gap-2 text-primary text-xs font-bold bg-primary/10 px-3 py-1.5 rounded-xl self-start sm:self-auto">
             <Loader2 className="w-4 h-4 animate-spin" />
             <span>در حال به‌روزرسانی آمار...</span>
           </div>
@@ -90,73 +90,73 @@ const AdminDashboard = () => {
       </div>
 
       {/* Top Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white/85 border border-primary/20 rounded-3xl p-5 shadow-sm">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div className="bg-white/85 border border-primary/20 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 shadow-sm">
           <div className="flex justify-between items-center mb-3">
             <span className="text-xs font-bold text-textDark/70">کل ویزیت‌های ماه</span>
             <div className="w-9 h-9 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
               <Users size={18} />
             </div>
           </div>
-          <div className="text-2xl font-black text-primary mb-1">{typeof totalVisits === 'number' ? `${totalVisits} بیمار` : totalVisits}</div>
+          <div className="text-xl sm:text-2xl font-black text-primary mb-1">{typeof totalVisits === 'number' ? `${totalVisits} بیمار` : totalVisits}</div>
           <span className="text-[11px] font-bold text-emerald-600 flex items-center gap-1">
             <TrendingUp size={12} />
             {visitsGrowth}
           </span>
         </div>
 
-        <div className="bg-white/85 border border-primary/20 rounded-3xl p-5 shadow-sm">
+        <div className="bg-white/85 border border-primary/20 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 shadow-sm">
           <div className="flex justify-between items-center mb-3">
             <span className="text-xs font-bold text-textDark/70">نوبت‌های آنلاین</span>
             <div className="w-9 h-9 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
               <Calendar size={18} />
             </div>
           </div>
-          <div className="text-2xl font-black text-primary mb-1">{typeof onlineBookings === 'number' ? `${onlineBookings} نوبت` : onlineBookings}</div>
+          <div className="text-xl sm:text-2xl font-black text-primary mb-1">{typeof onlineBookings === 'number' ? `${onlineBookings} نوبت` : onlineBookings}</div>
           <span className="text-[11px] font-bold text-emerald-600 flex items-center gap-1">
             <CheckCircle2 size={12} />
             {attendanceRate} درصد حضور موفق
           </span>
         </div>
 
-        <div className="bg-white/85 border border-primary/20 rounded-3xl p-5 shadow-sm">
+        <div className="bg-white/85 border border-primary/20 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 shadow-sm">
           <div className="flex justify-between items-center mb-3">
             <span className="text-xs font-bold text-textDark/70">تریاژ هوشمند AI</span>
             <div className="w-9 h-9 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
               <Activity size={18} />
             </div>
           </div>
-          <div className="text-2xl font-black text-primary mb-1">{typeof triageChats === 'number' ? `${triageChats} گفتگو` : triageChats}</div>
+          <div className="text-xl sm:text-2xl font-black text-primary mb-1">{typeof triageChats === 'number' ? `${triageChats} گفتگو` : triageChats}</div>
           <span className="text-[11px] font-bold text-primary">{typeof emergencyCodes === 'number' ? `${emergencyCodes} کد اورژانس صادرشده` : emergencyCodes}</span>
         </div>
 
-        <div className="bg-white/85 border border-primary/20 rounded-3xl p-5 shadow-sm">
+        <div className="bg-white/85 border border-primary/20 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 shadow-sm">
           <div className="flex justify-between items-center mb-3">
             <span className="text-xs font-bold text-textDark/70">رضایت مراجعین</span>
             <div className="w-9 h-9 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
               <CheckCircle2 size={18} />
             </div>
           </div>
-          <div className="text-2xl font-black text-primary mb-1">{satisfactionRating}</div>
+          <div className="text-xl sm:text-2xl font-black text-primary mb-1">{satisfactionRating}</div>
           <span className="text-[11px] font-bold text-amber-500">بر اساس {reviewsCount} دیدگاه</span>
         </div>
       </div>
 
       {/* Charts Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3.5 sm:gap-6">
         {/* Line Chart */}
-        <div className="lg:col-span-2 bg-white/85 border border-primary/20 rounded-3xl shadow-sm p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="text-base font-bold text-primary flex items-center gap-2">
-              <TrendingUp size={18} />
+        <div className="lg:col-span-2 bg-white/85 border border-primary/20 rounded-2xl sm:rounded-3xl shadow-sm p-3.5 sm:p-6">
+          <div className="flex justify-between items-center mb-4 sm:mb-6">
+            <h3 className="text-sm sm:text-base font-bold text-primary flex items-center gap-2">
+              <TrendingUp size={16} />
               روند ویزیت‌های ۶ ماه اخیر
             </h3>
-            <span className="text-xs bg-primary/10 text-primary font-bold px-3 py-1 rounded-xl">
+            <span className="text-[11px] sm:text-xs bg-primary/10 text-primary font-bold px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-xl">
               سال ۱۴۰۳
             </span>
           </div>
 
-          <div className="h-64">
+          <div className="h-56 sm:h-64">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData}>
                 <XAxis dataKey="month" stroke="#4a2545" tick={{ fill: '#4a2545', fontSize: 12 }} />
@@ -183,7 +183,7 @@ const AdminDashboard = () => {
         </div>
 
         {/* Pie Chart */}
-        <div className="bg-white/85 border border-primary/20 rounded-3xl shadow-sm p-6 flex flex-col justify-between">
+        <div className="bg-white/85 border border-primary/20 rounded-2xl sm:rounded-3xl shadow-sm p-3.5 sm:p-6 flex flex-col justify-between">
           <h3 className="text-base font-bold text-primary mb-4">
             وضعیت انجام نوبت‌ها
           </h3>

@@ -15,14 +15,14 @@ const AdminSettings = () => {
   };
 
   return (
-    <div className="space-y-8">
-      <div className="border-b border-primary/20 pb-4 flex flex-col sm:flex-row justify-between sm:items-center gap-2">
+    <div className="space-y-4 sm:space-y-8">
+      <div className="border-b border-primary/20 pb-3 sm:pb-4 flex flex-col sm:flex-row justify-between sm:items-center gap-2">
         <div>
-          <h1 className="text-2xl font-black text-primary flex items-center gap-2.5">
-            <Palette className="w-7 h-7" />
+          <h1 className="text-lg sm:text-xl md:text-2xl font-black text-primary flex items-center gap-2">
+            <Palette className="w-5 h-5 sm:w-6 sm:h-6" />
             تنظیمات تم و ظاهر سراسری سایت
           </h1>
-          <p className="text-sm text-textDark/70 mt-1 font-medium">
+          <p className="text-[11px] sm:text-xs md:text-sm text-textDark/70 mt-0.5 font-medium">
             تم انتخاب‌شده در این بخش، بلافاصله برای تمامی کاربران و بازدیدکنندگان وب‌سایت اعمال خواهد شد.
           </p>
         </div>
@@ -34,7 +34,7 @@ const AdminSettings = () => {
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 sm:gap-6">
         {Object.entries(THEMES).map(([key, theme]) => {
           const isSelected = activeTheme === key;
 
@@ -42,7 +42,7 @@ const AdminSettings = () => {
             <div
               key={key}
               onClick={() => handleSelectTheme(key)}
-              className={`p-6 rounded-3xl border-2 transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between shadow-sm ${
+              className={`p-4 sm:p-6 rounded-2xl sm:rounded-3xl border-2 transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between shadow-sm ${
                 isSelected
                   ? 'border-primary bg-primary/10 shadow-lg scale-102 ring-2 ring-primary/30'
                   : 'border-primary/20 bg-white/70 hover:border-primary/50 hover:bg-white'
@@ -111,11 +111,11 @@ const AdminSettings = () => {
         })}
       </div>
 
-      <div className="bg-white/60 border border-primary/20 rounded-3xl p-6 flex items-start gap-4">
-        <Shield className="w-6 h-6 text-primary shrink-0 mt-1" />
+      <div className="bg-white/60 border border-primary/20 rounded-2xl sm:rounded-3xl p-3.5 sm:p-6 flex items-start gap-3 sm:gap-4">
+        <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-primary shrink-0 mt-0.5 sm:mt-1" />
         <div>
-          <h4 className="font-bold text-textDark text-sm mb-1">کنترل امنیتی دسترسی به تم</h4>
-          <p className="text-xs text-textDark/70 font-medium leading-relaxed">
+          <h4 className="font-bold text-textDark text-xs sm:text-sm mb-0.5 sm:mb-1">کنترل امنیتی دسترسی به تم</h4>
+          <p className="text-[11px] sm:text-xs text-textDark/70 font-medium leading-relaxed">
             سوئیچر تم عمومی از دید بازدیدکنندگان عادی در بخش کلاینت حذف شده و تغییر پالت رنگی منحصراً از این پنل و توسط مدیر سیستم کنترل می‌شود.
           </p>
         </div>
