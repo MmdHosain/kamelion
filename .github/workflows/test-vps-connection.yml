@@ -6,19 +6,25 @@ on:
 
 jobs:
   test-connection:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, windows, x64]
 
     steps:
       - name: Test TCP connection to VPS
+        shell: powershell
         env:
           VPS_HOST: ${{ secrets.VPS_HOST }}
           VPS_PORT: ${{ secrets.VPS_PORT }}
         run: |
-          echo "Testing connection to VPS..."
+          Write-Host "Testing connection from local Windows..."
 
-          if timeout 10 bash -c '</dev/tcp/$VPS_HOST/$VPS_PORT'; then
-            echo "SUCCESS: VPS SSH port is reachable."
-          else
-            echo "FAILED: Cannot connect to VPS SSH port."
+          $result = Test-NetConnection `
+            -ComputerName $env:VPS_HOST `
+            -Port ([int]$env:VPS_PORT) `
+            -WarningAction SilentlyContinue
+
+          if ($result.TcpTestSucceeded) {
+            Write-Host "SUCCESS: VPS SSH port is reachable."
+          } else {
+            Write-Host "FAILED: Cannot connect to VPS SSH port."
             exit 1
-          fi
+          }
