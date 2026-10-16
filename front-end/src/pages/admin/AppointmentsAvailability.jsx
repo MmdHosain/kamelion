@@ -222,15 +222,17 @@ const AppointmentsAvailability = () => {
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={saveSettings}
-          disabled={saveStatus === 'saving'}
-          className={`flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-bold text-sm shadow-md transition-all duration-200 cursor-pointer ${saveBg}`}
-        >
-          <Save size={16} />
-          <span>{saveLabel}</span>
-        </button>
+        {activeTab === 'Availability' && (
+          <button
+            type="button"
+            onClick={saveSettings}
+            disabled={saveStatus === 'saving'}
+            className={`flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-bold text-sm shadow-md transition-all duration-200 cursor-pointer ${saveBg}`}
+          >
+            <Save size={16} />
+            <span>{saveLabel}</span>
+          </button>
+        )}
       </div>
 
       {/* Tabs */}

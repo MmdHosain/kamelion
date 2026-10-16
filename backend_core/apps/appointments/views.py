@@ -13,6 +13,8 @@ from .serializers import (
 
 from .services import (
     get_available_slots,
+    get_unavailable_dates,
+    get_weekly_schedule_spans,
     book_appointment,
     cancel_appointment
 )
@@ -22,22 +24,57 @@ from rest_framework.generics import ListAPIView
     
     
 class AvailableSlotsView(APIView):
+    """
+    GET /api/appointments/slots/?date=YYYY-MM-DD
+        -> {"date": ..., "available_slots": [...]}
+
+    GET /api/appointments/slots/?month=YYYY-MM
+        -> {"month": ..., "unavailable_dates": [...]}
+        Every date in that month the doctor can't be booked: clinic
+        closed, not in office that weekday, or fully booked.
+    """
     authentication_classes = []
     permission_classes = []
-    
+
     def get(self, request):
 
         serializer = SlotQuerySerializer(data=request.query_params)
         serializer.is_valid(raise_exception=True)
 
-        date = serializer.validated_data["date"]
+        date = serializer.validated_data.get("date")
 
-        slots = get_available_slots(date)
+        if date:
+            slots = get_available_slots(date)
+
+            return Response({
+                "date": date,
+                "available_slots": slots
+            })
+
+        month = serializer.validated_data["month"]
+        year_str, month_str = month.split("-")
 
         return Response({
-            "date": date,
-            "available_slots": slots
+            "month": month,
+            "unavailable_dates": get_unavailable_dates(
+                int(year_str), int(month_str)
+            ),
         })
+
+
+class WeeklyScheduleView(APIView):
+    """
+    GET /api/appointments/schedule/
+
+    The doctor's weekly hours as runs of consecutive days, for the
+    main page, e.g. SUN-WED 09:00-17:00, THU-FRI 09:00-13:00,
+    SAT not available.
+    """
+    authentication_classes = []
+    permission_classes = []
+
+    def get(self, request):
+        return Response({"spans": get_weekly_schedule_spans()})
 
 
 class BookAppointmentView(APIView):

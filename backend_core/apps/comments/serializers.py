@@ -15,6 +15,7 @@ class ReviewSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "created_at", "approved"]
         extra_kwargs = {
             "rating": {"required": True, "allow_null": False},
+            "name": {"required": False, "allow_blank": True},
         }
 
     def validate_rating(self, value):
@@ -23,10 +24,8 @@ class ReviewSerializer(serializers.ModelSerializer):
         return value
 
     def validate_name(self, value):
-        value = value.strip()
-        if not value:
-            raise serializers.ValidationError("Name cannot be empty.")
-        return value
+        # Optional field now - just normalize whitespace, don't reject blanks.
+        return value.strip()
 
     def validate_text(self, value):
         value = value.strip()

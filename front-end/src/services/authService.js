@@ -14,22 +14,32 @@ const normalizeAuthResponse = (data) => {
 };
 
 const authService = {
-  sendOtp: async (phone, type = 'login', name = null) => {
+  requestOtp: async (phone) => {
     const response = await apiClient.post('/auth/request-otp', {
       phone_number: phone,
-      type,
-      name,
     });
 
     return response.data;
   },
 
-  verifyOtp: async (phone, code, type = 'login', name = null) => {
+  sendOtp: async (phone) => {
+    return authService.requestOtp(phone);
+  },
+
+  verifyOtp: async (phone, code) => {
     const response = await apiClient.post('/auth/verify-otp', {
       phone_number: phone,
       code,
-      type,
-      full_name: name || undefined,
+    });
+
+    return normalizeAuthResponse(response.data);
+  },
+
+  completeRegistration: async (signup_token, full_name, national_id) => {
+    const response = await apiClient.post('/auth/complete-registration', {
+      signup_token,
+      full_name,
+      national_id,
     });
 
     return normalizeAuthResponse(response.data);

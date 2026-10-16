@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Search, Users, Eye, Phone, Calendar, ArrowUpDown, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import PatientDetailModal from './PatientDetailModal';
+import TriageLevelBadge from './TriageLevelBadge';
 import { adminApi } from '../../../api/admin';
 
 const mockPatients = [
@@ -10,27 +11,21 @@ const mockPatients = [
     fullName: 'سارا معتمدی',
     phoneNumber: '0912 345 6789',
     lastAppointment: '2026-08-23',
+    triageLevel: 'low_priority',
     notes: [
       { id: 1, text: 'بررسی سونوگرافی توده فیبروآدنوم سینه چپ', createdAt: '۱۴۰۳/۰۲/۲۰' },
       { id: 2, text: 'نیاز به پیگیری و چکاپ ۶ ماهه', createdAt: '۱۴۰۳/۰۲/۲۰' },
     ],
-    aiProfile: {
-      riskLevel: 'پایین',
-      chronicCondition: 'فیبروکیستیک',
-      recommendation: 'سونوگرافی دوره‌ای ۶ ماهه',
-      medAdherence: 'عالی',
-      lifestyle: 'فعال',
-    },
     appointments: [
       { date: '۱۴۰۳/۰۲/۱۵', time: '۰۹:۰۰' },
       { date: '۱۴۰۲/۱۱/۱۰', time: '۱۴:۳۰' },
     ],
   },
-  { id: '2', fullName: 'ترانه کمالی', phoneNumber: '0912 111 2233', lastAppointment: '2026-07-15', notes: [], aiProfile: {}, appointments: [] },
-  { id: '3', fullName: 'مهناز رضایی', phoneNumber: '0901 234 5678', lastAppointment: '2026-06-30', notes: [], aiProfile: {}, appointments: [] },
-  { id: '4', fullName: 'فاطمه کریمی', phoneNumber: '0935 678 9012', lastAppointment: '2026-05-18', notes: [], aiProfile: {}, appointments: [] },
-  { id: '5', fullName: 'زهرا نیک‌پور', phoneNumber: '0914 765 4321', lastAppointment: '2026-04-10', notes: [], aiProfile: {}, appointments: [] },
-  { id: '6', fullName: 'نرگس حسینی', phoneNumber: '0936 555 7788', lastAppointment: '2026-03-02', notes: [], aiProfile: {}, appointments: [] },
+  { id: '2', fullName: 'ترانه کمالی', phoneNumber: '0912 111 2233', lastAppointment: '2026-07-15', triageLevel: 'urgent', notes: [], appointments: [] },
+  { id: '3', fullName: 'مهناز رضایی', phoneNumber: '0901 234 5678', lastAppointment: '2026-06-30', triageLevel: null, notes: [], appointments: [] },
+  { id: '4', fullName: 'فاطمه کریمی', phoneNumber: '0935 678 9012', lastAppointment: '2026-05-18', triageLevel: 'high_priority', notes: [], appointments: [] },
+  { id: '5', fullName: 'زهرا نیک‌پور', phoneNumber: '0914 765 4321', lastAppointment: '2026-04-10', triageLevel: null, notes: [], appointments: [] },
+  { id: '6', fullName: 'نرگس حسینی', phoneNumber: '0936 555 7788', lastAppointment: '2026-03-02', triageLevel: 'out_of_scope', notes: [], appointments: [] },
 ];
 
 const ROWS_OPTIONS = [10, 20, 50];
@@ -65,8 +60,8 @@ export default function PatientsList() {
             fullName: p.full_name || p.fullName || 'بیمار',
             phoneNumber: p.phone_number || p.phoneNumber || '—',
             lastAppointment: p.last_appointment || p.lastAppointment || null,
+            triageLevel: p.triage_level || p.triageLevel || null,
             notes: Array.isArray(p.notes) ? p.notes : [],
-            aiProfile: p.ai_profile || p.aiProfile || {},
             appointments: Array.isArray(p.appointments) ? p.appointments : [],
           }));
           setPatients(formatted);
@@ -140,13 +135,14 @@ export default function PatientsList() {
                 <th className="px-5 py-4 font-black">نام و نام خانوادگی</th>
                 <th className="px-5 py-4 font-black">شماره تماس</th>
                 <th className="px-5 py-4 font-black">آخرین نوبت ویزیت</th>
+                <th className="px-5 py-4 font-black">وضعیت تریاژ هوشمند</th>
                 <th className="px-5 py-4 font-black text-center">مشاهده پرونده</th>
               </tr>
             </thead>
             <tbody>
               {displayedPatients.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-5 py-12 text-center text-textDark/50 font-medium">
+                  <td colSpan={5} className="px-5 py-12 text-center text-textDark/50 font-medium">
                     بیماری با این مشخصات یافت نشد.
                   </td>
                 </tr>
@@ -166,6 +162,9 @@ export default function PatientsList() {
                     </td>
                     <td className="px-5 py-4 text-textDark/75 font-medium whitespace-nowrap">
                       {formatDate(patient.lastAppointment)}
+                    </td>
+                    <td className="px-5 py-4 whitespace-nowrap">
+                      <TriageLevelBadge level={patient.triageLevel} />
                     </td>
                     <td className="px-5 py-4 text-center">
                       <button

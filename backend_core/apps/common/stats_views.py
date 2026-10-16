@@ -9,7 +9,7 @@ from rest_framework.permissions import IsAdminUser
 
 from apps.appointments.models import Appointment
 from apps.comments.models import Review
-from apps.chat_gateway.models import ChatSession, ChatMessage
+from apps.chat_gateway.models import ChatSession
 
 # Jalali (Persian solar calendar) month names, index 1-12, matching the
 # example payload in frontend-api-evaluation.md (فروردین, اردیبهشت, ...).
@@ -88,9 +88,9 @@ class AdminStatsView(APIView):
 
         # --- chat/triage ---
         triage_chats = ChatSession.objects.count()
-        emergency_codes = ChatMessage.objects.filter(is_emergency=True).exclude(
-            emergency_code__isnull=True
-        ).count()
+        # Emergency codes will be issued by the chat gateway's urgent action, which is not
+        # built yet. Until then there is nothing to count.
+        emergency_codes = 0
 
         # --- reviews/satisfaction ---
         approved_reviews = Review.objects.filter(status=Review.APPROVED)

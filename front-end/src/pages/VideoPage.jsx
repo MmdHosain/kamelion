@@ -54,16 +54,23 @@ export default function VideoPage() {
       .then((data) => {
         if (!isMounted) return;
         if (Array.isArray(data) && data.length > 0) {
-          const formatted = data.map((v, i) => ({
-            id: v.id || i,
-            type:
-              v.type ||
-              (v.src && (v.src.includes('embed') || v.src.includes('youtube') || v.src.includes('aparat'))
-                ? 'iframe'
-                : 'video'),
-            src: v.src || v.url || v.video_url || '',
-            title: v.title || 'ویدیو آموزشی',
-          }));
+          const formatted = data.map((v, i) => {
+            let currentSrc = v.src || v.url || v.video_url || '';
+            if (currentSrc.includes('aparat.com/v/')) {
+              const hash = currentSrc.split('aparat.com/v/')[1].split('/')[0].split('?')[0];
+              currentSrc = `https://www.aparat.com/video/video/embed/videohash/${hash}/vt/frame`;
+            }
+            return {
+              id: v.id || i,
+              type:
+                v.type ||
+                (currentSrc && (currentSrc.includes('embed') || currentSrc.includes('youtube') || currentSrc.includes('aparat'))
+                  ? 'iframe'
+                  : 'video'),
+              src: currentSrc,
+              title: v.title || 'ویدیو آموزشی',
+            };
+          });
           setVideos(formatted);
         }
       })

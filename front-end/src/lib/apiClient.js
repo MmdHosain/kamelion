@@ -4,10 +4,10 @@ import useAuthStore from '../store/authStore';
 const envUrl = import.meta.env.VITE_API_URL;
 
 if (!envUrl) {
-  console.warn("⚠️ WARNING: VITE_API_URL environment variable is missing. Falling back to http://127.0.0.1:8000/api");
+  console.warn("⚠️ WARNING: VITE_API_URL environment variable is missing. Falling back to /api");
 }
 
-const BASE_URL = envUrl || 'http://127.0.0.1:8000/api';
+const BASE_URL = envUrl || '/api';
 
 const apiClient = axios.create({
   baseURL: BASE_URL,
@@ -52,6 +52,22 @@ const clearAuthInStore = () => {
 
 apiClient.interceptors.request.use(
   (config) => {
+    // If request URL is an absolute URL from backend pagination that lost its port (e.g. http://localhost/api/...)
+    // convert it to a relative endpoint so Axios preserves apiClient's baseURL and active port.
+    if (config.url && /^https?:\/\//i.test(config.url)) {
+      try {
+        const parsed = new URL(config.url);
+        if (typeof window !== 'undefined' && window.location) {
+          const isSameHost = parsed.hostname === window.location.hostname;
+          if (isSameHost) {
+            config.url = parsed.pathname.replace(/^\/api/, '') + parsed.search;
+          }
+        }
+      } catch {
+        // ignore malformed URLs
+      }
+    }
+
     const token = getAccessTokenFromStore();
 
     if (token) {
@@ -80,6 +96,7 @@ const isAuthEndpoint = (url = '') => {
     url.includes('/auth/request-otp') ||
     url.includes('/auth/send-otp') ||
     url.includes('/auth/verify-otp') ||
+    url.includes('/auth/complete-registration') ||
     url.includes('/auth/refresh')
   );
 };

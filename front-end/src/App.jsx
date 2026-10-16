@@ -13,9 +13,11 @@ import Footer from './components/layout/Footer';
 /* Pages */
 import HomePage from './pages/HomePage';
 import AboutPage from './pages/AboutPage';
-import ServicesPage from './pages/ServicesPage';
+import TherapeuticServicesPage from './pages/TherapeuticServicesPage';
+import AestheticServicesPage from './pages/AestheticServicesPage';
 import FaqPage from './pages/FaqPage';
 import ResourcesPage from './pages/ResourcesPage';
+import ArticleDetailPage from './pages/ArticleDetailPage';
 import VideoPage from './pages/VideoPage';
 
 import AdminPage from './pages/admin/AdminPage';
@@ -25,6 +27,7 @@ import AdminProtectedRoute from './components/admin/AdminProtectedRoute';
 /* Chat & Modals */
 import FloatingChatWidget from './components/chat/FloatingChatWidget';
 import AppointmentModal from './components/ui/AppointmentModal';
+import MyAppointmentsModal from './components/ui/MyAppointmentsModal';
 import AuthModal from './components/ui/AuthModal';
 
 const App = () => {
@@ -33,6 +36,7 @@ const App = () => {
 
   const { activeTheme, fetchTheme } = useThemeStore();
   const [openAppointment, setOpenAppointment] = useState(false);
+  const [openMyAppointments, setOpenMyAppointments] = useState(false);
   const [openChat, setOpenChat] = useState(false);
 
   // Sync theme with server on mount and apply to DOM
@@ -59,6 +63,7 @@ const App = () => {
       {!isAdminRoute && (
         <Header
           onOpenAppointment={() => setOpenAppointment(true)}
+          onOpenMyAppointments={() => setOpenMyAppointments(true)}
           onOpenChat={() => setOpenChat(true)}
         />
       )}
@@ -75,14 +80,30 @@ const App = () => {
         />
         <Route path="/about" element={<AboutPage />} />
         <Route
+          path="/services/therapeutic"
+          element={<TherapeuticServicesPage onOpenAppointment={() => setOpenAppointment(true)} />}
+        />
+        <Route
+          path="/services/aesthetic"
+          element={<AestheticServicesPage onOpenAppointment={() => setOpenAppointment(true)} />}
+        />
+        <Route
           path="/services"
-          element={<ServicesPage onOpenAppointment={() => setOpenAppointment(true)} />}
+          element={<Navigate to="/services/therapeutic" replace />}
         />
         <Route
           path="/faq"
           element={<FaqPage onOpenChat={() => setOpenChat(true)} />}
         />
         <Route path="/resources" element={<ResourcesPage />} />
+        <Route
+          path="/resources/:slug"
+          element={<ArticleDetailPage onOpenAppointment={() => setOpenAppointment(true)} />}
+        />
+        <Route
+          path="/articles/:slug"
+          element={<ArticleDetailPage onOpenAppointment={() => setOpenAppointment(true)} />}
+        />
         <Route path="/video" element={<VideoPage />} />
         <Route path="/videos" element={<VideoPage />} />
 
@@ -113,6 +134,20 @@ const App = () => {
           <AppointmentModal
             open={openAppointment}
             onClose={() => setOpenAppointment(false)}
+            onOpenMyAppointments={() => {
+              setOpenAppointment(false);
+              setOpenMyAppointments(true);
+            }}
+          />
+
+          {/* My Appointments (User Portal) Modal */}
+          <MyAppointmentsModal
+            open={openMyAppointments}
+            onClose={() => setOpenMyAppointments(false)}
+            onOpenNewBooking={() => {
+              setOpenMyAppointments(false);
+              setOpenAppointment(true);
+            }}
           />
 
           {/* Auth Modal for Login/OTP if required */}

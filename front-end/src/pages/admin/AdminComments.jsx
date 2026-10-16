@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { createPortal } from 'react-dom';
 import {
   MessageSquare,
   Star,
@@ -11,9 +10,15 @@ import {
   Clock,
   Filter,
   X,
-  AlertCircle,
 } from 'lucide-react';
 import { useCommentsStore } from '../../store/commentsStore';
+import ToastNotification from '../../components/ui/ToastNotification';
+
+const THEMES_LIST = [
+  'from-[#e75480] to-[#ba2d63]',
+  'from-[#b685c2] to-[#7d4a99]',
+  'from-[#7d4a99] to-[#e75480]'
+];
 
 const AdminComments = () => {
   const {
@@ -250,9 +255,10 @@ const AdminComments = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4">
-          {filteredComments.map((comment) => {
+          {filteredComments.map((comment, index) => {
             const isApproved = comment.approved === true;
             const isBusy = actionLoadingId === comment.id;
+            const avatarGradient = THEMES_LIST[index % THEMES_LIST.length];
 
             return (
               <div
@@ -267,7 +273,7 @@ const AdminComments = () => {
                 <div className="flex-1 space-y-3 w-full">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-primary to-primary-dark text-white font-bold flex items-center justify-center text-sm shadow-md shadow-primary/20 shrink-0">
+                      <div className={`w-10 h-10 rounded-2xl bg-gradient-to-br ${avatarGradient} text-white font-bold flex items-center justify-center text-sm shadow-md shadow-primary/20 shrink-0`}>
                         {comment.avatar || (comment.name ? comment.name.charAt(0) : 'ک')}
                       </div>
                       <div>
@@ -356,41 +362,8 @@ const AdminComments = () => {
           })}
         </div>
       )}
-      {/* ================= FLOATING TOAST NOTIFICATION (Portal to document.body) ================= */}
-      {toast &&
-        createPortal(
-          <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[1000] max-w-lg w-[92%] sm:w-auto animate-scaleUp pointer-events-auto">
-            <div
-              className={`p-4 sm:px-5 sm:py-3.5 rounded-2xl shadow-2xl backdrop-blur-xl border flex items-center gap-3.5 text-xs sm:text-sm font-medium ${
-                toast.type === 'success'
-                  ? 'bg-slate-900/95 border-emerald-500/50 text-emerald-300 shadow-[0_10px_35px_-5px_rgba(16,185,129,0.35)]'
-                  : 'bg-slate-900/95 border-rose-500/50 text-rose-300 shadow-[0_10px_35px_-5px_rgba(244,63,94,0.35)]'
-              }`}
-            >
-              {toast.type === 'success' ? (
-                <div className="w-7 h-7 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
-                  <CheckCircle2 className="w-4 h-4" />
-                </div>
-              ) : (
-                <div className="w-7 h-7 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center shrink-0">
-                  <AlertCircle className="w-4 h-4" />
-                </div>
-              )}
-              <div className="flex-1 leading-relaxed text-white font-medium">
-                {toast.message}
-              </div>
-              <button
-                type="button"
-                onClick={() => setToast(null)}
-                className="text-white/50 hover:text-white p-1 transition-colors cursor-pointer mr-1 shrink-0"
-                aria-label="بستن"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-          </div>,
-          document.body
-        )}
+      {/* ================= FLOATING TOAST NOTIFICATION ================= */}
+      <ToastNotification toast={toast} onClose={() => setToast(null)} />
     </div>
   );
 };

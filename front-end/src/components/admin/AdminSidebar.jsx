@@ -18,11 +18,11 @@ const AdminSidebar = ({ open, onClose }) => {
       )}
 
       <aside
-        className={`fixed md:static inset-y-0 right-0 z-50 w-72 bg-gradient-to-b from-primary to-primary-dark text-white flex flex-col transition-all duration-300 shadow-2xl md:shadow-none ${
+        className={`fixed md:sticky inset-y-0 right-0 top-0 z-40 w-72 h-screen bg-gradient-to-b from-primary to-primary-dark text-white flex flex-col transition-all duration-300 shadow-2xl md:shadow-none shrink-0 ${
           open ? 'translate-x-0' : 'translate-x-full md:translate-x-0'
         }`}
       >
-        <div className="p-6 border-b border-white/15 flex items-center gap-3">
+        <div className="p-5 border-b border-white/15 flex items-center gap-3 shrink-0">
           <div className="w-10 h-10 rounded-2xl bg-white/20 flex items-center justify-center text-white shadow-inner">
             <Shield className="w-6 h-6" />
           </div>
@@ -32,33 +32,33 @@ const AdminSidebar = ({ open, onClose }) => {
           </div>
         </div>
 
-        <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+        <nav className="flex-1 px-3 py-3 space-y-1.5 overflow-y-auto scrollbar-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           {ADMIN_NAV_ITEMS.map(({ label, icon: Icon, path }) => (
             <NavLink
               key={path}
               to={path}
               onClick={onClose}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-4 py-3 rounded-2xl font-bold text-sm transition-all duration-200 ${
+                `flex items-center gap-3 px-3.5 py-2.5 rounded-2xl font-bold text-xs sm:text-sm transition-all duration-200 ${
                   isActive
-                    ? 'bg-white text-primary shadow-lg shadow-black/10 scale-102'
+                    ? 'bg-white text-primary shadow-lg shadow-black/10 scale-[1.02]'
                     : 'text-white/80 hover:bg-white/10 hover:text-white'
                 }`
               }
             >
-              <Icon size={20} />
+              <Icon size={18} />
               <span>{label}</span>
             </NavLink>
           ))}
         </nav>
 
-        <div className="p-4 border-t border-white/15">
+        <div className="p-4 border-t border-white/15 shrink-0">
           <button
             onClick={() => {
               if (logout) logout();
               window.location.href = '/';
             }}
-            className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-white/10 hover:bg-red-500 hover:text-white text-white/90 text-sm font-bold transition-all shadow-sm"
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-2xl bg-white/10 hover:bg-red-500 hover:text-white text-white/90 text-sm font-bold transition-all shadow-sm"
           >
             <LogOut size={18} />
             <span>خروج از حساب</span>

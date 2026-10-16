@@ -25,10 +25,17 @@ export default {
           from: { opacity: '0', transform: 'translateY(6px)' },
           to: { opacity: '1', transform: 'translateY(0)' },
         },
+        pinkHalo: {
+          '0%': { boxShadow: '0 0 0 0 rgba(231, 84, 128, 0)' },
+          '25%': { boxShadow: '0 0 0 5px rgba(231, 84, 128, 0.45), 0 0 18px 4px rgba(231, 84, 128, 0.35)' },
+          '60%': { boxShadow: '0 0 0 4px rgba(231, 84, 128, 0.25), 0 0 12px 2px rgba(231, 84, 128, 0.2)' },
+          '100%': { boxShadow: '0 0 0 0 rgba(231, 84, 128, 0)' },
+        },
       },
       animation: {
         fadeSlide: 'fadeSlide 0.6s ease-out forwards',
         messageIn: 'messageIn 0.2s ease-out',
+        'pink-halo': 'pinkHalo 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards',
       },
     },
   },

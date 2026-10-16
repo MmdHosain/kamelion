@@ -14,9 +14,12 @@ from .serializers import (
     AvailabilityExceptionBulkSerializer,
     AppointmentSerializer,
     AdminBookAppointmentSerializer,
+    AdminAppointmentFilterSerializer,
+    DisapproveAppointmentSerializer,
 )
-from .services import admin_book_appointment
+from .services import admin_book_appointment, approve_appointment, disapprove_appointment
 from .pagination import AppointmentPagination
+from .notifications import send_appointment_decision_sms
 
 
 
@@ -54,7 +57,24 @@ class AdminAppointmentsView(ListCreateAPIView):
             .all()
             .order_by("-id")
         )
-        
+
+        # Filters (only applied on GET; POST is a booking, not a listing):
+        #   ?date_from=2026-03-01&date_to=2026-03-31  (inclusive range)
+        #   ?status=pending | approved | disapproved  (comma-separate to combine)
+        filters = AdminAppointmentFilterSerializer(data=self.request.query_params)
+        filters.is_valid(raise_exception=True)
+
+        date_from = filters.validated_data.get("date_from")
+        date_to = filters.validated_data.get("date_to")
+        statuses = filters.validated_data.get("status")
+
+        if date_from:
+            queryset = queryset.filter(appointment_date__gte=date_from)
+        if date_to:
+            queryset = queryset.filter(appointment_date__lte=date_to)
+        if statuses:
+            queryset = queryset.filter(status__in=statuses)
+
         search = self.request.query_params.get("search")
 
         if search:
@@ -118,6 +138,20 @@ class AdminAppointmentDetailView(RetrieveUpdateDestroyAPIView):
         kwargs["partial"] = True
         return super().update(request, *args, **kwargs)
 
+    def perform_update(self, serializer):
+        # The admin panel approves/rejects by PUTting a new status here
+        # (not necessarily via the approve/ and disapprove/ endpoints),
+        # so notify the patient whenever a PENDING appointment moves to
+        # scheduled (approved) or cancelled_admin (rejected).
+        old_status = serializer.instance.status
+        appointment = serializer.save()
+
+        if old_status == Appointment.PENDING:
+            if appointment.status == Appointment.SCHEDULED:
+                send_appointment_decision_sms(appointment, approved=True)
+            elif appointment.status == Appointment.CANCELLED_BY_ADMIN:
+                send_appointment_decision_sms(appointment, approved=False)
+
 
 class AdminCreateAppointmentView(APIView):
     """
@@ -152,6 +186,53 @@ class AdminCreateAppointmentView(APIView):
             AppointmentSerializer(appointment).data,
             status=status.HTTP_201_CREATED
         )
+
+class AdminApproveAppointmentView(APIView):
+    """
+    POST /api/admin/appointments/<id>/approve/
+    Confirms a pending appointment, moving it to "scheduled".
+    """
+    permission_classes = [IsAdminUser]
+
+    def post(self, request, pk):
+        try:
+            appointment = Appointment.objects.select_related("user").get(pk=pk)
+        except Appointment.DoesNotExist:
+            return Response({"detail": "Appointment not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            approve_appointment(appointment)
+        except ValueError as e:
+            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(AppointmentSerializer(appointment).data)
+
+
+class AdminDisapproveAppointmentView(APIView):
+    """
+    POST /api/admin/appointments/<id>/disapprove/   body: {"reason": "..."}
+    Rejects a pending appointment, moving it to "cancelled_admin"
+    and freeing up its slot. The reason is required, saved on the
+    appointment and sent to the patient in the rejection SMS.
+    """
+    permission_classes = [IsAdminUser]
+
+    def post(self, request, pk):
+        try:
+            appointment = Appointment.objects.select_related("user").get(pk=pk)
+        except Appointment.DoesNotExist:
+            return Response({"detail": "Appointment not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = DisapproveAppointmentSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        try:
+            disapprove_appointment(appointment, serializer.validated_data["reason"])
+        except ValueError as e:
+            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(AppointmentSerializer(appointment).data)
+
 
 class AdminSlotBulkSaveView(APIView):
     permission_classes = [IsAdminUser]

@@ -6,7 +6,73 @@ from .models import DoctorAvailability
 
 
 class SlotQuerySerializer(serializers.Serializer):
-    date = serializers.DateField()
+    """
+    Query params for GET /api/appointments/slots/
+
+    - ?date=2026-03-20   -> free time slots for that day
+    - ?month=2026-03     -> dates in that month with no availability
+    If both are sent, `date` wins.
+    """
+    date = serializers.DateField(required=False)
+    month = serializers.RegexField(
+        r"^\d{4}-(0[1-9]|1[0-2])$",
+        required=False,
+        error_messages={"invalid": "Month must be in YYYY-MM format."},
+    )
+
+    def validate(self, attrs):
+        if not attrs.get("date") and not attrs.get("month"):
+            raise serializers.ValidationError(
+                "Provide either 'date' (YYYY-MM-DD) or 'month' (YYYY-MM)."
+            )
+        return attrs
+
+
+class AdminAppointmentFilterSerializer(serializers.Serializer):
+    """
+    Query params accepted by GET /api/admin/appointments/
+
+    date_from / date_to : inclusive appointment_date range (either is optional)
+    status              : pending | approved | disapproved (or a raw status
+                          value such as scheduled / visited). Comma-separate
+                          to combine, e.g. ?status=pending,approved
+    """
+    # UI label -> stored Appointment.status value
+    STATUS_ALIASES = {
+        "pending": "pending",
+        "approved": "scheduled",
+        "disapproved": "cancelled_admin",
+    }
+
+    date_from = serializers.DateField(required=False)
+    date_to = serializers.DateField(required=False)
+    status = serializers.CharField(required=False, allow_blank=True)
+
+    def validate_status(self, value):
+        raw_values = {code for code, _ in Appointment.STATUS_CHOICES}
+        resolved = []
+
+        for part in value.split(","):
+            part = part.strip().lower()
+            if not part or part == "all":
+                continue
+            part = self.STATUS_ALIASES.get(part, part)
+            if part not in raw_values:
+                raise serializers.ValidationError(
+                    f"Invalid status '{part}'. Use pending, approved or disapproved."
+                )
+            resolved.append(part)
+
+        return resolved
+
+    def validate(self, attrs):
+        date_from = attrs.get("date_from")
+        date_to = attrs.get("date_to")
+        if date_from and date_to and date_to < date_from:
+            raise serializers.ValidationError(
+                {"date_to": "date_to must be on or after date_from."}
+            )
+        return attrs
 
 
 class BookAppointmentSerializer(serializers.Serializer):
@@ -36,6 +102,17 @@ class AdminBookAppointmentSerializer(serializers.Serializer):
         value = value.strip()
         if not value:
             raise serializers.ValidationError("Phone number cannot be empty.")
+        return value
+
+
+class DisapproveAppointmentSerializer(serializers.Serializer):
+    """Body of POST /api/admin/appointments/<id>/disapprove/"""
+    reason = serializers.CharField(max_length=500)
+
+    def validate_reason(self, value):
+        value = value.strip()
+        if not value:
+            raise serializers.ValidationError("Reason cannot be empty.")
         return value
 
 
@@ -129,9 +206,27 @@ class AppointmentSerializer(serializers.ModelSerializer):
             "appointment_time",
             "status",
             "reason",
+            "disapproval_reason",
             "created_at",
             "updated_at",
         ]
+        extra_kwargs = {"disapproval_reason": {"required": False}}
+
+    def validate(self, attrs):
+        # The admin panel can also disapprove through PUT (status =
+        # cancelled_admin); that path needs a reason too.
+        if (
+            self.instance is not None
+            and self.instance.status == Appointment.PENDING
+            and attrs.get("status") == Appointment.CANCELLED_BY_ADMIN
+        ):
+            reason = (attrs.get("disapproval_reason") or "").strip()
+            if not reason:
+                raise serializers.ValidationError(
+                    {"disapproval_reason": "A reason is required to disapprove an appointment."}
+                )
+            attrs["disapproval_reason"] = reason
+        return attrs
 
     def get_full_name(self, obj):
         # Fall back to phone number so the admin table never shows

@@ -3,8 +3,6 @@ import { createPortal } from 'react-dom';
 import {
   Star,
   Send,
-  CheckCircle2,
-  AlertCircle,
   MessageSquareHeart,
   MessagesSquare,
   X,
@@ -13,6 +11,35 @@ import {
   Loader2,
 } from 'lucide-react';
 import { useCommentsStore } from '../../store/commentsStore';
+import ToastNotification from '../ui/ToastNotification';
+import useBodyScrollLock from '../../hooks/useBodyScrollLock';
+
+const THEMES_LIST = [
+  {
+    bg: 'bg-[#f7d6e4]/30 hover:bg-[#f7d6e4]/50',
+    border: 'border-[#e75480]/20 hover:border-[#e75480]/40',
+    borderTop: 'border-t-[#e75480]/20',
+    gradient: 'from-[#e75480] to-[#ba2d63]',
+    text: 'text-[#ba2d63]',
+    star: 'text-[#e75480]',
+  },
+  {
+    bg: 'bg-[#e4d1f0]/30 hover:bg-[#e4d1f0]/50',
+    border: 'border-[#b685c2]/20 hover:border-[#b685c2]/40',
+    borderTop: 'border-t-[#b685c2]/20',
+    gradient: 'from-[#b685c2] to-[#7d4a99]',
+    text: 'text-[#7d4a99]',
+    star: 'text-[#b685c2]',
+  },
+  {
+    bg: 'bg-[#ebd4f5]/30 hover:bg-[#ebd4f5]/50',
+    border: 'border-[#7d4a99]/20 hover:border-[#7d4a99]/40',
+    borderTop: 'border-t-[#7d4a99]/20',
+    gradient: 'from-[#7d4a99] to-[#e75480]',
+    text: 'text-[#7d4a99]',
+    star: 'text-[#7d4a99]',
+  }
+];
 
 const ReviewsSection = () => {
   const { comments, addComment, fetchPublicComments } = useCommentsStore();
@@ -39,25 +66,19 @@ const ReviewsSection = () => {
     return () => clearTimeout(timer);
   }, [toast]);
 
-  // Close modal on ESC key and prevent body scroll
+  // Universal body scroll lock when reviews modal is open
+  useBodyScrollLock(isModalOpen);
+
+  // Close modal on ESC key
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.key === 'Escape') {
+      if (e.key === 'Escape' && isModalOpen) {
         setIsModalOpen(false);
       }
     };
 
-    if (isModalOpen) {
-      document.body.style.overflow = 'hidden';
-      window.addEventListener('keydown', handleKeyDown);
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-
-    return () => {
-      document.body.style.overflow = 'unset';
-      window.removeEventListener('keydown', handleKeyDown);
-    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isModalOpen]);
 
   const handleSubmit = async (e) => {
@@ -117,28 +138,19 @@ const ReviewsSection = () => {
             صداقت در درمان و همراهی در تک‌تک مراحل بهبودی
           </p>
         </div>
-
-        {/* Modal trigger button in header */}
-        {approvedComments.length > 0 && (
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="inline-flex items-center gap-2 self-start md:self-auto bg-white/70 hover:bg-white text-primary border border-primary/30 hover:border-primary px-4 py-2.5 rounded-2xl text-xs md:text-sm font-bold shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 cursor-pointer group"
-          >
-            <MessagesSquare className="w-4 h-4 text-primary group-hover:scale-110 transition-transform" />
-            <span>مشاهده همه دیدگاه‌ها ({approvedComments.length})</span>
-          </button>
-        )}
       </div>
 
       {/* Reviews Grid (Initial 4) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        {approvedComments.slice(0, 4).map((comment) => (
+        {approvedComments.slice(0, 4).map((comment, index) => {
+          const t = THEMES_LIST[index % THEMES_LIST.length];
+          return (
           <div
             key={comment.id}
-            className="bg-gradient-to-br from-white/60 to-white/25 hover:from-white/80 hover:to-white/45 border border-primary/20 hover:border-primary/40 shadow-sm p-6 rounded-3xl transition-all duration-300 flex flex-col justify-between"
+            className={`${t.bg} border ${t.border} shadow-sm p-6 rounded-3xl transition-all duration-300 flex flex-col justify-between`}
           >
             <div>
-              <div className="flex items-center gap-1 mb-4 text-amber-500">
+              <div className={`flex items-center gap-1 mb-4 ${t.star}`}>
                 {[...Array(comment.rating || 5)].map((_, i) => (
                   <Star key={i} className="w-4 h-4 fill-current" />
                 ))}
@@ -148,17 +160,17 @@ const ReviewsSection = () => {
               </p>
             </div>
 
-            <div className="flex items-center gap-3 pt-3 border-t border-primary/10">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center text-sm font-bold text-white shadow-md">
+            <div className={`flex items-center gap-3 pt-3 border-t ${t.borderTop}`}>
+              <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${t.gradient} flex items-center justify-center text-sm font-bold text-white shadow-md`}>
                 {comment.avatar}
               </div>
               <div className="flex flex-col">
-                <span className="text-sm font-bold text-textDark/85">{comment.name}</span>
+                <span className={`text-sm font-bold ${t.text}`}>{comment.name}</span>
                 <span className="text-textDark/50 text-xs">{comment.date}</span>
               </div>
             </div>
           </div>
-        ))}
+        )})}
       </div>
 
       {/* View All Action Bar */}
@@ -257,9 +269,12 @@ const ReviewsSection = () => {
             />
 
             {/* Modal Container */}
-            <div className="relative w-full max-w-4xl max-h-[92vh] bg-gradient-to-br from-bgLight/95 via-white/95 to-bgDark/95 backdrop-blur-2xl border border-primary/30 rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden z-10 animate-scaleUp">
+            <div
+              className="relative w-full max-w-4xl max-h-[92dvh] bg-white/95 backdrop-blur-2xl border border-primary/20 rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden z-10 animate-scaleUp"
+              style={{ overscrollBehavior: 'contain' }}
+            >
               {/* Modal Header */}
-              <div className="p-5 md:p-6 border-b border-primary/15 flex items-center justify-between bg-white/60">
+              <div className="p-5 md:p-6 border-b border-primary/10 flex items-center justify-between bg-white/80">
                 <div className="flex items-center gap-3">
                   <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-primary to-primary-dark text-white flex items-center justify-center shadow-lg shadow-primary/30">
                     <MessagesSquare className="w-5 h-5" />
@@ -288,7 +303,7 @@ const ReviewsSection = () => {
               </div>
 
               {/* Modal Filters & Search Bar */}
-              <div className="px-5 py-3.5 bg-white/40 border-b border-primary/10 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
+              <div className="px-5 py-3.5 bg-white/60 border-b border-primary/10 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
                 {/* Search */}
                 <div className="relative flex-1">
                   <Search className="w-4 h-4 absolute right-3.5 top-1/2 -translate-y-1/2 text-textDark/40" />
@@ -363,14 +378,16 @@ const ReviewsSection = () => {
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {filteredComments.map((comment) => (
+                    {filteredComments.map((comment, index) => {
+                      const t = THEMES_LIST[index % THEMES_LIST.length];
+                      return (
                       <div
                         key={comment.id}
-                        className="bg-white/80 hover:bg-white border border-primary/20 hover:border-primary/40 rounded-2xl p-5 shadow-sm transition-all duration-200 flex flex-col justify-between"
+                        className={`${t.bg} border ${t.border} rounded-2xl p-5 shadow-sm transition-all duration-200 flex flex-col justify-between`}
                       >
                         <div>
                           <div className="flex items-center justify-between gap-2 mb-3">
-                            <div className="flex items-center gap-1 text-amber-500">
+                            <div className={`flex items-center gap-1 ${t.star}`}>
                               {[...Array(comment.rating || 5)].map((_, i) => (
                                 <Star key={i} className="w-3.5 h-3.5 fill-current" />
                               ))}
@@ -382,23 +399,23 @@ const ReviewsSection = () => {
                           </p>
                         </div>
 
-                        <div className="flex items-center gap-2.5 pt-3 border-t border-primary/10">
-                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center text-xs font-bold text-white shadow-md shrink-0">
+                        <div className={`flex items-center gap-2.5 pt-3 border-t ${t.borderTop}`}>
+                          <div className={`w-8 h-8 rounded-full bg-gradient-to-br ${t.gradient} flex items-center justify-center text-xs font-bold text-white shadow-md shrink-0`}>
                             {comment.avatar}
                           </div>
                           <div className="flex flex-col">
-                            <span className="text-xs font-bold text-textDark/85">{comment.name}</span>
+                            <span className={`text-xs font-bold ${t.text}`}>{comment.name}</span>
                           </div>
                         </div>
                       </div>
-                    ))}
+                    )})}
                   </div>
                 )}
               </div>
 
               {/* Modal Footer */}
-              <div className="p-4 bg-white/70 border-t border-primary/15 flex flex-wrap items-center justify-between gap-3 text-xs">
-                <div className="text-textDark/60">
+              <div className="p-4 bg-white/80 border-t border-primary/10 flex flex-wrap items-center justify-between gap-3 text-xs">
+                <div className="text-textDark/60 font-medium">
                   نمایش {filteredComments.length} از {approvedComments.length} دیدگاه
                 </div>
                 <div className="flex items-center gap-3">
@@ -427,44 +444,10 @@ const ReviewsSection = () => {
           document.body
         )}
 
-      {/* ================= FLOATING TOAST NOTIFICATION (Portal to document.body) ================= */}
-      {toast &&
-        createPortal(
-          <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[1000] max-w-lg w-[92%] sm:w-auto animate-scaleUp pointer-events-auto">
-            <div
-              className={`p-4 sm:px-5 sm:py-3.5 rounded-2xl shadow-2xl backdrop-blur-xl border flex items-center gap-3.5 text-xs sm:text-sm font-medium ${
-                toast.type === 'success'
-                  ? 'bg-slate-900/95 border-emerald-500/50 text-emerald-300 shadow-[0_10px_35px_-5px_rgba(16,185,129,0.35)]'
-                  : 'bg-slate-900/95 border-rose-500/50 text-rose-300 shadow-[0_10px_35px_-5px_rgba(244,63,94,0.35)]'
-              }`}
-            >
-              {toast.type === 'success' ? (
-                <div className="w-7 h-7 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
-                  <CheckCircle2 className="w-4 h-4" />
-                </div>
-              ) : (
-                <div className="w-7 h-7 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center shrink-0">
-                  <AlertCircle className="w-4 h-4" />
-                </div>
-              )}
-              <div className="flex-1 leading-relaxed text-white font-medium">
-                {toast.message}
-              </div>
-              <button
-                type="button"
-                onClick={() => setToast(null)}
-                className="text-white/50 hover:text-white p-1 transition-colors cursor-pointer mr-1 shrink-0"
-                aria-label="بستن"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-          </div>,
-          document.body
-        )}
+      {/* ================= FLOATING TOAST NOTIFICATION ================= */}
+      <ToastNotification toast={toast} onClose={() => setToast(null)} />
     </section>
   );
 };
 
 export default ReviewsSection;
-

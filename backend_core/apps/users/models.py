@@ -30,8 +30,12 @@ class UserManager(BaseUserManager):
             full_name=full_name,
         )
 
-        # OTP-based login → regular users do not need passwords
-        user.set_unusable_password()
+        if password:
+            # Admin/staff accounts log in with a password
+            user.set_password(password)
+        else:
+            # OTP-based login → regular patients do not need passwords
+            user.set_unusable_password()
 
         user.save(using=self._db)
         return user
@@ -74,6 +78,21 @@ class User(AbstractBaseUser, PermissionsMixin):
     # Optional display name for the patient
     full_name = models.CharField(max_length=100, blank=True, null=True)
 
+    # National ID, collected once on first-time signup (during OTP
+    # verification). Intentionally NOT unique - some patients may
+    # share a household ID, guardians booking for children, etc.,
+    # and we don't want that to ever block login/registration.
+    national_id = models.CharField(max_length=20, blank=True, null=True)
+
+    # Optional. Collected at first-time signup next to the name and national ID,
+    # and used as medical context (e.g. sent to the AI Service by chat_gateway).
+    FEMALE = 'female'
+    MALE = 'male'
+    SEX_CHOICES = [(FEMALE, 'Female'), (MALE, 'Male')]
+
+    sex = models.CharField(max_length=10, choices=SEX_CHOICES, blank=True, null=True)
+    date_of_birth = models.DateField(blank=True, null=True)
+
     # Standard Django user flags
     is_active = models.BooleanField(default=True)  # can login
     is_staff = models.BooleanField(default=False)  # can access admin panel
@@ -99,47 +118,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         # Human-readable representation
         return f"{self.phone_number} ({self.full_name or 'No name'})"
-
-
-class PatientProfile(models.Model):
-    """
-    Stores additional medical/personal info about the patient.
-
-    Separated from User to keep authentication data minimal.
-    """
-
-    # One profile per user
-    user = models.OneToOneField(
-        User,
-        on_delete=models.CASCADE,
-        related_name='patient_profile'
-    )
-
-    # Optional national ID for clinic records
-    national_id = models.CharField(max_length=20, unique=True, blank=True, null=True)
-
-    # Date of birth used for medical context
-    date_of_birth = models.DateField(blank=True, null=True)
-
-    # Optional home address
-    address = models.TextField(blank=True, null=True)
-
-    # Audit timestamps
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        verbose_name = "Patient Profile"
-        verbose_name_plural = "Patient Profiles"
-
-        # Indexes improve filtering performance
-        indexes = [
-            models.Index(fields=['national_id']),
-            models.Index(fields=['date_of_birth']),
-        ]
-
-    def __str__(self):
-        return f"Profile for {self.user.phone_number}"
 
 
 class PatientNote(models.Model):
@@ -209,4 +187,46 @@ class OTPRequest(models.Model):
         """
         Helper method to check if OTP is expired.
         """
+        return timezone.now() > self.expires_at
+
+
+class PhoneVerification(models.Model):
+    """
+    Created the moment an OTP code is confirmed correct for a phone
+    number that has no account yet.
+
+    Verifying the OTP and finishing signup are two separate steps:
+    once the code is confirmed, we're already sure the person owns
+    that phone number, and the OTP is consumed right then. This
+    token is the proof of that verification that the follow-up
+    "give me your name and national ID" step uses instead of asking
+    for the OTP code again.
+    """
+
+    # The phone number that was just verified
+    phone_number = models.CharField(max_length=15)
+
+    # Opaque, unguessable token handed to the client
+    token = models.CharField(max_length=64, unique=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    # Short-lived - just long enough to fill in a small form
+    expires_at = models.DateTimeField()
+
+    # Prevent the same token from completing registration twice
+    is_used = models.BooleanField(default=False)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['token', 'is_used']),
+        ]
+
+    def save(self, *args, **kwargs):
+        if not self.expires_at:
+            self.expires_at = timezone.now() + timedelta(minutes=10)
+
+        super().save(*args, **kwargs)
+
+    def is_expired(self):
         return timezone.now() > self.expires_at
