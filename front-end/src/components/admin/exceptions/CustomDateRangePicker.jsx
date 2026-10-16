@@ -15,6 +15,8 @@ import {
   getJalaliDayOfWeekIndex,
   toPersianDigits,
 } from '../../../utils/jalaliDateUtils';
+import { useViewportBoundary } from '../../../hooks/useViewportBoundary';
+import RangeCalendarCell from '../calendar/RangeCalendarCell';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -53,6 +55,7 @@ export default function CustomDateRangePicker({ startDate, endDate, onChange }) 
 
   // Jalali viewing month/year
   const todayJalali = useMemo(() => dateToJalali(new Date()), []);
+  const todayYmd = useMemo(() => toYMD(new Date()), []);
   const [jYear, setJYear] = useState(todayJalali.jy);
   const [jMonth, setJMonth] = useState(todayJalali.jm);
 
@@ -62,6 +65,9 @@ export default function CustomDateRangePicker({ startDate, endDate, onChange }) 
   const [hovered, setHovered] = useState(null);
 
   const popoverRef = useRef(null);
+  const popoverContentRef = useRef(null);
+
+  useViewportBoundary(open, popoverContentRef, { padding: 12 });
 
   // Sync draft from props when opening
   const openPicker = useCallback(() => {
@@ -132,52 +138,10 @@ export default function CustomDateRangePicker({ startDate, endDate, onChange }) 
     }
   };
 
-  // Day cell classification
-  const classifyDay = (ymd) => {
-    if (!ymd) return 'empty';
-    const end = draftEnd || hovered;
-
-    const isStart = ymd === draftStart;
-    const isEnd = end && ymd === end;
-    const inRange =
-      draftStart &&
-      end &&
-      ymd > (draftStart < end ? draftStart : end) &&
-      ymd < (end > draftStart ? end : draftStart);
-
-    if (isStart && isEnd) return 'single';
-    if (isStart) return 'start';
-    if (isEnd) return 'end';
-    if (inRange) return 'range';
-    return 'normal';
-  };
-
   const handleConfirm = () => {
     if (!draftStart) return;
     onChange(draftStart, draftEnd || draftStart);
     setOpen(false);
-  };
-
-  const cellStyle = (type) => {
-    const base = 'w-8 h-8 flex items-center justify-center text-xs font-bold select-none cursor-pointer transition-colors duration-100 ';
-    switch (type) {
-      case 'start':
-      case 'end':
-      case 'single':
-        return base + 'bg-primary text-white rounded-full shadow-sm';
-      case 'range':
-        return base + 'bg-primary/15 text-primary rounded-none';
-      case 'normal':
-        return base + 'text-textDark hover:bg-primary/10 rounded-full';
-      default:
-        return base;
-    }
-  };
-
-  const rowWrapStyle = (type) => {
-    if (type === 'start') return 'bg-primary/15 rounded-r-full';
-    if (type === 'end') return 'bg-primary/15 rounded-l-full';
-    return '';
   };
 
   // Build Jalali month grid
@@ -221,10 +185,11 @@ export default function CustomDateRangePicker({ startDate, endDate, onChange }) 
       {/* ── Popover ── */}
       {open && (
         <div
+          ref={popoverContentRef}
           className="
             absolute z-50 top-full mt-2 right-0
             bg-white/95 backdrop-blur-md border border-primary/20 rounded-3xl shadow-2xl
-            w-[310px] overflow-hidden p-3.5 flex flex-col gap-3 animate-in fade-in zoom-in-95 duration-150
+            w-[310px] max-w-[calc(100vw-1.5rem)] overflow-hidden p-3.5 flex flex-col gap-3 animate-in fade-in zoom-in-95 duration-150
           "
         >
           {/* Month nav */}
@@ -265,31 +230,25 @@ export default function CustomDateRangePicker({ startDate, endDate, onChange }) 
 
           {/* Day grid */}
           <div className="grid grid-cols-7 gap-y-1">
-            {jalaliGrid.map((cell, i) => {
-              if (!cell) {
-                return <div key={`empty-${i}`} className="w-8 h-8 mx-auto" />;
-              }
-
-              const type = classifyDay(cell.ymd);
-
-              return (
-                <div
-                  key={cell.ymd}
-                  className={`${rowWrapStyle(type)} flex justify-center`}
-                  onClick={() => handleDateClick(cell.ymd)}
-                  onMouseEnter={() => {
-                    if (draftStart && !draftEnd) {
-                      setHovered(cell.ymd);
-                    }
-                  }}
-                  onMouseLeave={() => setHovered(null)}
-                >
-                  <div className={cellStyle(type)}>
-                    {cell.displayNum}
-                  </div>
-                </div>
-              );
-            })}
+            {jalaliGrid.map((cell, i) => (
+              <RangeCalendarCell
+                key={cell ? cell.ymd : `empty-${i}`}
+                cell={cell}
+                colIndex={i % 7}
+                draftStart={draftStart}
+                draftEnd={draftEnd}
+                hovered={hovered}
+                isRTL={true}
+                isToday={cell ? cell.ymd === todayYmd : false}
+                onClick={handleDateClick}
+                onMouseEnter={(ymd) => {
+                  if (draftStart && !draftEnd) {
+                    setHovered(ymd);
+                  }
+                }}
+                onMouseLeave={() => setHovered(null)}
+              />
+            ))}
           </div>
 
           {/* Footer & Actions */}
@@ -298,7 +257,13 @@ export default function CustomDateRangePicker({ startDate, endDate, onChange }) 
               {draftStart ? (
                 <span>
                   {formatJalaliShort(draftStart)}
-                  {draftEnd && draftEnd !== draftStart ? ` تا ${formatJalaliShort(draftEnd)}` : ''}
+                  {draftEnd && draftEnd !== draftStart ? (
+                    ` تا ${formatJalaliShort(draftEnd)}`
+                  ) : (
+                    <span className="text-primary text-[10px] font-bold block sm:inline">
+                      {' '}— روز پایان را انتخاب کنید
+                    </span>
+                  )}
                 </span>
               ) : (
                 <span className="text-textDark/40 font-normal">روز شروع را انتخاب کنید</span>
