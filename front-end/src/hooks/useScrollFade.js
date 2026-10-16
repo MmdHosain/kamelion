@@ -16,8 +16,17 @@ export const useScrollFade = () => {
       });
     }, observerOptions);
 
-    const elements = document.querySelectorAll('.fade-section');
-    elements.forEach((el) => fadeObserver.observe(el));
+    // Lazy routes commit after App's effect has run. Observe their sections too.
+    const observeSections = (root) => {
+      if (root.nodeType !== Node.ELEMENT_NODE) return;
+      if (root.matches('.fade-section')) fadeObserver.observe(root);
+      root.querySelectorAll('.fade-section').forEach((el) => fadeObserver.observe(el));
+    };
+    observeSections(document.body);
+    const mutationObserver = new MutationObserver((records) => {
+      records.forEach((record) => record.addedNodes.forEach(observeSections));
+    });
+    mutationObserver.observe(document.body, { childList: true, subtree: true });
 
     const progressBar = document.getElementById('progress');
     const handleScroll = () => {
@@ -32,9 +41,9 @@ export const useScrollFade = () => {
     handleScroll();
 
     return () => {
-      elements.forEach((el) => fadeObserver.unobserve(el));
+      mutationObserver.disconnect();
       fadeObserver.disconnect();
       window.removeEventListener('scroll', handleScroll);
     };
-  });
+  }, []);
 };

@@ -1,8 +1,10 @@
 // src/App.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 
 /* Hooks & Stores */
+import useAuthStore from './store/authStore';
+import LazyLoadBoundary from './components/ui/LazyLoadBoundary';
 import { useScrollFade } from './hooks/useScrollFade';
 import { useThemeStore, applyThemeToDom } from './store/themeStore';
 
@@ -12,22 +14,31 @@ import Footer from './components/layout/Footer';
 
 /* Pages */
 import HomePage from './pages/HomePage';
-import AboutPage from './pages/AboutPage';
-import ServicesPage from './pages/ServicesPage';
-import FaqPage from './pages/FaqPage';
-import ResourcesPage from './pages/ResourcesPage';
-import VideoPage from './pages/VideoPage';
-
-import AdminPage from './pages/admin/AdminPage';
-import AdminLogin from './pages/admin/AdminLogin';
 import AdminProtectedRoute from './components/admin/AdminProtectedRoute';
-
-/* Chat & Modals */
 import FloatingChatWidget from './components/chat/FloatingChatWidget';
-import AppointmentModal from './components/ui/AppointmentModal';
-import AuthModal from './components/ui/AuthModal';
+const AboutPage = lazy(() => import('./pages/AboutPage'));
+const ServicesPage = lazy(() => import('./pages/ServicesPage'));
+const FaqPage = lazy(() => import('./pages/FaqPage'));
+const ResourcesPage = lazy(() => import('./pages/ResourcesPage'));
+const VideoPage = lazy(() => import('./pages/VideoPage'));
+
+const AdminPage = lazy(() => import('./pages/admin/AdminPage'));
+const AdminLogin = lazy(() => import('./pages/admin/AdminLogin'));
+/* On-demand forms */
+const AppointmentModal = lazy(() => import('./components/ui/AppointmentModal'));
+const AuthModal = lazy(() => import('./components/ui/AuthModal'));
+
+const LoadingNotice = ({ overlay = false, onClose }) => (
+  <div className={overlay ? 'fixed inset-0 z-[10000] flex items-center justify-center bg-white/95' : 'flex-grow p-24 text-center'}>
+    <div dir="rtl">
+      <p role="status" aria-live="polite">در حال بارگذاری…</p>
+      {onClose && <button type="button" onClick={onClose}>بستن</button>}
+    </div>
+  </div>
+);
 
 const App = () => {
+  const authModalOpen = useAuthStore((state) => state.authModalOpen);
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin');
 
@@ -63,6 +74,8 @@ const App = () => {
         />
       )}
 
+      <LazyLoadBoundary key={location.pathname}>
+      <Suspense fallback={<LoadingNotice />} >
       <Routes>
         <Route
           path="/"
@@ -94,6 +107,8 @@ const App = () => {
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      </Suspense>
+      </LazyLoadBoundary>
 
       {!isAdminRoute && <Footer />}
 
@@ -110,13 +125,21 @@ const App = () => {
           />
 
           {/* Appointment Booking Modal */}
+          {openAppointment && <LazyLoadBoundary>
+          <Suspense fallback={<LoadingNotice overlay onClose={() => setOpenAppointment(false)} />} >
           <AppointmentModal
             open={openAppointment}
             onClose={() => setOpenAppointment(false)}
           />
+          </Suspense>
+          </LazyLoadBoundary>}
 
           {/* Auth Modal for Login/OTP if required */}
-          <AuthModal />
+          {authModalOpen && <LazyLoadBoundary>
+            <Suspense fallback={<LoadingNotice overlay onClose={() => useAuthStore.getState().closeAuthModal()} />} >
+              <AuthModal />
+            </Suspense>
+          </LazyLoadBoundary>}
         </>
       )}
     </div>
