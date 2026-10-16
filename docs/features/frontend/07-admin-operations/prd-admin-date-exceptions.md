@@ -10,6 +10,8 @@
 - **کامپوننت‌های فرانت‌اند:**
   - لیست استثنائات زمانی: [`src/components/admin/exceptions/ExceptionsList.jsx`](file:///e:/GitHub%20Repo/kamelion/front-end/src/components/admin/exceptions/ExceptionsList.jsx)
   - انتخابگر بازه تاریخ: [`src/components/admin/exceptions/CustomDateRangePicker.jsx`](file:///e:/GitHub%20Repo/kamelion/front-end/src/components/admin/exceptions/CustomDateRangePicker.jsx)
+  - سلول تقویم کپسولی پیوسته: [`src/components/admin/calendar/RangeCalendarCell.jsx`](file:///e:/GitHub%20Repo/kamelion/front-end/src/components/admin/calendar/RangeCalendarCell.jsx)
+  - محاسبات هندسی کپسول و بازه: [`src/utils/calendarRangeUtils.js`](file:///e:/GitHub%20Repo/kamelion/front-end/src/utils/calendarRangeUtils.js)
   - هوک مدیریت استیت و ذخیره‌سازی: [`src/hooks/useAdminExceptions.js`](file:///e:/GitHub%20Repo/kamelion/front-end/src/hooks/useAdminExceptions.js)
 - **سرویس‌های وب:**
   - سرویس استثنائات ادمین: [`src/api/schedules.js`](file:///e:/GitHub%20Repo/kamelion/front-end/src/api/schedules.js)
@@ -35,6 +37,8 @@
 3. **طراحی بصری یکپارچه و تقویم شمسی جلالی:**
    - تقویم پاپ‌اور کاملاً بومی جلالی با نام ماه‌های فارسی، روزهای هفته فارسی (`ش` تا `ج`) و اعداد فارسی.
    - کارت‌های گلس‌پنل شکیل و هماهنگ با تب زمان‌بندی هفتگی (`ScheduleCard.jsx`) با محاسبه خودکار طول تعطیلی به روز.
+   - **طراحی کپسولی پیوسته (Google Calendar Capsule Ribbon):** اتصال پیوسته و بدون شکاف روزهای بازه با نوار کپسولی کشیده‌شده برجسته (`bg-pink-100 border-y border-pink-300`)، هندسه‌ی نیمه‌سلولی (Half-cell bridge) در روزهای شروع و پایان جهت اتصال بی‌نقص به دایره‌های برجسته بنفش دو سر بازه بدون کوچک‌ترین بیرون‌زدگی، گرد شدن نرم مرزهای سطرها، حلقه پالس‌زن نوری دور روز شروع (`animate-pulse`) تا زمان تعیین روز پایان، و پیش‌نمایش هاور داینامیک.
+   - **تمایز بصری روز «امروز» (Distinct Today Identity):** روز «امروز» در کلیه حالات (بیرون بازه، درون بازه، یا سر بازه) با نشانگر نقطه شاخص (Dot Indicator) و استایل تفکیک‌شده نمایش می‌یابد تا نوار کپسولی بازه در صورت عبور از روی روز امروز پاره نشود و هیچ‌گونه ابهامی میان دایره‌های بنفش شروع/پایان و روز جاری وجود نداشته باشد؛ ارقام روزهای داخل بازه نیز با رنگ بادمجانی تیره پالت (`--text-dark: #4a2545`) با خوانایی حداکثری نمایش داده می‌شوند.
 4. **حذف و ویرایش سریع و افزودن بازه:**
    - آیکون سطل زباله `Trash2` برای حذف آسان استثنائات.
    - دکمه دایره‌ای شناور با آیکون `Plus` و متن راهنما در پایین لیست کارت‌ها جهت افزودن بازه تعطیلی جدید (کاملاً یکپارچه و منطبق با الگوی تب زمان‌بندی هفتگی).
