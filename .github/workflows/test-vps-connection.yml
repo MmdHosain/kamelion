@@ -1,0 +1,24 @@
+
+name: Test VPS Connection
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test-connection:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Test TCP connection to VPS
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_PORT: ${{ secrets.VPS_PORT }}
+        run: |
+          echo "Testing connection to VPS..."
+
+          if timeout 10 bash -c '</dev/tcp/$VPS_HOST/$VPS_PORT'; then
+            echo "SUCCESS: VPS SSH port is reachable."
+          else
+            echo "FAILED: Cannot connect to VPS SSH port."
+            exit 1
+          fi
