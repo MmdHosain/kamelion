@@ -1,5 +1,5 @@
 // src/components/admin/upcoming/UpcomingSplitView.jsx
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   Calendar,
   Users,
@@ -19,6 +19,21 @@ export default function UpcomingSplitView({
     () => groupedByDay[0]?.dateKey || null
   );
 
+  const detailRef = useRef(null);
+
+  const handleDayClick = (dateKey) => {
+    setSelectedDayKey(dateKey);
+    // On mobile screens (< 1024px), smoothly scroll and focus the detail column below
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+      setTimeout(() => {
+        if (detailRef.current) {
+          detailRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          detailRef.current.focus?.({ preventScroll: true });
+        }
+      }, 60);
+    }
+  };
+
   const activeDay =
     groupedByDay.find((d) => d.dateKey === selectedDayKey) ||
     groupedByDay[0] ||
@@ -29,12 +44,12 @@ export default function UpcomingSplitView({
   }
 
   return (
-    <div className="flex flex-col lg:flex-row items-start gap-6">
+    <div className="flex flex-col lg:flex-row items-start gap-3.5 sm:gap-6">
       {/* Master Column: Days List */}
-      <div className="w-full lg:w-80 shrink-0 bg-white/80 backdrop-blur-md rounded-3xl border border-primary/20 p-4 shadow-sm flex flex-col gap-3">
-        <div className="flex items-center gap-2 border-b border-primary/15 pb-3 px-2">
-          <Calendar size={17} className="text-primary" />
-          <h3 className="text-sm font-black text-textDark">
+      <div className="w-full lg:w-80 shrink-0 bg-white/80 backdrop-blur-md rounded-2xl sm:rounded-3xl border border-primary/20 p-3 sm:p-4 shadow-sm flex flex-col gap-2.5 sm:gap-3">
+        <div className="flex items-center gap-2 border-b border-primary/15 pb-2.5 sm:pb-3 px-2">
+          <Calendar size={16} className="text-primary" />
+          <h3 className="text-xs sm:text-sm font-black text-textDark">
             فهرست روزهای کاری ({toPersianDigits(groupedByDay.length)} روز)
           </h3>
         </div>
@@ -46,7 +61,7 @@ export default function UpcomingSplitView({
             return (
               <div
                 key={day.dateKey}
-                onClick={() => setSelectedDayKey(day.dateKey)}
+                onClick={() => handleDayClick(day.dateKey)}
                 className={`p-3.5 rounded-2xl border transition-all duration-200 cursor-pointer flex items-center justify-between gap-2 ${
                   isSelected
                     ? 'bg-primary text-white border-primary shadow-md shadow-primary/25 scale-[1.01]'
@@ -85,13 +100,17 @@ export default function UpcomingSplitView({
       </div>
 
       {/* Detail Column: Patients Cards of Selected Day */}
-      <div className="flex-1 w-full bg-white/80 backdrop-blur-md rounded-3xl border border-primary/20 p-5 md:p-6 shadow-sm flex flex-col gap-5">
+      <div
+        ref={detailRef}
+        tabIndex={-1}
+        className="flex-1 w-full bg-white/80 backdrop-blur-md rounded-2xl sm:rounded-3xl border border-primary/20 p-3.5 sm:p-5 md:p-6 shadow-sm flex flex-col gap-3.5 sm:gap-5 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:ring-offset-2 transition-all scroll-mt-6"
+      >
         {activeDay ? (
           <>
             {/* Detail Day Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-primary/15 pb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-primary to-primary-dark text-white flex items-center justify-center shadow-md shadow-primary/25 shrink-0">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 border-b border-primary/15 pb-2.5 sm:pb-4">
+              <div className="flex items-center gap-2.5 sm:gap-3">
+                <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-gradient-to-tr from-primary to-primary-dark text-white flex items-center justify-center shadow-md shadow-primary/25 shrink-0">
                   <Calendar className="w-5 h-5" />
                 </div>
                 <div>

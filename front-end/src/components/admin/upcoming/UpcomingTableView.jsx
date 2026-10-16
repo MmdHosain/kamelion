@@ -81,36 +81,36 @@ export default function UpcomingTableView({
   }
 
   return (
-    <div className="bg-white/80 backdrop-blur-md rounded-3xl border border-primary/20 shadow-sm overflow-hidden">
+    <div className="bg-white/80 backdrop-blur-md rounded-2xl sm:rounded-3xl border border-primary/20 shadow-sm overflow-hidden">
       <div className="overflow-x-auto no-scrollbar">
         <table className="w-full text-right border-collapse">
           <thead>
-            <tr className="bg-primary/5 border-b border-primary/15 text-xs font-black text-textDark/80 select-none">
-              <th className="py-3.5 px-4 text-center w-12">#</th>
-              <th className="py-3.5 px-4 cursor-pointer hover:text-primary transition-colors" onClick={() => handleToggleSort('date')}>
+            <tr className="bg-primary/5 border-b border-primary/15 text-[11px] sm:text-xs font-black text-textDark/80 select-none">
+              <th className="py-2.5 sm:py-3.5 px-2.5 sm:px-4 text-center w-10 sm:w-12">#</th>
+              <th className="py-2.5 sm:py-3.5 px-2.5 sm:px-4 cursor-pointer hover:text-primary transition-colors" onClick={() => handleToggleSort('date')}>
                 <div className="flex items-center gap-1.5">
-                  <Calendar size={14} className="text-primary" />
-                  <span>تاریخ و ساعت ویزیت</span>
-                  <ArrowUpDown size={12} className="opacity-60" />
+                  <Calendar size={13} className="text-primary" />
+                  <span>تاریخ و ساعت</span>
+                  <ArrowUpDown size={11} className="opacity-60" />
                 </div>
               </th>
-              <th className="py-3.5 px-4 cursor-pointer hover:text-primary transition-colors" onClick={() => handleToggleSort('name')}>
+              <th className="py-2.5 sm:py-3.5 px-2.5 sm:px-4 cursor-pointer hover:text-primary transition-colors" onClick={() => handleToggleSort('name')}>
                 <div className="flex items-center gap-1.5">
-                  <User size={14} className="text-primary" />
-                  <span>نام و نام خانوادگی بیمار</span>
-                  <ArrowUpDown size={12} className="opacity-60" />
+                  <User size={13} className="text-primary" />
+                  <span>نام بیمار</span>
+                  <ArrowUpDown size={11} className="opacity-60" />
                 </div>
               </th>
-              <th className="py-3.5 px-4">شماره تماس</th>
-              <th className="py-3.5 px-4">کد ملی</th>
-              <th className="py-3.5 px-4">علت مراجعه</th>
-              <th className="py-3.5 px-4 cursor-pointer hover:text-primary transition-colors" onClick={() => handleToggleSort('status')}>
+              <th className="py-2.5 sm:py-3.5 px-2.5 sm:px-4">شماره تماس</th>
+              <th className="py-2.5 sm:py-3.5 px-2.5 sm:px-4">کد ملی</th>
+              <th className="py-2.5 sm:py-3.5 px-2.5 sm:px-4">علت مراجعه</th>
+              <th className="py-2.5 sm:py-3.5 px-2.5 sm:px-4 cursor-pointer hover:text-primary transition-colors" onClick={() => handleToggleSort('status')}>
                 <div className="flex items-center gap-1.5">
                   <span>وضعیت</span>
-                  <ArrowUpDown size={12} className="opacity-60" />
+                  <ArrowUpDown size={11} className="opacity-60" />
                 </div>
               </th>
-              <th className="py-3.5 px-4 text-center">عملیات</th>
+              <th className="py-2.5 sm:py-3.5 px-2.5 sm:px-4 text-center">عملیات</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-primary/10 text-xs">

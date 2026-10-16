@@ -1,5 +1,5 @@
 // src/components/admin/upcoming/UpcomingCalendarGridView.jsx
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import {
   ChevronLeft,
   ChevronRight,
@@ -84,6 +84,21 @@ export default function UpcomingCalendarGridView({
     return toYMD(d);
   }, []);
 
+  const drawerRef = useRef(null);
+
+  const handleDayClick = (ymd) => {
+    setSelectedDayKey(ymd);
+    // On mobile screens (< 1024px), smoothly scroll and focus the appointments drawer below the calendar
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+      setTimeout(() => {
+        if (drawerRef.current) {
+          drawerRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          drawerRef.current.focus?.({ preventScroll: true });
+        }
+      }, 60);
+    }
+  };
+
   // Navigation handlers
   const handlePrevMonth = () => {
     if (currentMonth === 1) {
@@ -135,11 +150,11 @@ export default function UpcomingCalendarGridView({
   const selectedDayData = selectedDayKey ? daysMap.get(selectedDayKey) : null;
 
   return (
-    <div className="relative flex flex-col lg:flex-row gap-6 items-start">
+    <div className="relative flex flex-col lg:flex-row gap-3.5 sm:gap-6 items-start">
       {/* Calendar Grid Box */}
-      <div className="flex-1 w-full bg-white/80 backdrop-blur-md rounded-3xl border border-primary/20 p-5 md:p-6 shadow-sm flex flex-col gap-5">
+      <div className="flex-1 w-full bg-white/80 backdrop-blur-md rounded-2xl sm:rounded-3xl border border-primary/20 p-3 sm:p-5 md:p-6 shadow-sm flex flex-col gap-3.5 sm:gap-5">
         {/* Month Navigation Header */}
-        <div className="flex items-center justify-between border-b border-primary/15 pb-4">
+        <div className="flex items-center justify-between border-b border-primary/15 pb-2.5 sm:pb-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center font-black">
               <Calendar size={18} />
@@ -202,7 +217,7 @@ export default function UpcomingCalendarGridView({
             return (
               <div
                 key={ymd}
-                onClick={() => setSelectedDayKey(ymd)}
+                onClick={() => handleDayClick(ymd)}
                 className={`min-h-[85px] md:min-h-[105px] p-2 md:p-2.5 rounded-2xl border transition-all duration-200 cursor-pointer flex flex-col justify-between ${
                   isSelected
                     ? 'bg-primary/10 border-primary shadow-md ring-2 ring-primary/20'
@@ -266,7 +281,11 @@ export default function UpcomingCalendarGridView({
 
       {/* Slide-over Side Panel (Drawer) for Selected Day */}
       {selectedDayKey && (
-        <div className="w-full lg:w-96 bg-white/95 backdrop-blur-md rounded-3xl border border-primary/25 p-5 shadow-xl flex flex-col gap-4 animate-in fade-in slide-in-from-left duration-200 shrink-0">
+        <div
+          ref={drawerRef}
+          tabIndex={-1}
+          className="w-full lg:w-96 bg-white/95 backdrop-blur-md rounded-3xl border border-primary/25 p-5 shadow-xl flex flex-col gap-4 animate-in fade-in slide-in-from-left duration-200 shrink-0 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:ring-offset-2 transition-all scroll-mt-6"
+        >
           {/* Side Panel Header */}
           <div className="flex items-center justify-between border-b border-primary/15 pb-3">
             <div className="flex items-center gap-2">

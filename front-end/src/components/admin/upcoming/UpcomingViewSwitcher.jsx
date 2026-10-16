@@ -10,6 +10,7 @@ import {
   Check,
   SlidersHorizontal,
 } from 'lucide-react';
+import { useViewportBoundary } from '../../../hooks/useViewportBoundary';
 
 export const AGENDA_VIEWS = [
   { id: 'cards', label: 'کارت‌های روزانه', icon: LayoutGrid, tooltip: 'نمایش کارتی بر اساس روزها' },
@@ -22,6 +23,9 @@ export const AGENDA_VIEWS = [
 export default function UpcomingViewSwitcher({ currentView, onChangeView }) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef(null);
+  const popoverRef = useRef(null);
+
+  useViewportBoundary(isOpen, popoverRef, { padding: 12 });
 
   const activeViewObj = AGENDA_VIEWS.find((v) => v.id === currentView) || AGENDA_VIEWS[0];
   const ActiveIcon = activeViewObj.icon;
@@ -70,7 +74,10 @@ export default function UpcomingViewSwitcher({ currentView, onChangeView }) {
 
       {/* Popover Dropdown Menu */}
       {isOpen && (
-        <div className="absolute left-0 sm:right-0 sm:left-auto top-full mt-2 w-64 bg-white/95 backdrop-blur-md rounded-2xl border border-primary/20 shadow-xl p-1.5 z-50 animate-in fade-in zoom-in-95 duration-150">
+        <div
+          ref={popoverRef}
+          className="absolute right-0 left-auto top-full mt-2 w-64 max-w-[calc(100vw-1.5rem)] bg-white/95 backdrop-blur-md rounded-2xl border border-primary/20 shadow-xl p-1.5 z-50 animate-in fade-in zoom-in-95 duration-150"
+        >
           <div className="px-3 py-2 border-b border-primary/10 mb-1 flex items-center justify-between">
             <span className="text-xs font-black text-textDark flex items-center gap-1.5">
               <SlidersHorizontal size={13} className="text-primary" />

@@ -81,9 +81,9 @@ export default function UpcomingTimelineView({
   }
 
   return (
-    <div className="bg-white/80 backdrop-blur-md rounded-3xl border border-primary/20 p-5 md:p-6 shadow-sm flex flex-col gap-6">
+    <div className="bg-white/80 backdrop-blur-md rounded-2xl sm:rounded-3xl border border-primary/20 p-3 sm:p-5 md:p-6 shadow-sm flex flex-col gap-3.5 sm:gap-6">
       {/* Day Selector Chips */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-primary/15 pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 border-b border-primary/15 pb-2.5 sm:pb-4">
         <div className="flex items-center gap-2">
           <CalendarCheck className="w-5 h-5 text-primary" />
           <span className="text-sm font-black text-textDark">
