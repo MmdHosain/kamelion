@@ -141,19 +141,19 @@ const AdminArticles = () => {
       )}
 
       {/* Header and Action */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white/70 backdrop-blur-md p-6 rounded-3xl border border-primary/10 shadow-xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 bg-white/70 backdrop-blur-md p-3.5 sm:p-6 rounded-2xl sm:rounded-3xl border border-primary/10 shadow-xs">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <h1 className="text-xl md:text-2xl font-black text-slate-800">
+            <h1 className="text-lg sm:text-xl md:text-2xl font-black text-slate-800">
               مدیریت مقالات و آموزش پزشکی
             </h1>
             {isSyncing ? (
-              <span className="flex items-center gap-1 text-xs text-primary font-bold bg-primary/10 px-2.5 py-1 rounded-full animate-pulse">
+              <span className="flex items-center gap-1 text-[11px] sm:text-xs text-primary font-bold bg-primary/10 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full animate-pulse">
                 <Loader2 className="w-3 h-3 animate-spin" />
                 در حال همگام‌سازی...
               </span>
             ) : isOnline ? (
-              <span className="flex items-center gap-1 text-xs text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-full">
+              <span className="flex items-center gap-1 text-[11px] sm:text-xs text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-full">
                 <Wifi className="w-3 h-3" /> آنلاین
               </span>
             ) : null}
@@ -163,11 +163,11 @@ const AdminArticles = () => {
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
           <button
             type="button"
             onClick={() => setCategoryModalOpen(true)}
-            className="inline-flex items-center justify-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2.5 rounded-2xl font-bold text-xs md:text-sm transition-all shrink-0 cursor-pointer"
+            className="inline-flex items-center justify-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl font-bold text-xs md:text-sm transition-all shrink-0 cursor-pointer"
           >
             <Layers className="w-4 h-4 text-primary" />
             مدیریت دسته‌بندی‌ها
@@ -175,7 +175,7 @@ const AdminArticles = () => {
 
           <button
             onClick={() => navigate('/admin/articles/new')}
-            className="inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary-dark text-white px-5 py-2.5 rounded-2xl font-bold text-sm shadow-md shadow-primary/20 transition-all hover:scale-102 shrink-0 cursor-pointer"
+            className="inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary-dark text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl font-bold text-xs sm:text-sm shadow-md shadow-primary/20 transition-all hover:scale-102 shrink-0 cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             نوشتن مقاله جدید
@@ -184,12 +184,12 @@ const AdminArticles = () => {
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white/60 p-4 rounded-2xl border border-primary/10">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 sm:gap-4 bg-white/60 p-2.5 sm:p-4 rounded-xl sm:rounded-2xl border border-primary/10">
         {/* Status Tabs */}
-        <div className="flex items-center gap-1 bg-slate-100/80 p-1 rounded-xl w-full sm:w-auto">
+        <div className="flex items-center gap-1 bg-slate-100/80 p-1 rounded-xl w-full sm:w-auto overflow-x-auto no-scrollbar">
           <button
             onClick={() => setStatusFilter('all')}
-            className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
+            className={`flex-1 sm:flex-none px-3 py-1.5 text-xs font-bold rounded-lg transition-all text-center whitespace-nowrap ${
               statusFilter === 'all'
                 ? 'bg-white text-primary shadow-xs'
                 : 'text-slate-600 hover:text-slate-900'
@@ -199,7 +199,7 @@ const AdminArticles = () => {
           </button>
           <button
             onClick={() => setStatusFilter('published')}
-            className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
+            className={`flex-1 sm:flex-none px-3 py-1.5 text-xs font-bold rounded-lg transition-all text-center whitespace-nowrap ${
               statusFilter === 'published'
                 ? 'bg-white text-emerald-700 shadow-xs'
                 : 'text-slate-600 hover:text-slate-900'
@@ -209,7 +209,7 @@ const AdminArticles = () => {
           </button>
           <button
             onClick={() => setStatusFilter('draft')}
-            className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
+            className={`flex-1 sm:flex-none px-3 py-1.5 text-xs font-bold rounded-lg transition-all text-center whitespace-nowrap ${
               statusFilter === 'draft'
                 ? 'bg-white text-amber-700 shadow-xs'
                 : 'text-slate-600 hover:text-slate-900'
@@ -233,7 +233,7 @@ const AdminArticles = () => {
       </div>
 
       {/* Articles Table */}
-      <div className="bg-white rounded-3xl border border-primary/10 shadow-xs overflow-hidden">
+      <div className="bg-white rounded-2xl sm:rounded-3xl border border-primary/10 shadow-xs overflow-hidden">
         {loading ? (
           <div className="p-12 text-center flex flex-col items-center justify-center gap-3">
             <Loader2 className="w-8 h-8 text-primary animate-spin" />
@@ -241,7 +241,7 @@ const AdminArticles = () => {
           </div>
         ) : filteredArticles.length === 0 ? (
           <div className="p-12 text-center flex flex-col items-center justify-center gap-3">
-            <div className="w-16 h-16 rounded-3xl bg-slate-100 flex items-center justify-center text-slate-400 mb-2">
+            <div className="w-16 h-16 rounded-2xl sm:rounded-3xl bg-slate-100 flex items-center justify-center text-slate-400 mb-2">
               <FileText className="w-8 h-8" />
             </div>
             <h3 className="text-base font-bold text-slate-700">هیچ مقاله‌ای یافت نشد</h3>
@@ -251,26 +251,26 @@ const AdminArticles = () => {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-right border-collapse">
+            <table className="w-full text-right border-collapse text-xs sm:text-sm">
               <thead>
-                <tr className="bg-slate-50/80 border-b border-slate-100 text-xs text-slate-500 font-bold">
-                  <th className="py-4 px-5">تصویر</th>
-                  <th className="py-4 px-5">عنوان مقاله</th>
-                  <th className="py-4 px-5">دسته‌بندی</th>
-                  <th className="py-4 px-5">وضعیت</th>
-                  <th className="py-4 px-5">بازدید</th>
-                  <th className="py-4 px-5">تاریخ ثبت</th>
-                  <th className="py-4 px-5 text-center">عملیات</th>
+                <tr className="bg-slate-50/80 border-b border-slate-100 text-[11px] sm:text-xs text-slate-500 font-bold whitespace-nowrap">
+                  <th className="py-2.5 px-3 sm:py-4 sm:px-5">تصویر</th>
+                  <th className="py-2.5 px-3 sm:py-4 sm:px-5">عنوان مقاله</th>
+                  <th className="py-2.5 px-3 sm:py-4 sm:px-5">دسته‌بندی</th>
+                  <th className="py-2.5 px-3 sm:py-4 sm:px-5">وضعیت</th>
+                  <th className="py-2.5 px-3 sm:py-4 sm:px-5">بازدید</th>
+                  <th className="py-2.5 px-3 sm:py-4 sm:px-5">تاریخ ثبت</th>
+                  <th className="py-2.5 px-3 sm:py-4 sm:px-5 text-center">عملیات</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 text-sm">
+              <tbody className="divide-y divide-slate-100 text-xs sm:text-sm">
                 {filteredArticles.map((article) => (
                   <tr
                     key={article.id}
                     className="hover:bg-slate-50/60 transition-colors group"
                   >
                     {/* Thumbnail */}
-                    <td className="py-3 px-5">
+                    <td className="py-2 px-3 sm:py-3 sm:px-5 whitespace-nowrap">
                       <div className="w-14 h-10 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
                         {article.cover_image ? (
                           <img
@@ -287,7 +287,7 @@ const AdminArticles = () => {
                     </td>
 
                     {/* Title */}
-                    <td className="py-3 px-5 max-w-xs">
+                    <td className="py-2.5 px-3 sm:py-3 sm:px-5 max-w-xs">
                       <div className="font-bold text-slate-800 group-hover:text-primary transition-colors line-clamp-1">
                         {article.title}
                       </div>
@@ -297,19 +297,19 @@ const AdminArticles = () => {
                     </td>
 
                     {/* Category */}
-                    <td className="py-3 px-5">
+                    <td className="py-2.5 px-3 sm:py-3 sm:px-5 whitespace-nowrap">
                       <span className="text-xs text-slate-600 bg-slate-100 px-2.5 py-1 rounded-lg font-medium">
                         {article.category_detail?.name || article.category?.name || 'عمومی'}
                       </span>
                     </td>
 
                     {/* Status */}
-                    <td className="py-3 px-5">
+                    <td className="py-2.5 px-3 sm:py-3 sm:px-5 whitespace-nowrap">
                       <ArticleStatusBadge status={article.status} />
                     </td>
 
                     {/* Views */}
-                    <td className="py-3 px-5 text-xs text-slate-600 font-medium">
+                    <td className="py-2.5 px-3 sm:py-3 sm:px-5 text-xs text-slate-600 font-medium whitespace-nowrap">
                       <div className="flex items-center gap-1">
                         <Eye className="w-3.5 h-3.5 text-slate-400" />
                         {article.views_count || 0}
@@ -317,7 +317,7 @@ const AdminArticles = () => {
                     </td>
 
                     {/* Date */}
-                    <td className="py-3 px-5 text-xs text-slate-500 font-medium">
+                    <td className="py-2.5 px-3 sm:py-3 sm:px-5 text-xs text-slate-500 font-medium whitespace-nowrap">
                       <div className="flex items-center gap-1">
                         <Calendar className="w-3.5 h-3.5 text-slate-400" />
                         {new Date(article.created_at).toLocaleDateString('fa-IR')}
@@ -325,7 +325,7 @@ const AdminArticles = () => {
                     </td>
 
                     {/* Actions */}
-                    <td className="py-3 px-5 text-center">
+                    <td className="py-2.5 px-3 sm:py-3 sm:px-5 text-center whitespace-nowrap">
                       <div className="flex items-center justify-center gap-1">
                         {/* Toggle Status */}
                         <button

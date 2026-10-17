@@ -23,16 +23,16 @@ export default function UpcomingDayGroup({
   const jalaliDisplay = dateObj ? formatJalaliDisplay(dateObj, true) : dateKey;
 
   return (
-    <div className="bg-white/60 backdrop-blur-sm rounded-3xl border border-primary/20 p-5 md:p-6 shadow-sm flex flex-col gap-4">
+    <div className="bg-white/60 backdrop-blur-sm rounded-2xl sm:rounded-3xl border border-primary/20 p-3 sm:p-5 md:p-6 shadow-sm flex flex-col gap-3 sm:gap-4">
       {/* Day Header Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-primary/15 pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 border-b border-primary/15 pb-2.5 sm:pb-4">
         {/* Date Titles */}
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-primary to-primary-dark text-white flex items-center justify-center shadow-md shadow-primary/25 shrink-0">
-            <Calendar className="w-6 h-6" />
+        <div className="flex items-center gap-2.5 sm:gap-3">
+          <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-gradient-to-tr from-primary to-primary-dark text-white flex items-center justify-center shadow-md shadow-primary/25 shrink-0">
+            <Calendar className="w-4 h-4 sm:w-6 sm:h-6" />
           </div>
           <div>
-            <h3 className="text-base md:text-lg font-black text-textDark flex items-center gap-2">
+            <h3 className="text-sm sm:text-base md:text-lg font-black text-textDark flex items-center gap-2">
               <span>{jalaliDisplay}</span>
             </h3>
             <span className="text-xs text-textDark/60 font-semibold tracking-wide" dir="ltr">
