@@ -1,4 +1,9 @@
 # معماری بک‌اند و مشخصات API ماژول مقالات پزشکی
+
+> **Document status (2026-10-17): historical expanded design proposal, not the current implementation.**
+> The sections below retain proposed tags, revisions, UUID IDs, review workflows, and SEO fields that are not implemented.
+> For current models, routes, and implementation status use [backend architecture](backend.md), [articles API](api-endpoints-articles.md), and [backend feature status](../features/feature-status-back-end.md).
+
 ## Backend Architecture & API Contract: Medical Articles & CMS Module
 
 ---
