@@ -51,8 +51,32 @@ jobs:
           tags: |
             ghcr.io/mmdhosain/kamelion-frontend:latest
             ghcr.io/mmdhosain/kamelion-frontend:${{ github.sha }}
+      - name: Configure SSH
+        env:
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_PORT: ${{ secrets.VPS_PORT }}
+        shell: bash
+        run: |
+          set -Eeuo pipefail
 
- 
+          : "${VPS_SSH_KEY:?Missing VPS_SSH_KEY secret}"
+          : "${VPS_HOST:?Missing VPS_HOST secret}"
+          : "${VPS_PORT:?Missing VPS_PORT secret}"
+
+          mkdir -p "$HOME/.ssh"
+          chmod 700 "$HOME/.ssh"
+
+          printf '%s\n' "$VPS_SSH_KEY" > "$HOME/.ssh/kamelion_deploy"
+          chmod 600 "$HOME/.ssh/kamelion_deploy"
+
+          ssh-keygen -y -f "$HOME/.ssh/kamelion_deploy" >/dev/null
+
+          ssh-keyscan -p "$VPS_PORT" -H "$VPS_HOST" \
+            >> "$HOME/.ssh/known_hosts" 2>/dev/null
+
+          chmod 600 "$HOME/.ssh/known_hosts"
+     
       - name: Deploy to VPS
         env:
           VPS_HOST: ${{ secrets.VPS_HOST }}
