@@ -1,16 +1,6 @@
 import React from 'react';
 import { Sparkles, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import SEO from '../components/seo/SEO';
-
-const aestheticSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'MedicalWebPage',
-  name: 'خدمات زیبایی و بازسازی پستان',
-  description:
-    'جراحی‌های ماموپلاستی کاهشی، ماستوپکسی (لیفت پستان)، پروتز پستان و بازسازی کامل پستان پس از درمان تومور توسط دکتر نگار معشوری.',
-  url: 'https://kamelion.ir/services/aesthetic',
-};
 
 const AestheticServicesPage = ({ onOpenAppointment }) => {
   return (
@@ -18,12 +8,6 @@ const AestheticServicesPage = ({ onOpenAppointment }) => {
       className="flex-grow flex flex-col items-center w-full pt-28 md:pt-32 pb-20"
       style={{ animation: 'fadeIn 0.6s ease-out forwards' }}
     >
-      <SEO
-        title="خدمات زیبایی و بازسازی پستان"
-        description="انجام تخصصی ماموپلاستی کاهشی، لیفت و ماستوپکسی، تعبیه پروتز سینه و بازسازی پستان با تکنیک‌های پیشرفته توسط دکتر نگار معشوری."
-        url="/services/aesthetic"
-        schema={aestheticSchema}
-      />
       <div className="glass-panel is-visible w-full max-w-5xl mx-auto px-4 md:px-8">
         {/* Header */}
         <div className="text-center mb-12">

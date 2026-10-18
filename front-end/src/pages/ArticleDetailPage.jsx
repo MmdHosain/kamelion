@@ -21,7 +21,6 @@ import ArticleSidebar from '../components/articles/ArticleSidebar';
 import ArticleMediaEmbed from '../components/articles/ArticleMediaEmbed';
 import ArticleRelatedGrid from '../components/articles/ArticleRelatedGrid';
 import { formatMediaUrl, formatMediaHtml } from '../utils/mediaUtils';
-import SEO from '../components/seo/SEO';
 
 const sanitizeAndAddIdsToHeadings = (rawHtml) => {
   if (!rawHtml) return { processedHtml: '', headings: [] };
@@ -111,7 +110,6 @@ const ArticleDetailPage = ({ onOpenAppointment }) => {
   if (error || !article) {
     return (
       <main className="flex-grow flex items-center justify-center min-h-[60vh] pt-32 pb-20 px-4">
-        <SEO title="مقاله یافت نشد" noindex={true} />
         <div className="bg-white/80 backdrop-blur-md p-8 md:p-12 rounded-3xl border border-primary/20 text-center max-w-md w-full shadow-lg">
           <div className="w-16 h-16 rounded-3xl bg-rose-50 text-rose-600 flex items-center justify-center mx-auto mb-4">
             <FileQuestion className="w-8 h-8" />
@@ -136,39 +134,9 @@ const ArticleDetailPage = ({ onOpenAppointment }) => {
   const authorName = article.author?.full_name || article.author_name || 'دکتر نگار معشوری';
   const authorDegree = article.author?.medical_degree || 'جراح متخصص پستان و انکوپلاستی';
 
-  const articleSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'MedicalWebPage',
-    name: article.title,
-    description: article.excerpt || article.title,
-    image: article.cover_image ? formatMediaUrl(article.cover_image) : 'https://kamelion.ir/pink-ribbon.svg',
-    url: `https://kamelion.ir/resources/${article.slug}`,
-    author: {
-      '@type': 'Physician',
-      name: authorName,
-      jobTitle: authorDegree,
-    },
-    publisher: {
-      '@type': 'MedicalClinic',
-      name: 'کلینیک تخصصی پستان دکتر نگار معشوری',
-      url: 'https://kamelion.ir',
-      logo: 'https://kamelion.ir/pink-ribbon.svg',
-    },
-    datePublished: article.published_at || article.created_at,
-    dateModified: article.updated_at || article.published_at || article.created_at,
-  };
-
   return (
     <main className="flex-grow flex flex-col items-center w-full pt-28 md:pt-32 pb-20">
-      <SEO
-        title={article.title}
-        description={article.excerpt || 'مقاله آموزشی و تخصصی پیرامون سلامت، غربالگری و جراحی‌های پستان.'}
-        url={`/resources/${article.slug}`}
-        image={article.cover_image ? formatMediaUrl(article.cover_image) : undefined}
-        type="article"
-        schema={articleSchema}
-      />
-      <article className="glass-panel fade-section is-visible max-w-6xl w-full mx-auto px-4 md:px-8">
+      <div className="glass-panel fade-section is-visible max-w-6xl w-full mx-auto px-4 md:px-8">
         {/* Breadcrumb Navigation */}
         <nav className="flex items-center gap-2 text-xs text-textDark/60 mb-8 font-medium overflow-x-auto pb-1 scrollbar-none">
           <Link to="/" className="hover:text-primary transition-colors shrink-0">
@@ -316,7 +284,7 @@ const ArticleDetailPage = ({ onOpenAppointment }) => {
 
         {/* Related Articles Grid */}
         <ArticleRelatedGrid articles={relatedArticles} />
-      </article>
+      </div>
     </main>
   );
 };

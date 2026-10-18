@@ -1,16 +1,6 @@
 import React from 'react';
 import { Activity, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import SEO from '../components/seo/SEO';
-
-const therapeuticSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'MedicalWebPage',
-  name: 'خدمات درمانی و جراحی‌های انکوپلاستی پستان',
-  description:
-    'ارائه کلیه خدمات تشخیصی، درمان بیماری‌های خوش‌خیم و بدخیم و جراحی‌های انکوپلاستی با متدهای روز جهان توسط دکتر نگار معشوری.',
-  url: 'https://kamelion.ir/services/therapeutic',
-};
 
 const TherapeuticServicesPage = ({ onOpenAppointment }) => {
   return (
@@ -18,12 +8,6 @@ const TherapeuticServicesPage = ({ onOpenAppointment }) => {
       className="flex-grow flex flex-col items-center w-full pt-28 md:pt-32 pb-20"
       style={{ animation: 'fadeIn 0.6s ease-out forwards' }}
     >
-      <SEO
-        title="خدمات درمانی و انکوپلاستی پستان"
-        description="تشخیص و درمان سرطان پستان، جراحی‌های انکوپلاستی و حفظ پستان، تخلیه کیست‌ها و توده‌های خوش‌خیم توسط دکتر نگار معشوری."
-        url="/services/therapeutic"
-        schema={therapeuticSchema}
-      />
       <div className="glass-panel is-visible w-full max-w-5xl mx-auto px-4 md:px-8">
         {/* Header */}
         <div className="text-center mb-12">

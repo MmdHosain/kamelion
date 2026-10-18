@@ -12,7 +12,6 @@ import {
   Calendar,
 } from 'lucide-react';
 import { videoService } from '../api/videoService';
-import SEO from '../components/seo/SEO';
 
 const DEFAULT_VIDEOS = [
   {
@@ -95,11 +94,6 @@ export default function VideoPage() {
 
   return (
     <main className="flex-grow flex flex-col items-center w-full pt-28 md:pt-32 pb-20">
-      <SEO
-        title="گالری ویدیوهای آموزشی و بالینی"
-        description="مجموعه ویدیوهای آموزشی و توضیحات بالینی دکتر نگار معشوری پیرامون سلامت پستان، روش‌های نوین جراحی، مراقبت‌های قبل و بعد از عمل."
-        url="/videos"
-      />
       <div className="glass-panel fade-section is-visible w-full max-w-6xl">
         
         {/* Page Header */}

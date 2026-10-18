@@ -19,13 +19,13 @@ const ArticleCard = ({ article }) => {
           {article.cover_image ? (
             <img
               src={formatMediaUrl(article.cover_image)}
-              alt={`${article.title} — دکتر نگار معشوری`}
+              alt={article.title}
               loading="lazy"
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-primary/5 text-primary/60 font-bold text-xs text-center p-3">
-              کلینیک تخصصی پستان دکتر نگار معشوری
+            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-primary/5 text-primary/40 font-bold text-sm">
+              کلینیک کملین
             </div>
           )}
 

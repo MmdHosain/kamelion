@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import { Search, Heart, Loader2, FileQuestion } from 'lucide-react';
 import articleService from '../api/articleService';
 import ArticleCard from '../components/articles/ArticleCard';
-import SEO from '../components/seo/SEO';
 
 const ResourcesPage = () => {
   const [articles, setArticles] = useState([]);
@@ -53,11 +52,6 @@ const ResourcesPage = () => {
 
   return (
     <main className="flex-grow flex flex-col items-center w-full pt-28 md:pt-32 pb-20">
-      <SEO
-        title="مقالات آموزشی و راهنمای سلامت پستان"
-        description="مجموعه مقالات معتبر و علمی دکتر نگار معشوری درباره پیشگیری، خودآزمایی ماهانه، درمان و جراحی‌های تخصصی پستان."
-        url="/resources"
-      />
       <div className="glass-panel fade-section is-visible max-w-6xl w-full mx-auto px-4 md:px-8">
         {/* Header */}
         <div className="text-center mb-10">
