@@ -10,6 +10,10 @@ permissions:
   contents: read
   packages: write
 
+concurrency:
+  group: kamelion-deployment
+  cancel-in-progress: false
+
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
@@ -29,8 +33,11 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Use official npm registry in CI
+        shell: bash
         run: |
-          sed -i 's|https://mirror-npm.runflare.com/|https://registry.npmjs.org/|g' front-end/package-lock.json
+          sed -i \
+            's|https://mirror-npm.runflare.com/|https://registry.npmjs.org/|g' \
+            front-end/package-lock.json
 
       - name: Build and push backend
         uses: docker/build-push-action@v6
@@ -51,8 +58,7 @@ jobs:
           tags: |
             ghcr.io/mmdhosain/kamelion-frontend:latest
             ghcr.io/mmdhosain/kamelion-frontend:${{ github.sha }}
-  
-  
+
   deploy:
     needs: build-and-push
     runs-on: [self-hosted, Windows, X64]
@@ -69,25 +75,74 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
 
+          foreach ($name in @(
+            'VPS_HOST',
+            'VPS_USER',
+            'VPS_PORT',
+            'VPS_SSH_KEY',
+            'GHCR_READ_TOKEN'
+          )) {
+            if ([string]::IsNullOrWhiteSpace(
+              [Environment]::GetEnvironmentVariable($name)
+            )) {
+              throw "Required GitHub secret is missing: $name"
+            }
+          }
+
           $keyPath = Join-Path $env:RUNNER_TEMP 'kamelion-deploy-key'
           $remotePath = Join-Path $env:RUNNER_TEMP 'kamelion-deploy.sh'
 
           $remoteScript = @'
-          set -e
+          set -Eeuo pipefail
+
           IFS= read -r GHCR_READ_TOKEN
-          cd ~/deploy
+
+          DEPLOY_DIR="$HOME/deploy"
+
+          if [ ! -d "$DEPLOY_DIR" ]; then
+            echo "ERROR: Deployment directory does not exist: $DEPLOY_DIR"
+            exit 1
+          fi
+
+          cd "$DEPLOY_DIR"
+
+          if ! docker compose config --quiet; then
+            echo "ERROR: Docker Compose configuration is invalid or missing."
+            exit 1
+          fi
+
+          services="$(docker compose config --services)"
+
+          for service in backend frontend; do
+            if ! grep -Fxq "$service" <<< "$services"; then
+              echo "ERROR: Compose service '$service' is missing."
+              exit 1
+            fi
+          done
 
           printf '%s' "$GHCR_READ_TOKEN" |
-            docker login ghcr.io -u MmdHosain --password-stdin
+            docker login ghcr.io \
+              --username MmdHosain \
+              --password-stdin
+
+          unset GHCR_READ_TOKEN
+
+          trap 'docker logout ghcr.io >/dev/null 2>&1 || true' EXIT
 
           docker pull ghcr.io/mmdhosain/kamelion-backend:latest
           docker pull ghcr.io/mmdhosain/kamelion-frontend:latest
 
-          docker tag ghcr.io/mmdhosain/kamelion-backend:latest kamelion-backend:latest
-          docker tag ghcr.io/mmdhosain/kamelion-frontend:latest kamelion-frontend:latest
+          docker tag \
+            ghcr.io/mmdhosain/kamelion-backend:latest \
+            kamelion-backend:latest
 
-          docker compose up -d backend frontend
-          docker logout ghcr.io
+          docker tag \
+            ghcr.io/mmdhosain/kamelion-frontend:latest \
+            kamelion-frontend:latest
+
+          docker compose up -d --no-build backend frontend
+
+          docker compose ps backend frontend
           '@
 
           try {
@@ -97,7 +152,6 @@ jobs:
               [System.Text.Encoding]::ASCII
             )
 
-            # Send the script separately; its first line reads the token from stdin.
             [System.IO.File]::WriteAllText(
               $remotePath,
               $remoteScript,
@@ -121,6 +175,6 @@ jobs:
             }
           }
           finally {
-            Remove-Item $keyPath, $remotePath -Force -ErrorAction SilentlyContinue
+            Remove-Item $keyPath, $remotePath `
+              -Force -ErrorAction SilentlyContinue
           }
-
