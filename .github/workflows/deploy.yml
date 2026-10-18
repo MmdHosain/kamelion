@@ -52,67 +52,53 @@ jobs:
             ghcr.io/mmdhosain/kamelion-frontend:latest
             ghcr.io/mmdhosain/kamelion-frontend:${{ github.sha }}
 
-  deploy:
-    needs: build-and-push
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Install SSH client
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y openssh-client
-
-      - name: Configure SSH
-        env:
-          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
-          VPS_HOST: ${{ secrets.VPS_HOST }}
-          VPS_PORT: ${{ secrets.VPS_PORT }}
-        run: |
-          set -euo pipefail
-
-          mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
-
-          printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/kamelion_deploy
-          chmod 600 ~/.ssh/kamelion_deploy
-
-          ssh-keyscan -p "$VPS_PORT" -H "$VPS_HOST" \
-            >> ~/.ssh/known_hosts 2>/dev/null
-
+ 
       - name: Deploy to VPS
         env:
           VPS_HOST: ${{ secrets.VPS_HOST }}
           VPS_PORT: ${{ secrets.VPS_PORT }}
           VPS_USER: ${{ secrets.VPS_USER }}
           GHCR_READ_TOKEN: ${{ secrets.GHCR_READ_TOKEN }}
+        shell: bash
         run: |
-          set -euo pipefail
-
-          REMOTE_SCRIPT="$(mktemp)"
-          trap 'rm -f "$REMOTE_SCRIPT"' EXIT
-
-          cat > "$REMOTE_SCRIPT" <<'REMOTE'
           set -Eeuo pipefail
 
-          IFS= read -r GHCR_READ_TOKEN
+          if [[ -z "$GHCR_READ_TOKEN" ]]; then
+            echo "ERROR: GHCR_READ_TOKEN is empty or missing."
+            exit 1
+          fi
+
+          printf '%s\n' "$GHCR_READ_TOKEN" |
+            ssh \
+              -i ~/.ssh/kamelion_deploy \
+              -p "$VPS_PORT" \
+              -o BatchMode=yes \
+              -o ConnectTimeout=30 \
+              "$VPS_USER@$VPS_HOST" \
+              'bash -s' <<'REMOTE'
+          set -Eeuo pipefail
+
+          IFS= read -r GHCR_READ_TOKEN || {
+            echo "ERROR: Failed to receive GHCR token."
+            exit 1
+          }
+
+          if [[ -z "$GHCR_READ_TOKEN" ]]; then
+            echo "ERROR: Received an empty GHCR token."
+            exit 1
+          fi
 
           cd /root/kamelion
 
-          test -f docker-compose.yml || {
-            echo "ERROR: /root/kamelion/docker-compose.yml not found"
-            exit 1
-          }
-
-          test -f .env || {
-            echo "ERROR: /root/kamelion/.env not found"
-            exit 1
-          }
+          test -f docker-compose.yml
+          test -f .env
 
           printf '%s' "$GHCR_READ_TOKEN" |
             docker login ghcr.io \
               --username mmdhosain \
               --password-stdin
 
+          unset GHCR_READ_TOKEN
           trap 'docker logout ghcr.io >/dev/null 2>&1 || true' EXIT
 
           docker pull ghcr.io/mmdhosain/kamelion-backend:latest
@@ -127,19 +113,6 @@ jobs:
             kamelion-frontend:latest
 
           docker compose config -q
-
           docker compose up -d --no-build backend frontend
-
           docker compose ps
           REMOTE
-
-          {
-            printf '%s\n' "$GHCR_READ_TOKEN"
-            cat "$REMOTE_SCRIPT"
-          } | ssh \
-            -i ~/.ssh/kamelion_deploy \
-            -p "$VPS_PORT" \
-            -o BatchMode=yes \
-            -o ConnectTimeout=30 \
-            "$VPS_USER@$VPS_HOST" \
-            'bash -s'
