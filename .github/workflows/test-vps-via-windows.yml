@@ -1,0 +1,31 @@
+
+name: Test VPS via Windows Runner
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test-connection:
+    runs-on: [self-hosted, Windows, X64]
+
+    steps:
+      - name: Test VPS TCP connection
+        shell: powershell
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_PORT: ${{ secrets.VPS_PORT }}
+        run: |
+          Write-Host "Runner computer: $env:COMPUTERNAME"
+          Write-Host "Testing $env:VPS_HOST on port $env:VPS_PORT"
+
+          $result = Test-NetConnection `
+            -ComputerName $env:VPS_HOST `
+            -Port ([int]$env:VPS_PORT) `
+            -WarningAction SilentlyContinue
+
+          if ($result.TcpTestSucceeded) {
+            Write-Host "SUCCESS: VPS is reachable from Windows."
+          } else {
+            Write-Host "FAILED: VPS is not reachable from Windows."
+            exit 1
+          }
