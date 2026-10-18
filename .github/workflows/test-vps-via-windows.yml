@@ -7,6 +7,7 @@ on:
 jobs:
   test-connection:
     runs-on: [self-hosted, Windows, X64]
+    timeout-minutes: 1
 
     steps:
       - name: Test VPS TCP connection
@@ -15,17 +16,29 @@ jobs:
           VPS_HOST: ${{ secrets.VPS_HOST }}
           VPS_PORT: ${{ secrets.VPS_PORT }}
         run: |
-          Write-Host "Runner computer: $env:COMPUTERNAME"
-          Write-Host "Testing $env:VPS_HOST on port $env:VPS_PORT"
+          Write-Host "Runner: $env:COMPUTERNAME"
+          Write-Host "Target: $env:VPS_HOST`:$env:VPS_PORT"
 
-          $result = Test-NetConnection `
-            -ComputerName $env:VPS_HOST `
-            -Port ([int]$env:VPS_PORT) `
-            -WarningAction SilentlyContinue
+          $client = New-Object System.Net.Sockets.TcpClient
+          try {
+            $connect = $client.BeginConnect(
+              $env:VPS_HOST,
+              [int]$env:VPS_PORT,
+              $null,
+              $null
+            )
 
-          if ($result.TcpTestSucceeded) {
+            if (-not $connect.AsyncWaitHandle.WaitOne(5000)) {
+              throw "Connection timed out after 5 seconds."
+            }
+
+            $client.EndConnect($connect)
             Write-Host "SUCCESS: VPS is reachable from Windows."
-          } else {
-            Write-Host "FAILED: VPS is not reachable from Windows."
+          }
+          catch {
+            Write-Host "FAILED: $($_.Exception.Message)"
             exit 1
+          }
+          finally {
+            $client.Close()
           }
