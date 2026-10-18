@@ -52,33 +52,75 @@ jobs:
             ghcr.io/mmdhosain/kamelion-frontend:latest
             ghcr.io/mmdhosain/kamelion-frontend:${{ github.sha }}
   
+  
   deploy:
     needs: build-and-push
     runs-on: [self-hosted, Windows, X64]
 
     steps:
       - name: Deploy to VPS
-        uses: appleboy/ssh-action@v1.2.0
+        shell: pwsh
         env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_PORT: ${{ secrets.VPS_PORT }}
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
           GHCR_READ_TOKEN: ${{ secrets.GHCR_READ_TOKEN }}
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          port: ${{ secrets.VPS_PORT }}
-          envs: GHCR_READ_TOKEN
-          script: |
-            set -e
-            cd ~/deploy
+        run: |
+          $ErrorActionPreference = 'Stop'
 
-            printf '%s' "$GHCR_READ_TOKEN" | docker login ghcr.io -u MmdHosain --password-stdin
+          $keyPath = Join-Path $env:RUNNER_TEMP 'kamelion-deploy-key'
+          $remotePath = Join-Path $env:RUNNER_TEMP 'kamelion-deploy.sh'
 
-            docker pull ghcr.io/mmdhosain/kamelion-backend:latest
-            docker pull ghcr.io/mmdhosain/kamelion-frontend:latest
+          $remoteScript = @'
+          set -e
+          IFS= read -r GHCR_READ_TOKEN
+          cd ~/deploy
 
-            docker tag ghcr.io/mmdhosain/kamelion-backend:latest kamelion-backend:latest
-            docker tag ghcr.io/mmdhosain/kamelion-frontend:latest kamelion-frontend:latest
+          printf '%s' "$GHCR_READ_TOKEN" |
+            docker login ghcr.io -u MmdHosain --password-stdin
 
-            docker compose up -d backend frontend
+          docker pull ghcr.io/mmdhosain/kamelion-backend:latest
+          docker pull ghcr.io/mmdhosain/kamelion-frontend:latest
 
-            docker logout ghcr.io
+          docker tag ghcr.io/mmdhosain/kamelion-backend:latest kamelion-backend:latest
+          docker tag ghcr.io/mmdhosain/kamelion-frontend:latest kamelion-frontend:latest
+
+          docker compose up -d backend frontend
+          docker logout ghcr.io
+          '@
+
+          try {
+            [System.IO.File]::WriteAllText(
+              $keyPath,
+              $env:VPS_SSH_KEY.Trim() + "`n",
+              [System.Text.Encoding]::ASCII
+            )
+
+            # Send the script separately; its first line reads the token from stdin.
+            [System.IO.File]::WriteAllText(
+              $remotePath,
+              $remoteScript,
+              [System.Text.UTF8Encoding]::new($false)
+            )
+
+            $payload = $env:GHCR_READ_TOKEN + "`n"
+            $payload += [System.IO.File]::ReadAllText($remotePath)
+
+            $payload | ssh.exe `
+              -i $keyPath `
+              -p $env:VPS_PORT `
+              -o BatchMode=yes `
+              -o ConnectTimeout=30 `
+              -o StrictHostKeyChecking=accept-new `
+              "$env:VPS_USER@$env:VPS_HOST" `
+              "bash -s"
+
+            if ($LASTEXITCODE -ne 0) {
+              throw "VPS deployment failed with exit code $LASTEXITCODE"
+            }
+          }
+          finally {
+            Remove-Item $keyPath, $remotePath -Force -ErrorAction SilentlyContinue
+          }
+
