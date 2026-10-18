@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { HelpCircle, ChevronDown, MessageSquare } from 'lucide-react';
+import SEO from '../components/seo/SEO';
 
 const FAQS = [
   {
@@ -24,11 +25,30 @@ const FAQS = [
   },
 ];
 
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: FAQS.map((faq) => ({
+    '@type': 'Question',
+    name: faq.q,
+    acceptedAnswer: {
+      '@type': 'Answer',
+      text: faq.a,
+    },
+  })),
+};
+
 const FaqPage = ({ onOpenChat }) => {
   const [openIndex, setOpenIndex] = useState(0);
 
   return (
     <main className="flex-grow flex flex-col items-center w-full pt-28 md:pt-32 pb-20">
+      <SEO
+        title="پرسش‌های متداول بیماران"
+        description="پاسخ به پرتکرارترین پرسش‌های پزشکی درباره ماموگرافی، سونوگرافی، پروتز سینه، ماموپلاستی و انکوپلاستی توسط دکتر نگار معشوری."
+        url="/faq"
+        schema={faqSchema}
+      />
       <div className="glass-panel fade-section is-visible">
         <div className="text-center mb-12">
           <div className="text-xs md:text-sm text-primary font-bold tracking-wider mb-2 uppercase">

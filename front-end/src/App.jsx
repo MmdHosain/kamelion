@@ -1,6 +1,6 @@
 // src/App.jsx
 import React, { useState, useEffect } from 'react';
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation, useParams } from 'react-router-dom';
 
 /* Hooks & Stores */
 import { useScrollFade } from './hooks/useScrollFade';
@@ -29,6 +29,11 @@ import FloatingChatWidget from './components/chat/FloatingChatWidget';
 import AppointmentModal from './components/ui/AppointmentModal';
 import MyAppointmentsModal from './components/ui/MyAppointmentsModal';
 import AuthModal from './components/ui/AuthModal';
+
+const ArticleRedirect = () => {
+  const { slug } = useParams();
+  return <Navigate to={`/resources/${slug}`} replace />;
+};
 
 const App = () => {
   const location = useLocation();
@@ -100,11 +105,8 @@ const App = () => {
           path="/resources/:slug"
           element={<ArticleDetailPage onOpenAppointment={() => setOpenAppointment(true)} />}
         />
-        <Route
-          path="/articles/:slug"
-          element={<ArticleDetailPage onOpenAppointment={() => setOpenAppointment(true)} />}
-        />
-        <Route path="/video" element={<VideoPage />} />
+        <Route path="/articles/:slug" element={<ArticleRedirect />} />
+        <Route path="/video" element={<Navigate to="/videos" replace />} />
         <Route path="/videos" element={<VideoPage />} />
 
         <Route path="/admin/login" element={<AdminLogin />} />
