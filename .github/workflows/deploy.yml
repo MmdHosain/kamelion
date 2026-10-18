@@ -29,8 +29,12 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Use official npm registry in CI
+        shell: bash
         run: |
-          sed -i 's|https://mirror-npm.runflare.com/|https://registry.npmjs.org/|g' front-end/package-lock.json
+          set -Eeuo pipefail
+          sed -i \
+            's|https://mirror-npm.runflare.com/|https://registry.npmjs.org/|g' \
+            front-end/package-lock.json
 
       - name: Build and push backend
         uses: docker/build-push-action@v6
@@ -51,78 +55,89 @@ jobs:
           tags: |
             ghcr.io/mmdhosain/kamelion-frontend:latest
             ghcr.io/mmdhosain/kamelion-frontend:${{ github.sha }}
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+
+    steps:
       - name: Configure SSH
+        shell: bash
         env:
           VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
           VPS_HOST: ${{ secrets.VPS_HOST }}
           VPS_PORT: ${{ secrets.VPS_PORT }}
-        shell: bash
         run: |
           set -Eeuo pipefail
 
-          : "${VPS_SSH_KEY:?Missing VPS_SSH_KEY secret}"
-          : "${VPS_HOST:?Missing VPS_HOST secret}"
-          : "${VPS_PORT:?Missing VPS_PORT secret}"
+          : "${VPS_SSH_KEY:?Missing VPS_SSH_KEY}"
+          : "${VPS_HOST:?Missing VPS_HOST}"
+          : "${VPS_PORT:?Missing VPS_PORT}"
 
           mkdir -p "$HOME/.ssh"
           chmod 700 "$HOME/.ssh"
 
-          printf '%s\n' "$VPS_SSH_KEY" > "$HOME/.ssh/kamelion_deploy"
+          printf '%s\n' "$VPS_SSH_KEY" \
+            > "$HOME/.ssh/kamelion_deploy"
+
           chmod 600 "$HOME/.ssh/kamelion_deploy"
 
-          ssh-keygen -y -f "$HOME/.ssh/kamelion_deploy" >/dev/null
+          ssh-keygen -y \
+            -f "$HOME/.ssh/kamelion_deploy" \
+            > /dev/null
 
           ssh-keyscan -p "$VPS_PORT" -H "$VPS_HOST" \
             >> "$HOME/.ssh/known_hosts" 2>/dev/null
 
+          test -s "$HOME/.ssh/known_hosts"
           chmod 600 "$HOME/.ssh/known_hosts"
-     
+
       - name: Deploy to VPS
+        shell: bash
         env:
           VPS_HOST: ${{ secrets.VPS_HOST }}
           VPS_PORT: ${{ secrets.VPS_PORT }}
           VPS_USER: ${{ secrets.VPS_USER }}
           GHCR_READ_TOKEN: ${{ secrets.GHCR_READ_TOKEN }}
-        shell: bash
         run: |
           set -Eeuo pipefail
 
-          if [[ -z "$GHCR_READ_TOKEN" ]]; then
-            echo "ERROR: GHCR_READ_TOKEN is empty or missing."
-            exit 1
-          fi
+          : "${VPS_HOST:?Missing VPS_HOST}"
+          : "${VPS_PORT:?Missing VPS_PORT}"
+          : "${VPS_USER:?Missing VPS_USER}"
+          : "${GHCR_READ_TOKEN:?Missing GHCR_READ_TOKEN}"
 
-          printf '%s\n' "$GHCR_READ_TOKEN" |
-            ssh \
-              -i ~/.ssh/kamelion_deploy \
-              -p "$VPS_PORT" \
-              -o BatchMode=yes \
-              -o ConnectTimeout=30 \
-              "$VPS_USER@$VPS_HOST" \
-              'bash -s' <<'REMOTE'
+          SSH=(
+            ssh
+            -i "$HOME/.ssh/kamelion_deploy"
+            -p "$VPS_PORT"
+            -o BatchMode=yes
+            -o StrictHostKeyChecking=yes
+            -o ConnectTimeout=30
+          )
+
+          # Connection 1: Authenticate Docker on the VPS.
+          printf '%s' "$GHCR_READ_TOKEN" |
+            "${SSH[@]}" "$VPS_USER@$VPS_HOST" \
+              'docker login ghcr.io --username mmdhosain --password-stdin'
+
+          # Connection 2: Pull images and deploy.
+          "${SSH[@]}" "$VPS_USER@$VPS_HOST" 'bash -se' <<'REMOTE'
           set -Eeuo pipefail
-
-          IFS= read -r GHCR_READ_TOKEN || {
-            echo "ERROR: Failed to receive GHCR token."
-            exit 1
-          }
-
-          if [[ -z "$GHCR_READ_TOKEN" ]]; then
-            echo "ERROR: Received an empty GHCR token."
-            exit 1
-          fi
 
           cd /root/kamelion
 
-          test -f docker-compose.yml
-          test -f .env
+          test -f docker-compose.yml || {
+            echo "ERROR: docker-compose.yml not found"
+            exit 1
+          }
 
-          printf '%s' "$GHCR_READ_TOKEN" |
-            docker login ghcr.io \
-              --username mmdhosain \
-              --password-stdin
+          test -f .env || {
+            echo "ERROR: .env not found"
+            exit 1
+          }
 
-          unset GHCR_READ_TOKEN
+          # Ensure logout runs even if deployment fails.
           trap 'docker logout ghcr.io >/dev/null 2>&1 || true' EXIT
 
           docker pull ghcr.io/mmdhosain/kamelion-backend:latest
@@ -137,6 +152,8 @@ jobs:
             kamelion-frontend:latest
 
           docker compose config -q
+
           docker compose up -d --no-build backend frontend
+
           docker compose ps
           REMOTE
