@@ -1,12 +1,19 @@
 // src/components/ui/DateOfBirthInput.jsx
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useMemo,
+  useCallback,
+  useRef,
+} from 'react';
 import {
   CalendarDays,
   Sparkles,
   AlertCircle,
-  HelpCircle,
   ListFilter,
   Keyboard,
+  ChevronDown,
+  Check,
 } from 'lucide-react';
 import {
   PERSIAN_MONTH_NAMES,
@@ -55,6 +62,275 @@ const getDaysInGregorianMonth = (year, month) => {
   return new Date(year, month, 0).getDate();
 };
 
+/**
+ * Elevated, Accessible Custom Select Dropdown for Date Segments
+ */
+function DateSegmentDropdown({
+  label,
+  value,
+  placeholder,
+  options,
+  isOpen,
+  onToggle,
+  onSelect,
+  onClose,
+  disabled,
+  hasError,
+  ariaLabel,
+  zIndexClass = 'z-20',
+  menuMinWidth = 'min-w-full',
+  defaultScrollValue,
+}) {
+  const containerRef = useRef(null);
+  const triggerRef = useRef(null);
+  const listboxRef = useRef(null);
+  const selectedItemRef = useRef(null);
+  const highlightedItemRef = useRef(null);
+
+  const [placement, setPlacement] = useState('bottom');
+  const [highlightedIndex, setHighlightedIndex] = useState(-1);
+  const typeAheadBufferRef = useRef('');
+  const typeAheadTimeoutRef = useRef(null);
+
+  // Find display label for currently selected value
+  const selectedOption = useMemo(() => {
+    if (!value) return null;
+    return options.find((opt) => String(opt.value) === String(value)) || null;
+  }, [options, value]);
+
+  // Intelligent viewport collision detection (opens upward if near bottom)
+  useEffect(() => {
+    if (isOpen && triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect();
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const spaceAbove = rect.top;
+      if (spaceBelow < 220 && spaceAbove > 220) {
+        setPlacement('top');
+      } else {
+        setPlacement('bottom');
+      }
+    }
+  }, [isOpen]);
+
+  // Set initial highlighted index & auto-scroll into view upon opening
+  useEffect(() => {
+    if (isOpen) {
+      let initialIdx = -1;
+      if (value) {
+        initialIdx = options.findIndex((opt) => String(opt.value) === String(value));
+      } else if (defaultScrollValue) {
+        initialIdx = options.findIndex((opt) => String(opt.value) === String(defaultScrollValue));
+      }
+      setHighlightedIndex(initialIdx !== -1 ? initialIdx : 0);
+
+      const timer = setTimeout(() => {
+        const targetEl = selectedItemRef.current || highlightedItemRef.current;
+        if (targetEl && listboxRef.current) {
+          targetEl.scrollIntoView({ block: 'nearest' });
+        }
+      }, 30);
+      return () => clearTimeout(timer);
+    } else {
+      setHighlightedIndex(-1);
+    }
+  }, [isOpen, value, options, defaultScrollValue]);
+
+  // Click outside listener for clean dismissal
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleClickOutside = (e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target)) {
+        onClose();
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, [isOpen, onClose]);
+
+  // Keyboard navigation
+  const handleKeyDown = (e) => {
+    if (disabled) return;
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (!isOpen) {
+        onToggle();
+      } else {
+        setHighlightedIndex((prev) => {
+          const next = prev < options.length - 1 ? prev + 1 : prev;
+          setTimeout(() => {
+            highlightedItemRef.current?.scrollIntoView({ block: 'nearest' });
+          }, 0);
+          return next;
+        });
+      }
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (!isOpen) {
+        onToggle();
+      } else {
+        setHighlightedIndex((prev) => {
+          const next = prev > 0 ? prev - 1 : 0;
+          setTimeout(() => {
+            highlightedItemRef.current?.scrollIntoView({ block: 'nearest' });
+          }, 0);
+          return next;
+        });
+      }
+    } else if (e.key === 'Enter' || e.key === ' ') {
+      if (isOpen) {
+        e.preventDefault();
+        if (highlightedIndex >= 0 && highlightedIndex < options.length) {
+          onSelect(options[highlightedIndex].value);
+          onClose();
+          triggerRef.current?.focus();
+        }
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        onToggle();
+      }
+    } else if (e.key === 'Escape') {
+      if (isOpen) {
+        e.preventDefault();
+        onClose();
+        triggerRef.current?.focus();
+      }
+    } else if (e.key === 'Tab') {
+      if (isOpen) {
+        onClose();
+      }
+    } else if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      // Type-ahead jump search for digits and characters
+      if (typeAheadTimeoutRef.current) clearTimeout(typeAheadTimeoutRef.current);
+      typeAheadBufferRef.current += e.key;
+      typeAheadTimeoutRef.current = setTimeout(() => {
+        typeAheadBufferRef.current = '';
+      }, 600);
+
+      const query = toEnglishDigits(typeAheadBufferRef.current).toLowerCase();
+      const matchIdx = options.findIndex((opt) => {
+        const labelStr = toEnglishDigits(opt.label).toLowerCase();
+        const valStr = toEnglishDigits(String(opt.value)).toLowerCase();
+        return labelStr.startsWith(query) || valStr.startsWith(query);
+      });
+
+      if (matchIdx !== -1) {
+        if (!isOpen) onToggle();
+        setHighlightedIndex(matchIdx);
+        setTimeout(() => {
+          highlightedItemRef.current?.scrollIntoView({ block: 'nearest' });
+        }, 10);
+      }
+    }
+  };
+
+  return (
+    <div className={`relative flex flex-col ${zIndexClass}`} ref={containerRef}>
+      <span className="block text-[10px] font-bold text-textDark/60 mb-1 pr-1">
+        {label}
+      </span>
+
+      {/* Trigger Button */}
+      <button
+        type="button"
+        ref={triggerRef}
+        onClick={() => {
+          if (!disabled) onToggle();
+        }}
+        onKeyDown={handleKeyDown}
+        disabled={disabled}
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
+        aria-label={ariaLabel}
+        className={`w-full h-11 px-3 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all duration-200 flex items-center justify-between gap-1 select-none cursor-pointer ${
+          isOpen
+            ? 'bg-white border-primary ring-2 ring-primary/20 shadow-md text-textDark'
+            : hasError
+            ? 'bg-rose-50/50 border-rose-400 text-rose-800 hover:border-rose-500 focus:ring-2 focus:ring-rose-200'
+            : value
+            ? 'bg-white/95 border-primary/35 text-textDark hover:border-primary shadow-xs'
+            : 'bg-white/80 border-primary/25 text-textDark/40 hover:border-primary/50 hover:bg-white shadow-inner'
+        } ${disabled ? 'opacity-60 cursor-not-allowed' : ''}`}
+      >
+        <span
+          className={`truncate ${
+            value ? 'font-bold text-textDark' : 'font-medium text-textDark/40'
+          }`}
+        >
+          {selectedOption ? selectedOption.displayLabel || selectedOption.label : placeholder}
+        </span>
+        <ChevronDown
+          className={`w-4 h-4 shrink-0 transition-transform duration-200 ${
+            isOpen ? 'rotate-180 text-primary' : 'text-textDark/40'
+          }`}
+        />
+      </button>
+
+      {/* Floating Animated Listbox */}
+      {isOpen && (
+        <div
+          ref={listboxRef}
+          role="listbox"
+          aria-label={ariaLabel}
+          tabIndex={-1}
+          className={`absolute ${
+            placement === 'top'
+              ? 'bottom-full mb-1.5 origin-bottom'
+              : 'top-full mt-1.5 origin-top'
+          } right-0 ${menuMinWidth} z-50 bg-white/98 backdrop-blur-2xl border border-primary/25 rounded-2xl shadow-xl shadow-primary/10 max-h-52 overflow-y-auto custom-scroll p-1.5 animate-scaleUp`}
+        >
+          {options.map((opt, idx) => {
+            const isSelected = String(opt.value) === String(value);
+            const isHighlighted = idx === highlightedIndex;
+
+            return (
+              <div
+                key={opt.value}
+                ref={
+                  isSelected
+                    ? selectedItemRef
+                    : isHighlighted
+                    ? highlightedItemRef
+                    : null
+                }
+                role="option"
+                aria-selected={isSelected}
+                onClick={() => {
+                  onSelect(opt.value);
+                  onClose();
+                  triggerRef.current?.focus();
+                }}
+                onMouseEnter={() => setHighlightedIndex(idx)}
+                className={`w-full px-3 py-2.5 rounded-xl text-xs sm:text-sm transition-all duration-150 flex items-center justify-between cursor-pointer select-none mb-0.5 last:mb-0 ${
+                  isSelected
+                    ? 'bg-gradient-to-r from-primary to-primary-dark text-white font-black shadow-xs'
+                    : isHighlighted
+                    ? 'bg-primary/10 text-primary font-bold'
+                    : 'text-textDark hover:bg-primary/5 hover:text-primary font-medium'
+                }`}
+              >
+                <span className="truncate">{opt.label}</span>
+                {isSelected && (
+                  <Check className="w-3.5 h-3.5 shrink-0 text-white stroke-[2.5]" />
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Main DateOfBirthInput Component
+ */
 export default function DateOfBirthInput({
   value = '',
   onChange,
@@ -65,6 +341,7 @@ export default function DateOfBirthInput({
 }) {
   const [calendarType, setCalendarType] = useState('jalali'); // 'jalali' | 'gregorian'
   const [inputMode, setInputMode] = useState('segmented'); // 'segmented' | 'masked'
+  const [openDropdown, setOpenDropdown] = useState(null); // 'day' | 'month' | 'year' | null
 
   const todayDate = useMemo(() => new Date(), []);
   const todayJalali = useMemo(() => dateToJalali(todayDate), [todayDate]);
@@ -197,9 +474,7 @@ export default function DateOfBirthInput({
       const minAllowedYear = isJalali ? currentJalaliYear - 115 : currentGregorianYear - 115;
       const maxAllowedYear = isJalali ? currentJalaliYear : currentGregorianYear;
       if (y < minAllowedYear || y > maxAllowedYear) {
-        const err = isJalali
-          ? `سال تولد باید بین ${minAllowedYear} تا ${maxAllowedYear} باشد.`
-          : `سال تولد باید بین ${minAllowedYear} تا ${maxAllowedYear} باشد.`;
+        const err = `سال تولد باید بین ${minAllowedYear} تا ${maxAllowedYear} باشد.`;
         setInternalError(err);
         onChange?.('', { isValid: false, error: err });
         return;
@@ -324,6 +599,40 @@ export default function DateOfBirthInput({
     }
   };
 
+  // Options mapping for Day dropdown
+  const dayOptions = useMemo(() => {
+    return Array.from({ length: maxDays }, (_, i) => i + 1).map((d) => ({
+      value: String(d),
+      label: calendarType === 'jalali' ? toPersianDigits(d) : String(d),
+      displayLabel: calendarType === 'jalali' ? toPersianDigits(d) : String(d),
+    }));
+  }, [maxDays, calendarType]);
+
+  // Options mapping for Month dropdown
+  const monthOptions = useMemo(() => {
+    if (calendarType === 'jalali') {
+      return PERSIAN_MONTH_NAMES.map((name, idx) => ({
+        value: String(idx + 1),
+        label: `${name} (${toPersianDigits(idx + 1)})`,
+        displayLabel: name,
+      }));
+    }
+    return GREGORIAN_MONTHS.map((m) => ({
+      value: String(m.id),
+      label: m.name,
+      displayLabel: m.name.split(' ')[0],
+    }));
+  }, [calendarType]);
+
+  // Options mapping for Year dropdown
+  const yearOptions = useMemo(() => {
+    return yearsList.map((y) => ({
+      value: String(y),
+      label: calendarType === 'jalali' ? toPersianDigits(y) : String(y),
+      displayLabel: calendarType === 'jalali' ? toPersianDigits(y) : String(y),
+    }));
+  }, [yearsList, calendarType]);
+
   const displayError = externalError || internalError;
 
   return (
@@ -331,7 +640,7 @@ export default function DateOfBirthInput({
       {/* Top Header: Label, Mode Switch & Calendar Switch */}
       <div className="flex items-center justify-between text-xs font-bold text-textDark/80 pr-1">
         <label className="flex items-center gap-1.5 cursor-pointer">
-          <CalendarDays className="w-4 h-4 text-primary shrink-0" />
+          <CalendarDays className="w-3.5 h-3.5 text-primary shrink-0" />
           <span>تاریخ تولد</span>
           {required && <span className="text-rose-500 font-black" title="الزامی">*</span>}
         </label>
@@ -350,6 +659,7 @@ export default function DateOfBirthInput({
               setCalculatedAge(null);
               setConversionPreview('');
               setInternalError('');
+              setOpenDropdown(null);
               onChange?.('', { isValid: false, error: '' });
             }}
             className="hover:text-primary transition-colors cursor-pointer inline-flex items-center gap-1 bg-white/70 px-2 py-0.5 rounded-lg border border-primary/20"
@@ -364,7 +674,10 @@ export default function DateOfBirthInput({
           {/* Input Mode Toggle (Segmented Selectors vs Masked Input) */}
           <button
             type="button"
-            onClick={() => setInputMode((prev) => (prev === 'segmented' ? 'masked' : 'segmented'))}
+            onClick={() => {
+              setOpenDropdown(null);
+              setInputMode((prev) => (prev === 'segmented' ? 'masked' : 'segmented'));
+            }}
             className="hover:text-primary transition-colors cursor-pointer inline-flex items-center gap-1 text-[11px] text-textDark/70 hover:underline"
             title={inputMode === 'segmented' ? 'تایپ مستقیم با کیبورد' : 'انتخاب از لیست کشویی'}
           >
@@ -383,89 +696,60 @@ export default function DateOfBirthInput({
         </div>
       </div>
 
-      {/* Mode 1: Segmented Dropdown Selectors */}
+      {/* Mode 1: Elevated Segmented Dropdown Selectors */}
       {inputMode === 'segmented' ? (
-        <div className="grid grid-cols-3 gap-2">
-          {/* Day Selector */}
-          <div>
-            <label className="block text-[10px] font-bold text-textDark/60 mb-1 pr-1">
-              روز
-            </label>
-            <select
-              value={selectedDay}
-              disabled={disabled}
-              onChange={(e) => handleSegmentChange('day', e.target.value)}
-              className={`w-full bg-white/90 border p-3 rounded-xl text-xs md:text-sm text-textDark font-medium focus:outline-none focus:ring-2 transition-all shadow-inner cursor-pointer ${
-                displayError
-                  ? 'border-rose-400 focus:border-rose-500 focus:ring-rose-200'
-                  : 'border-primary/30 focus:border-primary focus:ring-primary/20'
-              }`}
-              aria-label="روز تولد"
-            >
-              <option value="">روز</option>
-              {Array.from({ length: maxDays }, (_, i) => i + 1).map((d) => (
-                <option key={d} value={d}>
-                  {calendarType === 'jalali' ? toPersianDigits(d) : d}
-                </option>
-              ))}
-            </select>
-          </div>
+        <div className="grid grid-cols-3 gap-1.5 sm:gap-2 relative">
+          {/* Day Dropdown */}
+          <DateSegmentDropdown
+            label="روز"
+            value={selectedDay}
+            placeholder="روز"
+            options={dayOptions}
+            isOpen={openDropdown === 'day'}
+            onToggle={() => setOpenDropdown((prev) => (prev === 'day' ? null : 'day'))}
+            onSelect={(val) => handleSegmentChange('day', val)}
+            onClose={() => setOpenDropdown(null)}
+            disabled={disabled}
+            hasError={Boolean(displayError)}
+            ariaLabel="روز تولد"
+            zIndexClass={openDropdown === 'day' ? 'z-40' : 'z-20'}
+          />
 
-          {/* Month Selector */}
-          <div>
-            <label className="block text-[10px] font-bold text-textDark/60 mb-1 pr-1">
-              ماه
-            </label>
-            <select
-              value={selectedMonth}
-              disabled={disabled}
-              onChange={(e) => handleSegmentChange('month', e.target.value)}
-              className={`w-full bg-white/90 border p-3 rounded-xl text-xs md:text-sm text-textDark font-medium focus:outline-none focus:ring-2 transition-all shadow-inner cursor-pointer ${
-                displayError
-                  ? 'border-rose-400 focus:border-rose-500 focus:ring-rose-200'
-                  : 'border-primary/30 focus:border-primary focus:ring-primary/20'
-              }`}
-              aria-label="ماه تولد"
-            >
-              <option value="">ماه</option>
-              {calendarType === 'jalali'
-                ? PERSIAN_MONTH_NAMES.map((name, idx) => (
-                    <option key={idx + 1} value={idx + 1}>
-                      {name} ({toPersianDigits(idx + 1)})
-                    </option>
-                  ))
-                : GREGORIAN_MONTHS.map((m) => (
-                    <option key={m.id} value={m.id}>
-                      {m.name}
-                    </option>
-                  ))}
-            </select>
-          </div>
+          {/* Month Dropdown */}
+          <DateSegmentDropdown
+            label="ماه"
+            value={selectedMonth}
+            placeholder="ماه"
+            options={monthOptions}
+            isOpen={openDropdown === 'month'}
+            onToggle={() => setOpenDropdown((prev) => (prev === 'month' ? null : 'month'))}
+            onSelect={(val) => handleSegmentChange('month', val)}
+            onClose={() => setOpenDropdown(null)}
+            disabled={disabled}
+            hasError={Boolean(displayError)}
+            ariaLabel="ماه تولد"
+            zIndexClass={openDropdown === 'month' ? 'z-40' : 'z-20'}
+            menuMinWidth="min-w-[130px] sm:min-w-full"
+          />
 
-          {/* Year Selector */}
-          <div>
-            <label className="block text-[10px] font-bold text-textDark/60 mb-1 pr-1">
-              سال
-            </label>
-            <select
-              value={selectedYear}
-              disabled={disabled}
-              onChange={(e) => handleSegmentChange('year', e.target.value)}
-              className={`w-full bg-white/90 border p-3 rounded-xl text-xs md:text-sm text-textDark font-medium focus:outline-none focus:ring-2 transition-all shadow-inner cursor-pointer ${
-                displayError
-                  ? 'border-rose-400 focus:border-rose-500 focus:ring-rose-200'
-                  : 'border-primary/30 focus:border-primary focus:ring-primary/20'
-              }`}
-              aria-label="سال تولد"
-            >
-              <option value="">سال</option>
-              {yearsList.map((y) => (
-                <option key={y} value={y}>
-                  {calendarType === 'jalali' ? toPersianDigits(y) : y}
-                </option>
-              ))}
-            </select>
-          </div>
+          {/* Year Dropdown */}
+          <DateSegmentDropdown
+            label="سال"
+            value={selectedYear}
+            placeholder="سال"
+            options={yearOptions}
+            isOpen={openDropdown === 'year'}
+            onToggle={() => setOpenDropdown((prev) => (prev === 'year' ? null : 'year'))}
+            onSelect={(val) => handleSegmentChange('year', val)}
+            onClose={() => setOpenDropdown(null)}
+            disabled={disabled}
+            hasError={Boolean(displayError)}
+            ariaLabel="سال تولد"
+            zIndexClass={openDropdown === 'year' ? 'z-40' : 'z-20'}
+            defaultScrollValue={String(
+              calendarType === 'jalali' ? currentJalaliYear - 30 : currentGregorianYear - 30
+            )}
+          />
         </div>
       ) : (
         /* Mode 2: Masked Numeric Input */
@@ -480,14 +764,14 @@ export default function DateOfBirthInput({
             placeholder={
               calendarType === 'jalali' ? 'مثال: ۱۳۷۴/۰۶/۱۵' : 'YYYY/MM/DD (e.g. 1995/08/20)'
             }
-            className={`w-full bg-white/90 border p-3.5 rounded-xl text-textDark font-mono text-center text-sm md:text-base focus:outline-none focus:ring-2 transition-all shadow-inner ${
+            className={`w-full h-11 px-3.5 py-2.5 rounded-xl text-textDark font-mono text-center text-sm md:text-base focus:outline-none focus:ring-2 transition-all shadow-inner ${
               displayError
-                ? 'border-rose-400 focus:border-rose-500 focus:ring-rose-200'
-                : 'border-primary/30 focus:border-primary focus:ring-primary/20'
+                ? 'bg-rose-50/50 border border-rose-400 focus:border-rose-500 focus:ring-rose-200'
+                : 'bg-white/90 border border-primary/30 focus:border-primary focus:ring-primary/20'
             }`}
             aria-label="تاریخ تولد به صورت عدد"
           />
-          <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-textDark/30 pointer-events-none text-xs">
+          <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-textDark/35 pointer-events-none text-xs font-bold">
             {calendarType === 'jalali' ? 'شمسی' : 'میلادی'}
           </span>
         </div>
@@ -495,13 +779,13 @@ export default function DateOfBirthInput({
 
       {/* Age & Converted Date Preview Pill */}
       {calculatedAge !== null && !displayError && (
-        <div className="flex flex-wrap items-center justify-between text-[11px] text-textDark/85 bg-primary/10 border border-primary/25 rounded-xl px-3 py-2 font-bold animate-fadeIn">
+        <div className="flex flex-wrap items-center justify-between text-[11px] text-textDark/85 bg-primary/10 border border-primary/25 rounded-xl px-3 py-2 font-bold animate-fadeIn shadow-2xs">
           <div className="flex items-center gap-1.5 text-primary-dark">
             <Sparkles className="w-3.5 h-3.5 text-primary animate-pulse" />
             <span>سن: {toPersianDigits(calculatedAge)} سال</span>
           </div>
           {conversionPreview && (
-            <div className="text-textDark/70 font-mono text-[10px]" dir="ltr">
+            <div className="text-textDark/70 font-mono text-[10px] tracking-wide" dir="ltr">
               {conversionPreview}
             </div>
           )}
