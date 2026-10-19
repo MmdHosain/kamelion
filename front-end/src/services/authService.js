@@ -35,12 +35,20 @@ const authService = {
     return normalizeAuthResponse(response.data);
   },
 
-  completeRegistration: async (signup_token, full_name, national_id) => {
-    const response = await apiClient.post('/auth/complete-registration', {
-      signup_token,
-      full_name,
-      national_id,
-    });
+  completeRegistration: async (signup_token, full_name, national_id, date_of_birth) => {
+    let payload = {};
+    if (typeof signup_token === 'object' && signup_token !== null) {
+      payload = { ...signup_token };
+    } else {
+      payload = {
+        signup_token,
+        full_name,
+        national_id,
+        ...(date_of_birth ? { date_of_birth } : {}),
+      };
+    }
+
+    const response = await apiClient.post('/auth/complete-registration', payload);
 
     return normalizeAuthResponse(response.data);
   },
