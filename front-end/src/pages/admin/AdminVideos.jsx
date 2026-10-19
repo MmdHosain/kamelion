@@ -172,15 +172,15 @@ export default function AdminVideos() {
   `;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3.5 sm:space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-primary/15 pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 border-b border-primary/15 pb-3 sm:pb-4">
         <div>
-          <h1 className="text-xl md:text-2xl font-black text-primary flex items-center gap-2.5">
-            <Film className="w-6 h-6" />
+          <h1 className="text-lg sm:text-xl md:text-2xl font-black text-primary flex items-center gap-2">
+            <Film className="w-5 h-5 sm:w-6 sm:h-6" />
             مدیریت ویدیوهای آموزشی و بالینی
           </h1>
-          <p className="text-xs md:text-sm text-textDark/70 font-medium mt-0.5">
+          <p className="text-[11px] sm:text-xs md:text-sm text-textDark/70 font-medium mt-0.5">
             افزودن ویدیوهای آموزشی، مصاحبه‌ها و نکات مراقبتی جهت نمایش در گالری ویدیویی سایت
           </p>
         </div>
@@ -188,9 +188,9 @@ export default function AdminVideos() {
         <button
           type="button"
           onClick={openAddModal}
-          className="flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-primary hover:bg-primary-dark text-white font-bold text-sm shadow-md shadow-primary/25 hover:shadow-primary/40 hover:-translate-y-0.5 transition-all duration-200 cursor-pointer whitespace-nowrap"
+          className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl bg-primary hover:bg-primary-dark text-white font-bold text-xs sm:text-sm shadow-md shadow-primary/25 hover:shadow-primary/40 hover:-translate-y-0.5 transition-all duration-200 cursor-pointer whitespace-nowrap self-stretch sm:self-auto"
         >
-          <Plus size={18} />
+          <Plus size={16} />
           <span>افزودن ویدیوی جدید</span>
         </button>
       </div>
@@ -221,7 +221,7 @@ export default function AdminVideos() {
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-6">
           {videos.map((video, idx) => {
             const isIframe =
               video.type === 'iframe' ||
@@ -230,7 +230,7 @@ export default function AdminVideos() {
             return (
               <div
                 key={video.id || idx}
-                className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden flex flex-col justify-between group hover:shadow-md hover:border-primary/30 transition-all duration-300"
+                className="bg-white rounded-2xl sm:rounded-3xl border border-gray-100 shadow-sm overflow-hidden flex flex-col justify-between group hover:shadow-md hover:border-primary/30 transition-all duration-300"
               >
                 {/* Media Preview Box */}
                 <div className="relative aspect-video bg-black/90 overflow-hidden">
@@ -285,12 +285,12 @@ export default function AdminVideos() {
       {/* Add Video Modal */}
       {isModalOpen && (
         <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeSlide"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 animate-fadeSlide"
           onClick={(e) => {
             if (e.target === e.currentTarget) closeAddModal();
           }}
         >
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg p-6 md:p-8 flex flex-col gap-6 relative border border-primary/20">
+          <div className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-lg p-4 sm:p-6 md:p-8 flex flex-col gap-4 sm:gap-6 relative border border-primary/20 max-h-[92dvh] overflow-y-auto chat-scroll">
             {/* Header */}
             <div className="flex items-center justify-between border-b border-gray-100 pb-3.5">
               <div className="flex items-center gap-2.5">

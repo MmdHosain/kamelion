@@ -63,7 +63,7 @@ const ScheduleCard = ({
       onDragEnd={handleDragEnd}
       onDragOver={handleDragOver}
       onDragEnter={handleDragEnter}
-      className={`relative bg-white/90 backdrop-blur-md rounded-3xl border border-primary/20 p-4 shadow-sm flex flex-col transition-all duration-200 cursor-move ${
+      className={`relative bg-white/90 backdrop-blur-md rounded-2xl sm:rounded-3xl border border-primary/20 p-3 sm:p-4 shadow-sm flex flex-col transition-all duration-200 cursor-move ${
         isDragging
           ? 'opacity-50 scale-105 shadow-2xl border-2 border-dashed border-primary rotate-2'
           : 'hover:shadow-md hover:border-primary/40'

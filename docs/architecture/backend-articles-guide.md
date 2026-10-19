@@ -1,4 +1,9 @@
 # راهنمای جامع معماری و پیاده‌سازی بک‌اند — ماژول مقالات و آموزش پزشکی
+
+> **Document status (2026-10-17): historical implementation guide, not the current API contract.**
+> The implemented module differs from examples below (including nh3 sanitization, derived reading time, publication timestamps, and response fields).
+> Use [articles API](api-endpoints-articles.md), [backend architecture](backend.md), and [backend feature status](../features/feature-status-back-end.md) for the current implementation.
+
 ## Backend Architecture & Implementation Guide: Medical Articles Module (`apps.articles`)
 
 > **مخاطب:** تیم توسعه بک‌اند پلتفرم کملین (`backend_core`)  

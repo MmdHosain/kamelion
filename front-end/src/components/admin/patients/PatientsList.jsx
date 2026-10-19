@@ -100,16 +100,16 @@ export default function PatientsList() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3.5 sm:space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-primary/15 pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 border-b border-primary/15 pb-3 sm:pb-4">
         <div>
-          <h1 className="text-xl md:text-2xl font-black text-primary flex items-center gap-2.5">
-            <Users className="w-6 h-6" />
+          <h1 className="text-lg sm:text-xl md:text-2xl font-black text-primary flex items-center gap-2">
+            <Users className="w-5 h-5 sm:w-6 sm:h-6" />
             لیست پرونده‌های بیماران
             {isLoading && <Loader2 className="w-4 h-4 animate-spin text-primary" />}
           </h1>
-          <p className="text-xs md:text-sm text-textDark/70 font-medium mt-0.5">
+          <p className="text-[11px] sm:text-xs md:text-sm text-textDark/70 font-medium mt-0.5">
             مشاهده سوابق ویزیت، پرونده تریاژ و شرح حال بالینی بیماران
           </p>
         </div>
@@ -120,29 +120,29 @@ export default function PatientsList() {
             placeholder="جستجو با نام یا شماره تماس..."
             value={searchQuery}
             onChange={(e) => handleSearch(e.target.value)}
-            className="w-full pl-4 pr-10 py-2.5 text-xs md:text-sm border border-primary/25 rounded-2xl bg-white/90 text-textDark placeholder:text-textDark/45 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all shadow-inner font-medium"
+            className="w-full pl-4 pr-10 py-2 sm:py-2.5 text-xs md:text-sm border border-primary/25 rounded-xl sm:rounded-2xl bg-white/90 text-textDark placeholder:text-textDark/45 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all shadow-inner font-medium"
           />
           <Search size={16} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-primary pointer-events-none" />
         </div>
       </div>
 
       {/* Table */}
-      <div className="bg-white/85 backdrop-blur-xl rounded-3xl border border-primary/20 shadow-sm overflow-hidden">
+      <div className="bg-white/85 backdrop-blur-xl rounded-2xl sm:rounded-3xl border border-primary/20 shadow-sm overflow-hidden">
         <div className="overflow-x-auto chat-scroll">
           <table className="w-full text-right text-xs md:text-sm">
             <thead>
-              <tr className="border-b border-primary/15 bg-primary/5 text-primary">
-                <th className="px-5 py-4 font-black">نام و نام خانوادگی</th>
-                <th className="px-5 py-4 font-black">شماره تماس</th>
-                <th className="px-5 py-4 font-black">آخرین نوبت ویزیت</th>
-                <th className="px-5 py-4 font-black">وضعیت تریاژ هوشمند</th>
-                <th className="px-5 py-4 font-black text-center">مشاهده پرونده</th>
+              <tr className="border-b border-primary/15 bg-primary/5 text-primary text-[11px] sm:text-xs whitespace-nowrap">
+                <th className="px-3 sm:px-5 py-2.5 sm:py-4 font-black">نام و نام خانوادگی</th>
+                <th className="px-3 sm:px-5 py-2.5 sm:py-4 font-black">شماره تماس</th>
+                <th className="px-3 sm:px-5 py-2.5 sm:py-4 font-black">آخرین نوبت ویزیت</th>
+                <th className="px-3 sm:px-5 py-2.5 sm:py-4 font-black">وضعیت تریاژ هوشمند</th>
+                <th className="px-3 sm:px-5 py-2.5 sm:py-4 font-black text-center">مشاهده پرونده</th>
               </tr>
             </thead>
             <tbody>
               {displayedPatients.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-5 py-12 text-center text-textDark/50 font-medium">
+                  <td colSpan={5} className="px-3 sm:px-5 py-12 text-center text-textDark/50 font-medium">
                     بیماری با این مشخصات یافت نشد.
                   </td>
                 </tr>
@@ -154,22 +154,22 @@ export default function PatientsList() {
                       idx % 2 === 0 ? 'bg-transparent' : 'bg-white/40'
                     }`}
                   >
-                    <td className="px-5 py-4 font-bold text-textDark whitespace-nowrap">
+                    <td className="px-3 sm:px-5 py-2.5 sm:py-4 font-bold text-textDark whitespace-nowrap">
                       {patient.fullName}
                     </td>
-                    <td className="px-5 py-4 font-mono font-bold text-primary-dark whitespace-nowrap" dir="ltr">
+                    <td className="px-3 sm:px-5 py-2.5 sm:py-4 font-mono font-bold text-primary-dark whitespace-nowrap" dir="ltr">
                       {patient.phoneNumber}
                     </td>
-                    <td className="px-5 py-4 text-textDark/75 font-medium whitespace-nowrap">
+                    <td className="px-3 sm:px-5 py-2.5 sm:py-4 text-textDark/75 font-medium whitespace-nowrap">
                       {formatDate(patient.lastAppointment)}
                     </td>
-                    <td className="px-5 py-4 whitespace-nowrap">
+                    <td className="px-3 sm:px-5 py-2.5 sm:py-4 whitespace-nowrap">
                       <TriageLevelBadge level={patient.triageLevel} />
                     </td>
-                    <td className="px-5 py-4 text-center">
+                    <td className="px-3 sm:px-5 py-2.5 sm:py-4 text-center whitespace-nowrap">
                       <button
                         onClick={() => setSelectedPatient(patient)}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary/10 hover:bg-primary hover:text-white text-primary text-xs font-bold transition-all shadow-sm cursor-pointer"
+                        className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg sm:rounded-xl bg-primary/10 hover:bg-primary hover:text-white text-primary text-xs font-bold transition-all shadow-sm cursor-pointer"
                       >
                         <Eye size={14} />
                         <span>مشاهده</span>
@@ -183,7 +183,7 @@ export default function PatientsList() {
         </div>
 
         {/* Pagination */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-5 py-3.5 border-t border-primary/15 bg-white/40">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 px-3.5 sm:px-5 py-2.5 sm:py-3.5 border-t border-primary/15 bg-white/40">
           <div className="flex items-center gap-2 text-xs text-textDark/70 font-medium">
             <span>نمایش در هر صفحه:</span>
             <select

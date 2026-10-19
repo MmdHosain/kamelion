@@ -11,10 +11,13 @@ import {
   Loader2,
   ArrowRight,
   RotateCcw,
+  CalendarDays,
 } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
 import { useAuth } from '../../hooks/useAuth';
 import useBodyScrollLock from '../../hooks/useBodyScrollLock';
+import DateOfBirthInput from './DateOfBirthInput';
+import { formatJalaliDisplay } from '../../utils/jalaliDateUtils';
 
 export const toEnglishDigits = (str) => {
   if (!str) return '';
@@ -32,6 +35,20 @@ export const normalizePhone = (phone) => {
     cleaned = '0' + cleaned;
   }
   return cleaned;
+};
+
+const formatDobDisplay = (dateStr) => {
+  if (!dateStr) return '';
+  try {
+    const parts = String(dateStr).split('T')[0].split('-').map(Number);
+    if (parts.length === 3) {
+      const d = new Date(parts[0], parts[1] - 1, parts[2]);
+      return formatJalaliDisplay(d, false);
+    }
+    return dateStr;
+  } catch {
+    return dateStr;
+  }
 };
 
 const AuthModal = () => {
@@ -58,6 +75,8 @@ const AuthModal = () => {
   const [otp, setOtp] = useState('');
   const [fullName, setFullName] = useState('');
   const [nationalId, setNationalId] = useState('');
+  const [dateOfBirth, setDateOfBirth] = useState(''); // ISO string YYYY-MM-DD
+  const [dobValidation, setDobValidation] = useState({ isValid: false, error: '' });
   const [password, setPassword] = useState('');
   const [localError, setLocalError] = useState('');
 
@@ -93,6 +112,8 @@ const AuthModal = () => {
       setOtp('');
       setFullName('');
       setNationalId('');
+      setDateOfBirth('');
+      setDobValidation({ isValid: false, error: '' });
       setPassword('');
       setLocalError('');
     }
@@ -189,10 +210,20 @@ const AuthModal = () => {
       return;
     }
 
+    if (!dateOfBirth) {
+      setLocalError(dobValidation.error || 'لطفاً تاریخ تولد خود را به صورت کامل مشخص کنید.');
+      return;
+    }
+
+    if (dobValidation.error) {
+      setLocalError(dobValidation.error);
+      return;
+    }
+
     try {
-      await handleCompleteRegistration(cleanName, cleanNid);
+      await handleCompleteRegistration(cleanName, cleanNid, dateOfBirth);
     } catch (err) {
-      // Handled
+      // Handled inside useAuth hook
     }
   };
 
@@ -223,7 +254,7 @@ const AuthModal = () => {
       className="fixed inset-0 z-[110] bg-black/60 backdrop-blur-sm flex items-center justify-center px-4 transition-all duration-300 animate-fadeIn"
     >
       <div
-        className="bg-gradient-to-br from-bgLight via-white to-bgDark border border-primary/30 rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl relative transform transition-all duration-300"
+        className="bg-gradient-to-br from-bgLight via-white to-bgDark border border-primary/30 rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl relative transform transition-all duration-300 max-h-[92dvh] overflow-y-auto chat-scroll"
         id="auth-modal-content"
         style={{ overscrollBehavior: 'contain' }}
       >
@@ -231,7 +262,7 @@ const AuthModal = () => {
         <button
           type="button"
           onClick={closeAuthModal}
-          className="absolute top-5 left-5 text-textDark/60 hover:text-primary transition-colors w-8 h-8 flex items-center justify-center rounded-full bg-white/70 hover:bg-white shadow-sm cursor-pointer"
+          className="absolute top-5 left-5 text-textDark/60 hover:text-primary transition-colors w-8 h-8 flex items-center justify-center rounded-full bg-white/70 hover:bg-white shadow-sm cursor-pointer z-10"
           aria-label="Close"
         >
           <X className="w-5 h-5" />
@@ -375,7 +406,7 @@ const AuthModal = () => {
               </div>
               <h3 className="text-2xl font-black text-textDark mb-2">تکمیل اطلاعات ثبت‌نام</h3>
               <p className="text-textDark/70 text-sm font-medium">
-                شماره شما جدید است. لطفاً نام و کد ملی خود را وارد کنید.
+                شماره شما جدید است. لطفاً مشخصات هویتی خود را وارد فرمایید.
               </p>
             </div>
 
@@ -412,13 +443,27 @@ const AuthModal = () => {
                 />
               </div>
 
+              {/* Date of Birth Field */}
+              <DateOfBirthInput
+                value={dateOfBirth}
+                onChange={(isoDate, meta) => {
+                  setDateOfBirth(isoDate);
+                  setDobValidation(meta || { isValid: Boolean(isoDate), error: '' });
+                  if (localError && (meta?.isValid || isoDate)) {
+                    setLocalError('');
+                  }
+                }}
+                disabled={loading}
+                required
+              />
+
               {currentDisplayError && (
                 <div className="text-red-500 text-xs font-bold text-center bg-red-50/80 border border-red-200 p-2.5 rounded-xl animate-shake">
                   {currentDisplayError}
                 </div>
               )}
 
-              <div className="flex gap-3">
+              <div className="flex gap-3 pt-2">
                 <button
                   type="button"
                   onClick={() => setAuthStep('otp')}
@@ -533,6 +578,14 @@ const AuthModal = () => {
                   <span className="text-textDark/60 font-medium">کد ملی:</span>
                   <span className="font-mono font-bold" dir="ltr">
                     {user.national_id}
+                  </span>
+                </div>
+              )}
+              {(user?.date_of_birth || dateOfBirth) && (
+                <div className="flex justify-between items-center">
+                  <span className="text-textDark/60 font-medium">تاریخ تولد:</span>
+                  <span className="font-bold text-gray-800">
+                    {formatDobDisplay(user?.date_of_birth || dateOfBirth)}
                   </span>
                 </div>
               )}

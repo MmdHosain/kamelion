@@ -18,6 +18,8 @@ import {
   formatJalaliDisplay,
 } from '../../../utils/jalaliDateUtils';
 import { toYMD, fromYMD } from '../../../hooks/useUpcomingAppointments';
+import { useViewportBoundary } from '../../../hooks/useViewportBoundary';
+import RangeCalendarCell from '../calendar/RangeCalendarCell';
 
 const GREGORIAN_MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -37,6 +39,7 @@ export default function DualCalendarRangePicker({ startDate, endDate, onChange }
 
   // Jalali viewing month/year
   const todayJalali = useMemo(() => dateToJalali(new Date()), []);
+  const todayYmd = useMemo(() => toYMD(new Date()), []);
   const [jYear, setJYear] = useState(todayJalali.jy);
   const [jMonth, setJMonth] = useState(todayJalali.jm);
 
@@ -45,6 +48,9 @@ export default function DualCalendarRangePicker({ startDate, endDate, onChange }
   const [gMonth, setGMonth] = useState(() => new Date().getMonth());
 
   const popoverRef = useRef(null);
+  const popoverContentRef = useRef(null);
+
+  useViewportBoundary(open, popoverContentRef, { padding: 12 });
 
   // Sync draft from props when opening
   const openPicker = useCallback(() => {
@@ -135,26 +141,6 @@ export default function DualCalendarRangePicker({ startDate, endDate, onChange }
     }
   };
 
-  // Classify day cell for styling
-  const classifyDay = (ymd) => {
-    if (!ymd) return 'empty';
-    const end = draftEnd || hovered;
-
-    const isStart = ymd === draftStart;
-    const isEnd = end && ymd === end;
-    const inRange =
-      draftStart &&
-      end &&
-      ymd > (draftStart < end ? draftStart : end) &&
-      ymd < (end > draftStart ? end : draftStart);
-
-    if (isStart && isEnd) return 'single';
-    if (isStart) return 'start';
-    if (isEnd) return 'end';
-    if (inRange) return 'range';
-    return 'normal';
-  };
-
   const handleConfirm = () => {
     if (!draftStart) return;
     onChange(draftStart, draftEnd || draftStart);
@@ -223,29 +209,7 @@ export default function DualCalendarRangePicker({ startDate, endDate, onChange }
     return cells;
   }, [gYear, gMonth]);
 
-  // Cell style logic
-  const cellStyle = (type) => {
-    const base =
-      'w-8 h-8 flex items-center justify-center text-xs md:text-sm font-semibold select-none cursor-pointer transition-colors duration-150 ';
-    switch (type) {
-      case 'start':
-      case 'end':
-      case 'single':
-        return base + 'bg-primary text-white rounded-full shadow-md';
-      case 'range':
-        return base + 'bg-primary/15 text-primary rounded-none';
-      case 'normal':
-        return base + 'text-textDark hover:bg-primary/10 rounded-full';
-      default:
-        return base;
-    }
-  };
 
-  const rowWrapStyle = (type) => {
-    if (type === 'start') return 'bg-primary/15 rounded-r-full';
-    if (type === 'end') return 'bg-primary/15 rounded-l-full';
-    return '';
-  };
 
   return (
     <div className="relative inline-block" ref={popoverRef}>
@@ -257,22 +221,23 @@ export default function DualCalendarRangePicker({ startDate, endDate, onChange }
         aria-label="انتخاب بازه تاریخی"
       >
         <CalendarIcon className="w-4 h-4 text-primary shrink-0" />
-        <span className="text-primary font-black">
+        <bdi className="text-primary font-black" dir={calendarMode === 'jalali' ? 'rtl' : 'ltr'}>
           {formatTrigger(startDate)}
-        </span>
+        </bdi>
         <span className="text-textDark/40">تا</span>
-        <span className="text-primary font-black">
+        <bdi className="text-primary font-black" dir={calendarMode === 'jalali' ? 'rtl' : 'ltr'}>
           {formatTrigger(endDate)}
-        </span>
+        </bdi>
       </button>
 
       {/* Popover */}
       {open && (
         <div
+          ref={popoverContentRef}
           className="
-            absolute z-50 top-full mt-2 left-0 sm:left-auto sm:right-0 md:left-0 md:right-auto
+            absolute z-50 top-full mt-2 right-0 left-auto md:left-0 md:right-auto
             bg-white border border-primary/15 rounded-3xl shadow-2xl
-            w-[320px] sm:w-[340px] max-w-[calc(100vw-2rem)] overflow-hidden p-4 flex flex-col gap-3 animate-in fade-in zoom-in-95 duration-200
+            w-[320px] sm:w-[340px] max-w-[calc(100vw-1.5rem)] overflow-hidden p-4 flex flex-col gap-3 animate-in fade-in zoom-in-95 duration-200
           "
         >
           {/* Mode switch & Reset */}
@@ -314,14 +279,17 @@ export default function DualCalendarRangePicker({ startDate, endDate, onChange }
           </div>
 
           {/* Month Navigation */}
-          <div className="flex items-center justify-between px-1">
+          <div
+            className="flex items-center justify-between px-1"
+            dir={calendarMode === 'jalali' ? 'rtl' : 'ltr'}
+          >
             <button
               type="button"
               onClick={calendarMode === 'jalali' ? prevJalaliMonth : prevGregorianMonth}
               className="p-1.5 rounded-xl hover:bg-primary/10 text-primary transition-colors cursor-pointer"
-              aria-label="ماه قبل"
+              aria-label={calendarMode === 'jalali' ? "ماه قبل" : "Previous month"}
             >
-              <ChevronRight size={18} />
+              {calendarMode === 'jalali' ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
             </button>
 
             <span className="text-sm font-black text-primary">
@@ -334,59 +302,75 @@ export default function DualCalendarRangePicker({ startDate, endDate, onChange }
               type="button"
               onClick={calendarMode === 'jalali' ? nextJalaliMonth : nextGregorianMonth}
               className="p-1.5 rounded-xl hover:bg-primary/10 text-primary transition-colors cursor-pointer"
-              aria-label="ماه بعد"
+              aria-label={calendarMode === 'jalali' ? "ماه بعد" : "Next month"}
             >
-              <ChevronLeft size={18} />
+              {calendarMode === 'jalali' ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
             </button>
           </div>
 
-          {/* Weekday headers */}
-          <div className="grid grid-cols-7 text-center">
-            {(calendarMode === 'jalali' ? JALALI_DAYS : GREGORIAN_DAYS).map((dayName, idx) => (
-              <div
-                key={idx}
-                className="w-8 h-6 flex items-center justify-center text-xs font-bold text-textDark/50 mx-auto"
-              >
-                {dayName}
-              </div>
-            ))}
-          </div>
-
-          {/* Days Grid */}
-          <div className="grid grid-cols-7 gap-y-1">
-            {(calendarMode === 'jalali' ? jalaliGrid : gregorianGrid).map((cell, idx) => {
-              if (!cell) {
-                return <div key={`empty-${idx}`} className="w-8 h-8 mx-auto" />;
-              }
-              const type = classifyDay(cell.ymd);
-
-              return (
+          {/* Calendar Body with explicit direction */}
+          <div dir={calendarMode === 'jalali' ? 'rtl' : 'ltr'} className="flex flex-col gap-1">
+            {/* Weekday headers */}
+            <div className="grid grid-cols-7 text-center">
+              {(calendarMode === 'jalali' ? JALALI_DAYS : GREGORIAN_DAYS).map((dayName, idx) => (
                 <div
-                  key={cell.ymd}
-                  className={`${rowWrapStyle(type)} flex justify-center`}
-                  onClick={() => handleDateClick(cell.ymd)}
-                  onMouseEnter={() => {
-                    if (draftStart && !draftEnd) {
-                      setHovered(cell.ymd);
-                    }
-                  }}
-                  onMouseLeave={() => setHovered(null)}
+                  key={idx}
+                  className="w-8 h-6 flex items-center justify-center text-xs font-bold text-textDark/50 mx-auto"
                 >
-                  <div className={cellStyle(type)}>
-                    {cell.displayNum}
-                  </div>
+                  {dayName}
                 </div>
-              );
-            })}
+              ))}
+            </div>
+
+            {/* Days Grid */}
+            <div className="grid grid-cols-7 gap-y-1">
+              {(calendarMode === 'jalali' ? jalaliGrid : gregorianGrid).map((cell, idx) => {
+                const isJalali = calendarMode === 'jalali';
+                const isToday = cell ? cell.ymd === todayYmd : false;
+
+                return (
+                  <RangeCalendarCell
+                    key={cell ? cell.ymd : `empty-${idx}`}
+                    cell={cell}
+                    colIndex={idx % 7}
+                    draftStart={draftStart}
+                    draftEnd={draftEnd}
+                    hovered={hovered}
+                    isRTL={isJalali}
+                    isToday={isToday}
+                    onClick={handleDateClick}
+                    onMouseEnter={(ymd) => {
+                      if (draftStart && !draftEnd) {
+                        setHovered(ymd);
+                      }
+                    }}
+                    onMouseLeave={() => setHovered(null)}
+                  />
+                );
+              })}
+            </div>
           </div>
 
           {/* Footer & Actions */}
           <div className="flex items-center justify-between pt-3 border-t border-primary/10 mt-1">
             <div className="text-xs text-textDark/70 font-medium">
               {draftStart ? (
-                <span>
-                  {formatTrigger(draftStart)}
-                  {draftEnd && draftEnd !== draftStart ? ` تا ${formatTrigger(draftEnd)}` : ''}
+                <span className="inline-flex items-center gap-1.5 flex-wrap">
+                  <bdi className="font-bold text-textDark" dir={calendarMode === 'jalali' ? 'rtl' : 'ltr'}>
+                    {formatTrigger(draftStart)}
+                  </bdi>
+                  {draftEnd && draftEnd !== draftStart ? (
+                    <>
+                      <span className="text-textDark/40 text-[11px]">تا</span>
+                      <bdi className="font-bold text-textDark" dir={calendarMode === 'jalali' ? 'rtl' : 'ltr'}>
+                        {formatTrigger(draftEnd)}
+                      </bdi>
+                    </>
+                  ) : (
+                    <span className="text-primary text-[11px] font-bold block sm:inline">
+                      {' '}— روز پایان را انتخاب کنید
+                    </span>
+                  )}
                 </span>
               ) : (
                 <span className="text-textDark/40">روز شروع را انتخاب کنید</span>

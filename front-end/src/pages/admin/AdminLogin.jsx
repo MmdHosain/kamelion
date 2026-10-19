@@ -41,16 +41,16 @@ const AdminLogin = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-bgLight via-bgDark to-bgLight px-4 py-12">
-      <div className="w-full max-w-md bg-white/80 backdrop-blur-2xl border border-primary/25 rounded-[2.5rem] shadow-2xl p-8 md:p-10 relative overflow-hidden animate-fadeSlide">
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 rounded-3xl bg-gradient-to-br from-primary to-primary-dark text-white flex items-center justify-center mx-auto mb-4 shadow-lg shadow-primary/30">
-            <Shield className="w-8 h-8" />
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-bgLight via-bgDark to-bgLight px-3 sm:px-4 py-6 sm:py-12">
+      <div className="w-full max-w-md bg-white/80 backdrop-blur-2xl border border-primary/25 rounded-2xl sm:rounded-[2.5rem] shadow-2xl p-5 sm:p-8 md:p-10 relative overflow-hidden animate-fadeSlide">
+        <div className="text-center mb-5 sm:mb-8">
+          <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-primary to-primary-dark text-white flex items-center justify-center mx-auto mb-3 sm:mb-4 shadow-lg shadow-primary/30">
+            <Shield className="w-6 h-6 sm:w-8 sm:h-8" />
           </div>
-          <h1 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-l from-primary to-primary-dark">
+          <h1 className="text-xl sm:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-l from-primary to-primary-dark">
             ورود به پنل مدیریت
           </h1>
-          <p className="text-xs text-textDark/70 font-medium mt-1">
+          <p className="text-[11px] sm:text-xs text-textDark/70 font-medium mt-1">
             کلینیک تخصصی جراحی پستان دکتر نگار معشوری
           </p>
         </div>

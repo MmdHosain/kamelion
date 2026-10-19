@@ -296,13 +296,13 @@ export default function ReservationsList() {
 
   return (
     <>
-      <div className="p-6 bg-white rounded-3xl shadow-sm min-h-[520px] flex flex-col gap-5 border border-primary/10">
+      <div className="p-3 sm:p-6 bg-white rounded-2xl sm:rounded-3xl shadow-sm min-h-[460px] sm:min-h-[520px] flex flex-col gap-3.5 sm:gap-5 border border-primary/10">
         
         {/* Top Actions: Search & Add */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5 sm:gap-4">
           <div className="relative w-full max-w-md">
             <Search
-              size={18}
+              size={17}
               className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400"
             />
             <input
@@ -313,22 +313,22 @@ export default function ReservationsList() {
                 setSearchQuery(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full pr-10 pl-4 py-2.5 text-sm border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary placeholder:text-gray-400 bg-gray-50/50 focus:bg-white transition-all"
+              className="w-full pr-10 pl-4 py-2 sm:py-2.5 text-xs sm:text-sm border border-gray-200 rounded-xl sm:rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary placeholder:text-gray-400 bg-gray-50/50 focus:bg-white transition-all"
             />
           </div>
 
           <button
             type="button"
             onClick={() => setIsAddModalOpen(true)}
-            className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-2.5 bg-primary hover:bg-primary-dark text-white text-sm font-bold rounded-2xl shadow-md shadow-primary/25 hover:shadow-primary/40 hover:-translate-y-0.5 transition-all duration-200 cursor-pointer whitespace-nowrap"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 sm:px-6 sm:py-2.5 bg-primary hover:bg-primary-dark text-white text-xs sm:text-sm font-bold rounded-xl sm:rounded-2xl shadow-md shadow-primary/25 hover:shadow-primary/40 hover:-translate-y-0.5 transition-all duration-200 cursor-pointer whitespace-nowrap"
           >
-            <Plus size={18} />
+            <Plus size={16} />
             <span>ثبت نوبت دستی بیمار</span>
           </button>
         </div>
 
         {/* Status Filter Tabs */}
-        <div className="flex flex-wrap items-center gap-2 border-b border-gray-100 pb-2">
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 border-b border-gray-100 pb-1.5 sm:pb-2">
           {[
             { key: 'all', label: 'همه نوبت‌ها', count: statusCounts.all },
             {
@@ -347,7 +347,7 @@ export default function ReservationsList() {
                 setSelectedStatusTab(tab.key);
                 setCurrentPage(1);
               }}
-              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              className={`flex items-center gap-1.5 sm:gap-2 px-2.5 py-1 sm:px-3.5 sm:py-1.5 rounded-lg sm:rounded-xl text-[11px] sm:text-xs font-bold transition-all cursor-pointer ${
                 selectedStatusTab === tab.key
                   ? 'bg-primary text-white shadow-sm'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -355,7 +355,7 @@ export default function ReservationsList() {
             >
               <span>{tab.label}</span>
               <span
-                className={`px-1.5 py-0.5 rounded-lg text-[10px] font-black ${
+                className={`px-1.5 py-0.5 rounded-md text-[10px] font-black ${
                   selectedStatusTab === tab.key
                     ? 'bg-white/20 text-white'
                     : tab.highlight
@@ -370,21 +370,21 @@ export default function ReservationsList() {
         </div>
 
         {loadError && (
-          <div className="rounded-2xl bg-red-50 border border-red-200 text-red-700 px-4 py-3 text-xs md:text-sm font-bold flex items-center gap-2">
+          <div className="rounded-2xl bg-red-50 border border-red-200 text-red-700 px-3.5 py-2.5 sm:px-4 sm:py-3 text-xs sm:text-sm font-bold flex items-center gap-2">
             <AlertCircle size={18} className="shrink-0" />
             <span>{loadError}</span>
           </div>
         )}
 
         {/* Table */}
-        <div className="overflow-x-auto rounded-2xl border border-gray-100 shadow-sm">
-          <table className="w-full text-sm text-right">
+        <div className="overflow-x-auto rounded-xl sm:rounded-2xl border border-gray-100 shadow-sm">
+          <table className="w-full text-xs sm:text-sm text-right">
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50/80">
                 {TABLE_HEADERS.map((h, i) => (
                   <th
                     key={h}
-                    className={`px-5 py-3.5 text-xs font-bold text-gray-600 ${
+                    className={`px-3 sm:px-5 py-2.5 sm:py-3.5 text-[11px] sm:text-xs font-bold text-gray-600 ${
                       i === TABLE_HEADERS.length - 1 ? 'text-center' : ''
                     }`}
                   >
@@ -397,9 +397,9 @@ export default function ReservationsList() {
             <tbody>
               {isLoading ? (
                 <tr>
-                  <td colSpan={7} className="px-5 py-16 text-center text-gray-400">
+                  <td colSpan={7} className="px-3 sm:px-5 py-12 sm:py-16 text-center text-gray-400">
                     <div className="flex flex-col items-center justify-center gap-2">
-                      <Loader2 className="w-7 h-7 text-primary animate-spin" />
+                      <Loader2 className="w-6 h-6 sm:w-7 sm:h-7 text-primary animate-spin" />
                       <span className="text-xs font-medium">در حال بارگذاری نوبت‌ها...</span>
                     </div>
                   </td>
@@ -418,20 +418,20 @@ export default function ReservationsList() {
                       }`}
                       title="جهت مشاهده جزئیات کامل نوبت کلیک نمایید"
                     >
-                      <td className="px-5 py-3.5 text-gray-700 font-mono text-xs font-bold dir-ltr text-right">
+                      <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 text-gray-700 font-mono text-xs font-bold dir-ltr text-right">
                         {r.phoneNumber}
                       </td>
-                      <td className="px-5 py-3.5 font-bold text-gray-900">{r.fullName}</td>
-                      <td className="px-5 py-3.5 text-primary font-medium">{r.displayDate}</td>
-                      <td className="px-5 py-3.5 text-gray-700 font-bold">
+                      <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 font-bold text-gray-900">{r.fullName}</td>
+                      <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 text-primary font-medium">{r.displayDate}</td>
+                      <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 text-gray-700 font-bold">
                         <span className="bg-primary/10 text-primary-dark px-2 py-0.5 rounded-lg text-xs">
                           ساعت {toPersianDigits(r.time)}
                         </span>
                       </td>
-                      <td className="px-5 py-3.5 text-gray-500 text-xs max-w-[180px] truncate" title="جهت مشاهده متن کامل کلیک نمایید">
+                      <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 text-gray-500 text-xs max-w-[180px] truncate" title="جهت مشاهده متن کامل کلیک نمایید">
                         {r.reason}
                       </td>
-                      <td className="px-5 py-3.5">
+                      <td className="px-3 sm:px-5 py-2.5 sm:py-3.5">
                         <span
                           className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[11px] font-bold ${statusConf.bg} ${statusConf.text} ${statusConf.border} whitespace-nowrap`}
                         >
@@ -440,7 +440,7 @@ export default function ReservationsList() {
                           <span>{statusConf.label}</span>
                         </span>
                       </td>
-                      <td className="px-5 py-3.5 text-center">
+                      <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 text-center">
                         <div className="flex items-center justify-center gap-1">
                           {actionLoadingId === r.id ? (
                             <div className="p-2">

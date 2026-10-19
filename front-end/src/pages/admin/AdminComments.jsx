@@ -122,21 +122,21 @@ const AdminComments = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3.5 sm:space-y-6">
       {/* Header */}
-      <div className="border-b border-primary/20 pb-4 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+      <div className="border-b border-primary/20 pb-3 sm:pb-4 flex flex-col sm:flex-row justify-between sm:items-center gap-3 sm:gap-4">
         <div>
-          <h1 className="text-2xl font-black text-primary flex items-center gap-2.5">
-            <MessageSquare className="w-7 h-7" />
+          <h1 className="text-lg sm:text-xl md:text-2xl font-black text-primary flex items-center gap-2">
+            <MessageSquare className="w-5 h-5 sm:w-6 sm:h-6" />
             مدیریت نظرات و دیدگاه‌های مراجعین
           </h1>
-          <p className="text-sm text-textDark/70 mt-1 font-medium">
+          <p className="text-[11px] sm:text-xs md:text-sm text-textDark/70 mt-0.5 font-medium">
             بررسی و تایید دیدگاه‌های جدید کاربران جهت انتشار در سایت و نظارت بر تجربیات مراجعین.
           </p>
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="bg-primary/10 border border-primary/25 px-4 py-2 rounded-2xl text-primary font-bold text-sm flex items-center gap-2 self-start sm:self-auto">
+          <div className="bg-primary/10 border border-primary/25 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl text-primary font-bold text-xs sm:text-sm flex items-center gap-2 self-start sm:self-auto">
             {loading && <Loader2 className="w-4 h-4 animate-spin text-primary" />}
             <span>کل دیدگاه‌ها: {rawComments.length}</span>
           </div>
@@ -144,12 +144,12 @@ const AdminComments = () => {
       </div>
 
       {/* Filter Tabs & Search Bar */}
-      <div className="bg-white/80 backdrop-blur-md p-4 rounded-3xl border border-primary/20 shadow-sm flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between">
+      <div className="bg-white/80 backdrop-blur-md p-2.5 sm:p-4 rounded-2xl sm:rounded-3xl border border-primary/20 shadow-sm flex flex-col md:flex-row gap-2.5 sm:gap-4 items-stretch md:items-center justify-between">
         {/* Tabs */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0 scrollbar-none">
+        <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-1 md:pb-0 scrollbar-none no-scrollbar">
           <button
             onClick={() => setActiveFilter('all')}
-            className={`px-4 py-2 rounded-2xl text-xs md:text-sm font-bold transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
+            className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl text-xs sm:text-sm font-bold transition-all flex items-center gap-1.5 sm:gap-2 cursor-pointer shrink-0 ${
               activeFilter === 'all'
                 ? 'bg-primary text-white shadow-md shadow-primary/30'
                 : 'bg-white/90 text-textDark/70 hover:bg-white hover:text-textDark border border-primary/15'
@@ -254,7 +254,7 @@ const AdminComments = () => {
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4">
+        <div className="grid grid-cols-1 gap-3 sm:gap-4">
           {filteredComments.map((comment, index) => {
             const isApproved = comment.approved === true;
             const isBusy = actionLoadingId === comment.id;
@@ -263,7 +263,7 @@ const AdminComments = () => {
             return (
               <div
                 key={comment.id}
-                className={`p-5 md:p-6 rounded-3xl border transition-all duration-300 flex flex-col md:flex-row justify-between items-start md:items-center gap-5 ${
+                className={`p-3.5 sm:p-5 md:p-6 rounded-2xl sm:rounded-3xl border transition-all duration-300 flex flex-col md:flex-row justify-between items-start md:items-center gap-3.5 sm:gap-5 ${
                   isApproved
                     ? 'bg-white/90 border-emerald-500/20 shadow-sm hover:shadow-md'
                     : 'bg-amber-50/40 border-amber-300/60 shadow-sm hover:shadow-md'
