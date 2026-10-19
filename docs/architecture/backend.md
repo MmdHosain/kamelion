@@ -1,5 +1,10 @@
 # Backend Architecture
 
+> **SEO addition — 2026-10-19:** [backend SEO implementation](backend-seo-implementation.md)
+> documents the public sitemap, robots and social-preview endpoints, canonical
+> `SITE_DOMAIN`, versioned preview cache, and Nginx bot dispatch. The SEO addition
+> requires no schema migration and does not change existing JSON API contracts.
+
 > **Verified against repository source:** 2026-10-17, baseline commit `8b0eca0`.
 > Scope: the current `backend_core` implementation. Operational configuration and
 > external-service availability are separate from implementation status.

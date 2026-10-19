@@ -49,6 +49,7 @@ Existing feature IDs are retained because frontend documents refer to them. Newl
 | 24 | Persistent theme settings | ✅ Implemented | Public theme GET and admin PUT |
 | 25 | Video gallery and admin create/delete | ✅ Implemented | Public list, admin create/delete; no update route |
 | 26 | Admin dashboard analytics | 🟡 Partial | `GET /api/admin/stats`; emergency-code count hardcoded zero |
+| 27 | Public sitemap, robots.txt and social-link previews | ✅ Implemented | Public SEO endpoints and Nginx social-agent dispatch |
 
 ## Authentication and patient information
 
@@ -107,6 +108,25 @@ Low/high priority record a booking offer; urgent issues a unique `URG-` code. Ac
 Tags, revisions, medical review workflows, slug redirects, SEO fields, and UUID article IDs from the expanded proposal are not implemented. Runtime media serving is DEBUG-only in Django; Compose persistence and Nginx proxying do not by themselves serve uploaded files with DEBUG false.
 
 **11 — Django admin.** Users/notes, schedules/closures/appointments, reviews, articles/categories, site settings/videos, and chat sessions are registered. Chat messages/actions appear as read-only inlines. Appointments expose status filtering and bulk approve; no bulk disapprove action is present.
+
+## 27. Public SEO and social previews — ✅ Completed (2026-10-19)
+
+Public `/sitemap.xml`, `/robots.txt` and `/api/seo/bot-preview/` are implemented.
+Sitemaps include published articles and seven canonical static pages, with no
+category URLs as agreed for this backend-only scope. Preview HTML is escaped and
+restricted to public pages/published articles; private/unknown/draft paths return
+404. Current publication and metadata are checked before reading the versioned
+15-minute HTML cache, so edits/unpublishing/deletion take effect immediately across
+workers. `SITE_DOMAIN` governs public URLs, and Nginx dispatches social agents while
+preserving browser/Googlebot SPA routing and direct static-asset serving.
+
+No frontend components, model fields, migrations or existing JSON contracts are
+changed. Alt text and triage-topic export remain deferred. The SEO, articles,
+registration and mocked chat suites passed together (123 tests, isolated SQLite;
+no live AI/SMS calls). Nginx syntax and 48 HTTP checks through real local Nginx/Django
+also passed. Production cover images require public media serving.
+See the [implementation contract](../architecture/backend-seo-implementation.md)
+for exact routes, cache behavior, tests and deployment requirements.
 
 ## Verification and maintenance
 

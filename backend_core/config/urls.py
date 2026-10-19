@@ -19,7 +19,12 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
 
+from apps.articles.seo_views import bot_preview_view, public_sitemap, robots_view
+
 urlpatterns = [
+    path("sitemap.xml", public_sitemap, name="public-sitemap"),
+    path("robots.txt", robots_view, name="robots"),
+    path("api/seo/bot-preview/", bot_preview_view, name="seo-bot-preview"),
     path('admin/', admin.site.urls),
     path("api/admin/articles/", include("apps.articles.admin_urls")),
     path("api/admin/", include("apps.appointments.admin_urls")),
