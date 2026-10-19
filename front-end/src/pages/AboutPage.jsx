@@ -1,11 +1,12 @@
 import React from 'react';
-import { Award, GraduationCap, BookOpen, Stethoscope, CheckCircle2, ShieldCheck, HeartPulse, ArrowLeft } from 'lucide-react';
+import { Award, GraduationCap, BookOpen, Stethoscope, CheckCircle2, ShieldCheck, HeartPulse, ArrowLeft, Bot, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import SEO from '../components/seo/SEO';
 
 const physicianSchema = {
   '@context': 'https://schema.org',
   '@type': 'Physician',
+  '@id': 'https://kamelion.ir/#physician',
   name: 'دکتر نگار معشوری',
   jobTitle: 'متخصص جراحی عمومی و فلوشیپ فوق‌تخصصی بیماری‌ها و جراحی پستان',
   medicalSpecialty: [
@@ -16,9 +17,17 @@ const physicianSchema = {
   description:
     'فلوشیپ فوق‌تخصصی بیماری‌ها و جراحی پستان، انکوپلاستی و بازسازی پستان، تشخیص و درمان ضایعات بدخیم و خوش‌خیم.',
   url: 'https://kamelion.ir/about',
-  alumniOf: 'دانشگاه علوم پزشکی شهید بهشتی',
+  alumniOf: {
+    '@type': 'CollegeOrUniversity',
+    name: 'دانشگاه علوم پزشکی تهران',
+  },
+  sameAs: [
+    'https://rimaclinic.com',
+    'https://linkedin.com',
+  ],
   worksFor: {
     '@type': 'MedicalClinic',
+    '@id': 'https://kamelion.ir/#clinic',
     name: 'کلینیک تخصصی پستان دکتر نگار معشوری',
     url: 'https://kamelion.ir',
   },
@@ -39,8 +48,9 @@ const AboutPage = () => {
       <div className="glass-panel fade-section is-visible">
         {/* Top Header */}
         <div className="text-center mb-10">
-          <div className="text-xs md:text-sm text-primary font-bold tracking-wider mb-2 uppercase">
-            درباره پزشک
+          <div className="inline-flex items-center gap-2 bg-primary/10 text-primary border border-primary/20 px-3.5 py-1 rounded-full text-xs font-bold mb-3 shadow-2xs">
+            <Stethoscope className="w-3.5 h-3.5" />
+            <span>شماره نظام پزشکی: معتبر و رسمی | جراح پستان</span>
           </div>
           <h1 className="text-3xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-l from-primary to-primary-dark mb-4">
             دکتر نگار معشوری
@@ -120,6 +130,24 @@ const AboutPage = () => {
               </li>
             </ul>
           </div>
+        </div>
+
+        {/* AI Triage & Clinical Oversight (E-E-A-T & Medical Transparency) */}
+        <div className="bg-white/80 border border-primary/25 p-6 md:p-8 rounded-3xl shadow-sm mb-10">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center font-bold">
+              <Bot className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-textDark">
+                سامانه هوشمند تریاژ و نظارت بالینی
+              </h3>
+              <span className="text-xs text-primary font-semibold">تلفیق هوش مصنوعی با پروتکل‌های علمی جراحی پستان</span>
+            </div>
+          </div>
+          <p className="text-sm md:text-base text-textDark/80 leading-relaxed font-medium">
+            دستیار هوشمند کلینیک کملین به منظور راهنمایی اولیه مراجعین، پاسخ به دغدغه‌های پرتکرار و تسهیل غربالگری زودهنگام بیماری‌های پستان راه‌اندازی گردیده است. تمامی سناریوها و الگوریتم‌های ارزیابی علائم این سامانه به طور مستقیم توسط دکتر نگار معشوری تدوین شده و به صورت مستمر بر اساس تازه‌ترین گایدلاین‌های انکولوژی و جراحی پستان بازبینی و اعتبارسنجی بالینی می‌شوند.
+          </p>
         </div>
 
         {/* Philosophy */}
