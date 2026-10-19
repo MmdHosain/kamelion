@@ -1,0 +1,22 @@
+User-agent: *
+
+# Private admin, authentication and patient routes.
+Disallow: /admin/
+Disallow: /api/admin/
+Disallow: /api/auth/
+Disallow: /api/users/
+
+# Crawl exclusions supplement, and do not replace, authenticated access.
+Disallow: /chat-session/
+Disallow: /api/chat/
+Disallow: /api/chat_gateway/
+
+Allow: /
+Allow: /resources/
+Allow: /services/
+Allow: /about
+Allow: /faq
+Allow: /videos
+Allow: /media/
+
+Sitemap: {{ site_domain }}/sitemap.xml

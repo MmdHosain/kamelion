@@ -179,7 +179,12 @@ const QuickNavSlider = () => {
                 <div className="visual overflow-hidden">
                   <span className="glow"></span>
                   {card.image ? (
-                    <img src={card.image} alt={card.title} className="w-full h-full object-cover mix-blend-overlay opacity-60" />
+                    <img
+                      src={card.image}
+                      alt={card.title}
+                      loading="lazy"
+                      className="w-full h-full object-cover mix-blend-overlay opacity-60"
+                    />
                   ) : (
                     <svg className="pattern" aria-hidden="true">
                       <rect width="100%" height="100%" fill={`url(#${card.pattern})`} />

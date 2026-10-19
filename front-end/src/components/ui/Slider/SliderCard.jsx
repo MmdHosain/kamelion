@@ -14,6 +14,7 @@ export default function SliderCard({
       <img
         src={img_path || 'https://via.placeholder.com/240x340?text=No+Image'}
         alt={title}
+        loading="lazy"
         className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
       />
 

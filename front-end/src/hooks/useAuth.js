@@ -6,7 +6,7 @@ const toEnglishDigits = (str) => {
   if (!str) return '';
   return String(str)
     .replace(/[۰-۹]/g, (d) => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))
-    .replace(/[٠-٩]/g, (d) => '٠١٢٣۴٥٦٧٨٩'.indexOf(d));
+    .replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d));
 };
 
 export const useAuth = () => {
@@ -82,7 +82,7 @@ export const useAuth = () => {
       const cleanCode = String(code || '').trim();
       const response = await authService.verifyOtp(tempAuthData.phone, cleanCode);
 
-      // New user needing full name and national id
+      // New user needing full name, national id, and date of birth
       if (response?.registration_required) {
         setTempAuthData({
           ...tempAuthData,
@@ -134,7 +134,7 @@ export const useAuth = () => {
     }
   };
 
-  const handleCompleteRegistration = async (fullName, nationalId) => {
+  const handleCompleteRegistration = async (fullName, nationalId, dateOfBirth) => {
     const signupToken = tempAuthData?.signupToken;
     if (!signupToken) {
       setError('نشست ثبت‌نام منقضی شده است. لطفاً مجدداً شماره خود را وارد کنید.');
@@ -148,7 +148,8 @@ export const useAuth = () => {
       const response = await authService.completeRegistration(
         signupToken,
         fullName.trim(),
-        nationalId.trim()
+        nationalId.trim(),
+        dateOfBirth || undefined
       );
 
       let resolvedUser = response.user;
