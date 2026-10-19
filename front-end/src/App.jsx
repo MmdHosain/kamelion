@@ -3,12 +3,14 @@ import { Routes, Route, Navigate, useLocation, useParams } from 'react-router-do
 
 /* Hooks & Stores */
 import { useScrollFade } from './hooks/useScrollFade';
+import { usePageReady } from './hooks/usePageReady';
 import { useThemeStore, applyThemeToDom } from './store/themeStore';
 
-/* Layout & Loading Fallback */
+/* Layout & Loading Fallbacks */
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
 import RouteLoadingFallback from './components/ui/RouteLoadingFallback';
+import InitialPageLoader from './components/ui/InitialPageLoader';
 
 /* Pages: Eager loaded for instant first paint */
 import HomePage from './pages/HomePage';
@@ -43,6 +45,7 @@ const App = () => {
   const isAdminRoute = location.pathname.startsWith('/admin');
 
   const { activeTheme, fetchTheme } = useThemeStore();
+  const isPageReady = usePageReady();
   const [openAppointment, setOpenAppointment] = useState(false);
   const [openMyAppointments, setOpenMyAppointments] = useState(false);
   const [openChat, setOpenChat] = useState(false);
@@ -65,6 +68,9 @@ const App = () => {
 
   return (
     <div className="min-h-screen flex flex-col font-sans relative">
+      {/* Initial Page Readiness Preloader */}
+      <InitialPageLoader isReady={isPageReady} />
+
       {/* Top Scroll Progress Bar */}
       <div id="progress"></div>
 

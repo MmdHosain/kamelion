@@ -7,7 +7,7 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Vazir', 'Vazirmatn', 'ui-sans-serif', 'system-ui'],
+        sans: ['Vazirmatn Variable', 'Vazirmatn', 'Vazir', 'ui-sans-serif', 'system-ui'],
       },
       colors: {
         primary: 'var(--primary)',
