@@ -15,6 +15,7 @@ DJANGO_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sitemaps',
 ]
 
 THIRD_PARTY_APPS = [
@@ -144,6 +145,9 @@ CSRF_TRUSTED_ORIGINS = [
 STATIC_URL = '/static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# Public frontend origin for canonical, sitemap and social-preview URLs.
+SITE_DOMAIN = config('SITE_DOMAIN', default='https://kamelion.ir').rstrip('/')
+
 # ── Media (uploaded files, e.g. article images) ────────
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
@@ -186,7 +190,7 @@ LOGGING = {
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
