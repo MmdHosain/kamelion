@@ -8,13 +8,27 @@ Related documents: [backend architecture](backend.md), [backend feature status](
 
 ## Shared conventions
 
-- Paths below include `/api/`. Preserve trailing slashes exactly: auth, chat, theme, and stats routes have no trailing slash.
+- JSON API paths use `/api/`; SEO also exposes `/sitemap.xml` and `/robots.txt`. Preserve trailing slashes exactly: auth, chat, theme, and stats routes have no trailing slash.
 - **Public** means authentication and permissions are explicitly open; supplied JWTs are ignored. **JWT** means `IsAuthenticated`. **Admin** means JWT plus `IsAdminUser` (`is_staff=True`). Views described as patient-facing use `IsAuthenticated`, which does not exclude staff.
 - Protected routes use `Authorization: Bearer <access token>`. Access lifetime is 7 days; refresh lifetime is 30 days. Refresh tokens are not rotated. Patient login returns `access`/`refresh`; admin login and refresh return `accessToken`/`refreshToken`.
 - Bodies are JSON unless an upload specifies multipart. Dates are Gregorian `YYYY-MM-DD`; times are normally `HH:MM:SS`. SMS dates are separately formatted in Jalali.
 - Serializer failures normally return `400` with field errors (or `non_field_errors`). Handled business failures use `detail` or `error` as specified below. Protected routes reject absent/invalid/expired access tokens with `401`, and authenticated non-staff callers of admin routes with `403`.
 - Paginated lists return `{count, next, previous, results}`. Appointments and admin chat lists default to 10 items, maximum `page_size=100`; articles default to 10, maximum 50. Other lists below are unpaginated.
 - DRF also supplies `OPTIONS` and `HEAD` where supported. The scheduling `DefaultRouter` supplies format-suffix variants and `GET /api/admin/` (API discovery for slots/exceptions). That discovery view uses DRF's default `IsAuthenticated`, rather than `IsAdminUser`; the linked resources require staff access. `/admin/` is Django's session-authenticated admin UI.
+
+## Public SEO endpoints — added 2026-10-19
+
+| Method | Path | Auth | Response |
+|---|---|---|---|
+| GET / HEAD | `/sitemap.xml` | None | XML containing published articles and seven canonical public pages; no categories |
+| GET / HEAD | `/robots.txt` | None | Plain text with private-path crawl exclusions and the configured sitemap URL |
+| GET / HEAD | `/api/seo/bot-preview/` | None | HTML metadata for `?path=<public page path>` (defaults to `/`); 404 for private/unknown/draft paths |
+
+These views ignore bearer tokens and return 405 for other methods. Preview HTML
+is escaped; canonical URLs use `SITE_DOMAIN`. Article edits/unpublishing take
+effect on the next request despite the 15-minute rendered-HTML cache. Detailed
+paths, headers, aliases and deployment semantics are in the
+[SEO implementation contract](backend-seo-implementation.md).
 
 ## Auth — `apps.users`
 

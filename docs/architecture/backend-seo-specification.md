@@ -1,4 +1,10 @@
 # راهنمای جامع معماری و پیاده‌سازی سئو در بک‌اند — کلینیک کملین
+
+> **Implementation update — 2026-10-19:** the [current implementation contract](backend-seo-implementation.md)
+> supersedes the examples below. By user decision, category sitemap entries are omitted,
+> previews are restricted to public pages/published articles, and metadata changes take
+> effect immediately. Nginx uses named-location dispatch and escaped Django templates
+> replace interpolated HTML. Future alt-text and triage-export proposals are out of scope.
 ## Backend Architecture & Implementation Specification: Dynamic SEO, Sitemaps & Social Bot Proxying
 
 > **مخاطب:** تیم توسعه بک‌اند (`backend_core`) و مدیریت زیرساخت (DevOps / Nginx)  
