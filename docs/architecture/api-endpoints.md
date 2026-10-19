@@ -2,7 +2,7 @@
 
 > This is a complete list of every route actually wired into `config/urls.py` (directly or via an included app `urls.py`), what each one expects as input, what it returns, and what it does internally. Global defaults: unless a view explicitly overrides them, DRF's default authentication is **JWT** (`Authorization: Bearer <token>`) and the default permission is **`IsAuthenticated`**.
 >
-> **Updated:** this revision reflects the pending-appointment approval flow, the reworked two-step OTP/registration login flow, the admin-vs-patient branch at login, admin editing of patient info, the review/comment endpoints (previously undocumented), the **new articles CMS** (`apps/articles`), and the **disapproval reason** added to the reservation-disapprove flow (`disapproval_reason` field, required `reason` on `/disapprove/`, sent to the patient in the rejection SMS).
+> **Updated:** this revision reflects the pending-appointment approval flow, the reworked two-step OTP/registration login flow with Date of Birth (`date_of_birth`), the admin-vs-patient branch at login, admin editing of patient info, the review/comment endpoints (previously undocumented), the **new articles CMS** (`apps/articles`), and the **disapproval reason** added to the reservation-disapprove flow (`disapproval_reason` field, required `reason` on `/disapprove/`, sent to the patient in the rejection SMS).
 
 ---
 
@@ -46,6 +46,7 @@ Phone number already has an account (returning user) — logged straight in:
     "phone_number": "string",
     "full_name": "string",
     "national_id": "string or null",
+    "date_of_birth": "date or null",
     "role": "patient"
   }
 }
@@ -58,7 +59,7 @@ First time seeing this phone number — no tokens issued yet:
 
 **What it does:** This is now a self-contained "confirm the code" step, decoupled from account creation. It validates the code against the latest unused, non-expired `OTPRequest` for that phone number and **marks it used immediately** — phone ownership is considered proven at that point regardless of what happens next. It then checks whether a `User` already exists for that phone number:
 - **Exists:** logs them in and issues a JWT pair (same as before).
-- **Doesn't exist:** does **not** create a user and does **not** issue tokens. Instead it creates a short-lived (`PhoneVerification`) record and returns its `signup_token`, which the client must pass to `POST /api/auth/complete-registration` along with `full_name` and `national_id` to finish creating the account.
+- **Doesn't exist:** does **not** create a user and does **not** issue tokens. Instead it creates a short-lived (`PhoneVerification`) record and returns its `signup_token`, which the client must pass to `POST /api/auth/complete-registration` along with `full_name`, `national_id`, and `date_of_birth` to finish creating the account.
 
 ⚠️ **Breaking change from the previous version:** this endpoint used to get-or-create the user directly and always return a JWT pair. It no longer implicitly registers new patients — see `complete-registration` below.
 
@@ -66,7 +67,12 @@ First time seeing this phone number — no tokens issued yet:
 **Auth:** None (explicitly open)
 **Request body:**
 ```json
-{ "signup_token": "string, from verify-otp", "full_name": "string, max 100 chars", "national_id": "string, max 20 chars" }
+{
+  "signup_token": "string, from verify-otp",
+  "full_name": "string, max 100 chars",
+  "national_id": "string, max 20 chars",
+  "date_of_birth": "ISO date string (YYYY-MM-DD)"
+}
 ```
 **Response:** `200 OK` — same login shape as a successful `verify-otp` for a returning user:
 ```json
@@ -78,12 +84,13 @@ First time seeing this phone number — no tokens issued yet:
     "phone_number": "string",
     "full_name": "string",
     "national_id": "string",
+    "date_of_birth": "date or null",
     "role": "patient"
   }
 }
 ```
-**Error response:** `400 Bad Request` — `{ "error": "<reason>" }` — invalid/expired/already-used `signup_token`, or missing `full_name`/`national_id`.
-**What it does:** Second step of first-time login only. Looks up the `PhoneVerification` record by `signup_token` (must be unused and not expired — 10-minute window), and if valid, creates the `User` with the given `full_name` and `national_id`, marks the token used, and issues a JWT pair. The OTP code itself is not needed here — the token is the proof of phone ownership carried over from `verify-otp`.
+**Error response:** `400 Bad Request` — `{ "error": "<reason>" }` — invalid/expired/already-used `signup_token`, or missing `full_name`/`national_id`/`date_of_birth`.
+**What it does:** Second step of first-time login only. Looks up the `PhoneVerification` record by `signup_token` (must be unused and not expired — 10-minute window), and if valid, creates the `User` with the given `full_name`, `national_id`, and `date_of_birth` (stored on patient profile, formatted as `YYYY-MM-DD`), marks the token used, and issues a JWT pair. The OTP code itself is not needed here — the token is the proof of phone ownership carried over from `verify-otp`.
 
 ### `POST /api/auth/admin/login`
 **Auth:** None (explicitly open)
@@ -452,7 +459,7 @@ These exist as installed Django apps but currently expose no models, views, or U
 |---|---|---|---|---|
 | POST | `/api/auth/request-otp` | None | `phone_number` | Request a login OTP — or, for admin numbers, a signal to show the password screen instead |
 | POST | `/api/auth/verify-otp` | None | `phone_number`, `code` | Verify OTP → JWT pair (returning patient) **or** `signup_token` (first-time) |
-| POST | `/api/auth/complete-registration` | None | `signup_token`, `full_name`, `national_id` | Finish first-time signup → JWT pair |
+| POST | `/api/auth/complete-registration` | None | `signup_token`, `full_name`, `national_id`, `date_of_birth` | Finish first-time signup → JWT pair |
 | POST | `/api/auth/admin/login` | None | `phone_number`, `password` | Password login → JWT pair (admin) |
 | GET | `/api/appointments/slots/` | None | `?date=` | List free slots for a date (excludes `pending` + `scheduled`) |
 | POST | `/api/appointments/book/` | JWT | `date`, `time`, `reason?` | Book an appointment (starts as `pending`) |
