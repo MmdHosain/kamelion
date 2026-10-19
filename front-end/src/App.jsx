@@ -103,7 +103,12 @@ const App = () => {
         <Route path="/resources" element={<ResourcesPage />} />
         <Route
           path="/resources/:slug"
-          element={<ArticleDetailPage onOpenAppointment={() => setOpenAppointment(true)} />}
+          element={
+            <ArticleDetailPage
+              onOpenAppointment={() => setOpenAppointment(true)}
+              onOpenChat={() => setOpenChat(true)}
+            />
+          }
         />
         <Route path="/articles/:slug" element={<ArticleRedirect />} />
         <Route path="/video" element={<Navigate to="/videos" replace />} />
