@@ -12,7 +12,7 @@ const PRESETS = [
 
 export default function UpcomingQuickPresets({ activePreset, onSelectPreset }) {
   return (
-    <div className="flex items-center gap-1.5 overflow-x-auto pb-1 chat-scroll">
+    <div className="flex items-center gap-1.5 overflow-x-auto p-1 no-scrollbar min-w-0 select-none">
       {PRESETS.map((preset) => {
         const isActive = activePreset === preset.id;
         return (
@@ -20,9 +20,9 @@ export default function UpcomingQuickPresets({ activePreset, onSelectPreset }) {
             key={preset.id}
             type="button"
             onClick={() => onSelectPreset(preset.id)}
-            className={`px-3.5 py-2 rounded-2xl text-xs font-bold whitespace-nowrap transition-all duration-200 cursor-pointer flex items-center gap-1.5 ${
+            className={`px-3.5 py-2 rounded-2xl text-xs font-bold whitespace-nowrap transition-all duration-200 cursor-pointer flex items-center gap-1.5 shrink-0 ${
               isActive
-                ? 'bg-primary text-white shadow-md shadow-primary/25 scale-[1.02]'
+                ? 'bg-primary text-white shadow-md shadow-primary/25'
                 : 'bg-white/80 hover:bg-white text-textDark/80 border border-primary/15 hover:border-primary/40'
             }`}
           >
@@ -33,7 +33,7 @@ export default function UpcomingQuickPresets({ activePreset, onSelectPreset }) {
       })}
 
       {activePreset === 'custom' && (
-        <span className="px-3 py-1.5 rounded-2xl text-xs font-black bg-primary/10 text-primary border border-primary/30 flex items-center gap-1">
+        <span className="px-3 py-1.5 rounded-2xl text-xs font-black bg-primary/10 text-primary border border-primary/30 flex items-center gap-1 shrink-0">
           <CalendarDays size={13} />
           <span>بازه دلخواه انتخاب‌شده</span>
         </span>

@@ -255,35 +255,35 @@ const AdminArticleEditor = () => {
   }
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto pb-16">
+    <div className="space-y-3.5 sm:space-y-6 max-w-5xl mx-auto pb-10 sm:pb-16">
       {/* Top Bar Navigation */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white/70 backdrop-blur-md p-5 rounded-3xl border border-primary/10 shadow-xs">
-        <div className="flex items-center gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 bg-white/70 backdrop-blur-md p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-primary/10 shadow-xs">
+        <div className="flex items-center gap-2.5 sm:gap-3">
           <button
             type="button"
             onClick={() => navigate('/admin/articles')}
-            className="p-2 rounded-xl text-slate-500 hover:text-primary hover:bg-primary/10 transition-colors cursor-pointer"
+            className="p-1.5 sm:p-2 rounded-xl text-slate-500 hover:text-primary hover:bg-primary/10 transition-colors cursor-pointer"
             title="بازگشت به لیست مقالات"
           >
             <ArrowRight className="w-5 h-5" />
           </button>
           <div>
-            <h1 className="text-xl font-black text-slate-800">
+            <h1 className="text-lg sm:text-xl font-black text-slate-800">
               {isEditMode ? 'ویرایش مقاله پزشکی' : 'نگارش مقاله جدید'}
             </h1>
-            <p className="text-xs text-slate-500 font-medium">
+            <p className="text-[11px] sm:text-xs text-slate-500 font-medium">
               تکمیل فرم با رعایت استانداردهای علمی، سئو و بهینه‌سازی خوانایی
             </p>
           </div>
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
           <button
             type="button"
             onClick={() => handleSubmit('draft')}
             disabled={submitting}
-            className="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition-all cursor-pointer"
+            className="inline-flex items-center justify-center gap-2 px-3.5 sm:px-4 py-2 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition-all cursor-pointer"
           >
             <Save className="w-4 h-4" />
             ذخیره پیش‌نویس
@@ -293,7 +293,7 @@ const AdminArticleEditor = () => {
             type="button"
             onClick={() => handleSubmit('published')}
             disabled={submitting}
-            className="inline-flex items-center gap-2 px-5 py-2 text-xs font-bold text-white bg-primary hover:bg-primary-dark rounded-xl shadow-md shadow-primary/20 transition-all cursor-pointer"
+            className="inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2 text-xs font-bold text-white bg-primary hover:bg-primary-dark rounded-xl shadow-md shadow-primary/20 transition-all cursor-pointer"
           >
             {submitting ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -336,11 +336,11 @@ const AdminArticleEditor = () => {
       )}
 
       {/* Form Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3.5 sm:gap-6">
         {/* Main Content Area (2 Cols) */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-3.5 sm:space-y-6">
           {/* Title */}
-          <div className="bg-white p-5 rounded-3xl border border-primary/10 shadow-xs space-y-2">
+          <div className="bg-white p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-primary/10 shadow-xs space-y-2">
             <label className="block text-xs font-bold text-slate-700">
               عنوان مقاله <span className="text-rose-500">*</span>
             </label>
@@ -355,7 +355,7 @@ const AdminArticleEditor = () => {
           </div>
 
           {/* Excerpt */}
-          <div className="bg-white p-5 rounded-3xl border border-primary/10 shadow-xs space-y-2">
+          <div className="bg-white p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-primary/10 shadow-xs space-y-2">
             <label className="block text-xs font-bold text-slate-700">
               خلاصه مقاله (جهت سئو و نمایش در کارت‌های صفحه اصلی)
             </label>
@@ -365,12 +365,12 @@ const AdminArticleEditor = () => {
               placeholder="توضیح کوتاه و جذاب در ۲ الی ۳ خط که مخاطب را به مطالعه ادامه مطلب ترغیب نماید..."
               value={excerpt}
               onChange={(e) => setExcerpt(e.target.value)}
-              className="w-full text-xs md:text-sm p-4 rounded-2xl border border-slate-200 focus:outline-none focus:border-primary text-slate-700 leading-relaxed font-medium"
+              className="w-full text-xs md:text-sm p-3.5 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200 focus:outline-none focus:border-primary text-slate-700 leading-relaxed font-medium"
             />
           </div>
 
           {/* Rich Editor & File Importer */}
-          <div className="bg-white p-5 rounded-3xl border border-primary/10 shadow-xs space-y-3">
+          <div className="bg-white p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-primary/10 shadow-xs space-y-3">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <label className="block text-xs font-bold text-slate-700">
                 متن کامل مقاله <span className="text-rose-500">*</span>
@@ -393,9 +393,9 @@ const AdminArticleEditor = () => {
         </div>
 
         {/* Sidebar Settings (1 Col) */}
-        <div className="space-y-6">
+        <div className="space-y-3.5 sm:space-y-6">
           {/* Category & Slug */}
-          <div className="bg-white p-5 rounded-3xl border border-primary/10 shadow-xs space-y-4">
+          <div className="bg-white p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-primary/10 shadow-xs space-y-4">
             <h3 className="text-xs font-bold text-slate-700 flex items-center gap-1.5 border-b border-slate-100 pb-2">
               <Layers className="w-4 h-4 text-primary" />
               دسته‌بندی و آدرس URL

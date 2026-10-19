@@ -1,6 +1,28 @@
 import React from 'react';
 import { Award, GraduationCap, BookOpen, Stethoscope, CheckCircle2, ShieldCheck, HeartPulse, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import SEO from '../components/seo/SEO';
+
+const physicianSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Physician',
+  name: 'دکتر نگار معشوری',
+  jobTitle: 'متخصص جراحی عمومی و فلوشیپ فوق‌تخصصی بیماری‌ها و جراحی پستان',
+  medicalSpecialty: [
+    'SurgicalOncology',
+    'GeneralSurgery',
+    'PlasticSurgery',
+  ],
+  description:
+    'فلوشیپ فوق‌تخصصی بیماری‌ها و جراحی پستان، انکوپلاستی و بازسازی پستان، تشخیص و درمان ضایعات بدخیم و خوش‌خیم.',
+  url: 'https://kamelion.ir/about',
+  alumniOf: 'دانشگاه علوم پزشکی شهید بهشتی',
+  worksFor: {
+    '@type': 'MedicalClinic',
+    name: 'کلینیک تخصصی پستان دکتر نگار معشوری',
+    url: 'https://kamelion.ir',
+  },
+};
 
 const AboutPage = () => {
   return (
@@ -8,6 +30,12 @@ const AboutPage = () => {
       className="flex-grow flex flex-col items-center w-full pt-28 md:pt-32 pb-20"
       style={{ animation: 'fadeIn 0.6s ease-out forwards' }}
     >
+      <SEO
+        title="بیوگرافی و سوابق علمی دکتر نگار معشوری"
+        description="سوابق علمی، مدارک تخصصی، دوره‌ها و افتخارات دکتر نگار معشوری — متخصص جراحی عمومی و فلوشیپ فوق‌تخصصی بیماری‌ها و جراحی پستان."
+        url="/about"
+        schema={physicianSchema}
+      />
       <div className="glass-panel fade-section is-visible">
         {/* Top Header */}
         <div className="text-center mb-10">

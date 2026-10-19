@@ -1,9 +1,8 @@
 # API Endpoints Reference
 
-> **Verified against repository source:** 2026-10-17, baseline commit `8b0eca0`.
-> Describes the routes wired into `backend_core/config/urls.py`, their views,
-> serializers, and services. This is an implementation reference, not a proposed API.
-> Source inspection and URL resolution do not establish that a deployed service is healthy.
+> This is a complete list of every route actually wired into `config/urls.py` (directly or via an included app `urls.py`), what each one expects as input, what it returns, and what it does internally. Global defaults: unless a view explicitly overrides them, DRF's default authentication is **JWT** (`Authorization: Bearer <token>`) and the default permission is **`IsAuthenticated`**.
+>
+> **Updated:** this revision reflects the pending-appointment approval flow, the reworked two-step OTP/registration login flow with Date of Birth (`date_of_birth`), the admin-vs-patient branch at login, admin editing of patient info, the review/comment endpoints (previously undocumented), the **new articles CMS** (`apps/articles`), and the **disapproval reason** added to the reservation-disapprove flow (`disapproval_reason` field, required `reason` on `/disapprove/`, sent to the patient in the rejection SMS).
 
 Related documents: [backend architecture](backend.md), [backend feature status](../features/feature-status-back-end.md), [articles API](api-endpoints-articles.md), [chat and triage API](api-endpoints-chat.md).
 
@@ -21,23 +20,61 @@ Related documents: [backend architecture](backend.md), [backend feature status](
 
 Source: `apps/users/{urls,views,serializers,services}.py`.
 
-| Method | Path | Access | Input | Success |
-|---|---|---|---|---|
-| POST | `/api/auth/request-otp` | Public | `phone_number` (required, max 15) | `200` admin-password signal or OTP signal |
-| POST | `/api/auth/verify-otp` | Public | `phone_number` (max 15), `code` (max 6), both required | `200` login object or signup token |
-| POST | `/api/auth/complete-registration` | Public | `signup_token`, `full_name`, `national_id`; optional `sex`, `date_of_birth` | `200` patient login object |
-| POST | `/api/auth/admin/login` | Public | Required `phone_number` (max 15), `password` | `200` admin login object |
-| GET | `/api/auth/me` | JWT | None | `200` current user |
-| POST | `/api/auth/refresh` | Public | Required `refreshToken` | `200` `{accessToken, refreshToken}` |
-| POST | `/api/auth/logout` | JWT | Optional `refreshToken` or `refresh` | `200` `{"message":"Logged out"}` |
+Phone number already has an account (returning user) — logged straight in:
+```json
+{
+  "access": "<JWT access token>",
+  "refresh": "<JWT refresh token>",
+  "user": {
+    "id": 1,
+    "phone_number": "string",
+    "full_name": "string",
+    "national_id": "string or null",
+    "date_of_birth": "date or null",
+    "role": "patient"
+  }
+}
+```
+First time seeing this phone number — no tokens issued yet:
+```json
+{ "registration_required": true, "signup_token": "<opaque string>" }
+```
+**Error response:** `400 Bad Request` — `{ "error": "<reason>" }` if the code is wrong, expired, or already used.
 
-### OTP and registration
+**What it does:** This is now a self-contained "confirm the code" step, decoupled from account creation. It validates the code against the latest unused, non-expired `OTPRequest` for that phone number and **marks it used immediately** — phone ownership is considered proven at that point regardless of what happens next. It then checks whether a `User` already exists for that phone number:
+- **Exists:** logs them in and issues a JWT pair (same as before).
+- **Doesn't exist:** does **not** create a user and does **not** issue tokens. Instead it creates a short-lived (`PhoneVerification`) record and returns its `signup_token`, which the client must pass to `POST /api/auth/complete-registration` along with `full_name`, `national_id`, and `date_of_birth` to finish creating the account.
 
 `request-otp` checks `is_staff` first. Staff numbers receive `{"is_admin":true,"message":"Enter your password"}` without generating an OTP. Other numbers receive `{"is_admin":false,"message":"OTP sent"}` after a 6-digit OTP is stored, expiring in 5 minutes; previous unused OTPs are invalidated.
 
-Delivery depends on `SMS_PROVIDER`: `console` (default) prints the code; `panelchi` sends the login pattern with variable `otp_code`. A provider failure deletes the newly created code and returns `502 {"error":"..."}`. Configuring real delivery requires the PanelChi token and login pattern.
-
-`verify-otp` consumes a **valid** OTP. Invalid/used codes return `400 {"error":"Invalid OTP"}`; an expired matching unused code returns `400 {"error":"OTP expired"}`. Existing users receive:
+### `POST /api/auth/complete-registration` — *new*
+**Auth:** None (explicitly open)
+**Request body:**
+```json
+{
+  "signup_token": "string, from verify-otp",
+  "full_name": "string, max 100 chars",
+  "national_id": "string, max 20 chars",
+  "date_of_birth": "ISO date string (YYYY-MM-DD)"
+}
+```
+**Response:** `200 OK` — same login shape as a successful `verify-otp` for a returning user:
+```json
+{
+  "access": "<JWT access token>",
+  "refresh": "<JWT refresh token>",
+  "user": {
+    "id": 1,
+    "phone_number": "string",
+    "full_name": "string",
+    "national_id": "string",
+    "date_of_birth": "date or null",
+    "role": "patient"
+  }
+}
+```
+**Error response:** `400 Bad Request` — `{ "error": "<reason>" }` — invalid/expired/already-used `signup_token`, or missing `full_name`/`national_id`/`date_of_birth`.
+**What it does:** Second step of first-time login only. Looks up the `PhoneVerification` record by `signup_token` (must be unused and not expired — 10-minute window), and if valid, creates the `User` with the given `full_name`, `national_id`, and `date_of_birth` (stored on patient profile, formatted as `YYYY-MM-DD`), marks the token used, and issues a JWT pair. The OTP code itself is not needed here — the token is the proof of phone ownership carried over from `verify-otp`.
 
 ```json
 {
@@ -211,50 +248,40 @@ Source: `apps/common/{urls,admin_urls,views,stats_views,serializers,models}.py`.
 
 | Method | Path | Access | Input / purpose | Success |
 |---|---|---|---|---|
-| GET | `/api/settings/theme` | Public | Read persisted theme (default `pink`) | `200` `{theme}` |
-| PUT | `/api/admin/settings/theme` | Admin | Required `theme`: `pink`, `lilac`, or `purple` | `200` `{theme}` |
-| GET | `/api/videos/` | Public | Gallery, newest first | `200` unpaginated array |
-| POST | `/api/admin/videos/` | Admin | Required `title`, `src`; optional `type` | `201` video |
-| DELETE | `/api/admin/videos/<id>/` | Admin | Delete gallery entry | `204` |
-| GET | `/api/admin/stats` | Admin | Dashboard metrics | `200` object below |
-
-Video objects are `{id, title, src, type}`. Title max 255; src max 500; type is `video` (default) or `iframe`. `src` is stored as a string, not uploaded or host-validated here. Missing delete IDs return `404 {"detail":"Video not found"}`. No video update endpoint is wired.
-
-Stats fields and their implemented calculations:
-
-| Field | Meaning |
-|---|---|
-| `total_visits` | Count of `visited` appointments |
-| `visits_growth` | Growth in appointments **created** this Gregorian month versus last; `N/A` if both zero, `+100%` if only previous is zero, otherwise signed percentage followed by `vs last month` |
-| `online_bookings` | Count excluding both cancellation statuses; includes manual/admin bookings |
-| `attendance_rate` | Rounded visited / (visited + cancelled) percentage; `N/A` if denominator zero |
-| `triage_chats` | All `ChatSession` rows, including sessions without successful triage |
-| `emergency_codes` | **Hardcoded `0`**, despite code issuance being implemented in chat |
-| `satisfaction_rating`, `reviews_count` | Approved-review average formatted `x.x / 5.0` (0.0 when empty), and approved-review count |
-| `monthly_trends` | Six `{month, value}` entries counting appointment dates by **Gregorian** month; labels use the Jalali month containing each Gregorian month start; current month ends today |
-| `status_breakdown` | Two `{name, value}` percentages for visited vs scheduled only; Persian labels; excludes pending/cancelled; both zero when empty |
-
-## Articles and AI chat route inventory
-
-Detailed payloads, validation, and behavior are maintained in the linked references.
-
-| Method | Path | Access | Contract |
-|---|---|---|---|
-| GET | `/api/articles/` | Public | [Published article list](api-endpoints-articles.md) |
-| GET | `/api/articles/categories/` | Public | [Category list](api-endpoints-articles.md) |
-| GET | `/api/articles/<slug>/` | Public | [Published detail and view count](api-endpoints-articles.md) |
-| GET / POST | `/api/admin/articles/` | Admin | [Article list/create](api-endpoints-articles.md) |
-| GET / PUT / PATCH / DELETE | `/api/admin/articles/<id>/` | Admin | [Article detail/update/delete](api-endpoints-articles.md) |
-| PATCH | `/api/admin/articles/<id>/toggle-status/` | Admin | [Publication toggle](api-endpoints-articles.md) |
-| POST | `/api/admin/articles/upload-image/` | Admin | [Multipart image upload](api-endpoints-articles.md) |
-| GET / POST | `/api/admin/articles/categories/` | Admin | [Category list/create](api-endpoints-articles.md) |
-| DELETE | `/api/admin/articles/categories/<id>/` | Admin | [Category deletion](api-endpoints-articles.md) |
-| POST | `/api/chat/message` | JWT | [Message, reply, booking offer, emergency code](api-endpoints-chat.md) |
-| GET | `/api/admin/patients/<id>/chats/` | Admin | [Paginated full chat histories](api-endpoints-chat.md) |
-| GET | `/api/admin/patients/<id>/triage_level/` | Admin | [Latest triaged session](api-endpoints-chat.md) |
-
-## Verification and maintenance
-
-This revision was checked against URL configurations, resolved view methods, serializers, services, models, migrations, settings, and existing test definitions. Business behavior descriptions come from source inspection; no live SMS or AI request was made. For implementation availability and known gaps, use the [feature status](../features/feature-status-back-end.md).
-
-When changing an endpoint, update its contract here or in the linked domain reference and update the corresponding feature entry. The older article architecture and implementation guides retain design proposals; their status notices identify the current implementation references.
+| POST | `/api/auth/request-otp` | None | `phone_number` | Request a login OTP — or, for admin numbers, a signal to show the password screen instead |
+| POST | `/api/auth/verify-otp` | None | `phone_number`, `code` | Verify OTP → JWT pair (returning patient) **or** `signup_token` (first-time) |
+| POST | `/api/auth/complete-registration` | None | `signup_token`, `full_name`, `national_id`, `date_of_birth` | Finish first-time signup → JWT pair |
+| POST | `/api/auth/admin/login` | None | `phone_number`, `password` | Password login → JWT pair (admin) |
+| GET | `/api/appointments/slots/` | None | `?date=` | List free slots for a date (excludes `pending` + `scheduled`) |
+| POST | `/api/appointments/book/` | JWT | `date`, `time`, `reason?` | Book an appointment (starts as `pending`) |
+| GET | `/api/appointments/my/` | JWT | — | List own appointments |
+| POST | `/api/appointments/<id>/cancel/` | JWT | — | Cancel own appointment (while `pending` or `scheduled`) |
+| GET | `/api/reviews/` | None | — | List approved reviews |
+| POST | `/api/reviews/` | None | `name?`, `email?`, `text`, `rating` | Submit a review (starts `pending`) |
+| GET/POST | `/api/admin/slots/` | JWT (admin) | `DoctorAvailability` fields | List / create weekly schedules |
+| GET/PUT/PATCH/DELETE | `/api/admin/slots/<id>/` | JWT (admin) | `DoctorAvailability` fields | Retrieve / update / delete a schedule |
+| PUT | `/api/admin/slots/bulk/` | JWT (admin) | `{ schedules: [...] }` | Replace-all weekly schedules |
+| GET/POST | `/api/admin/exceptions/` | JWT (admin) | `AvailabilityException` fields | List / create closed-date ranges |
+| GET/PUT/PATCH/DELETE | `/api/admin/exceptions/<id>/` | JWT (admin) | `AvailabilityException` fields | Retrieve / update / delete an exception |
+| PUT | `/api/admin/exceptions/bulk/` | JWT (admin) | `{ exceptions: [...] }` | Replace-all closed dates |
+| GET | `/api/admin/appointments/` | JWT (admin) | `?search=`, `?status=`, `?page=`, `?page_size=` | Paginated, searchable, status-filterable list of all appointments |
+| PUT/PATCH | `/api/admin/appointments/<id>/` | JWT (admin) | any `Appointment` field; `disapproval_reason` required when setting `pending` → `cancelled_admin` | Update an appointment (e.g. status directly) |
+| POST | `/api/admin/appointments/<id>/approve/` | JWT (admin) | — | Approve a pending appointment → `scheduled` |
+| POST | `/api/admin/appointments/<id>/disapprove/` | JWT (admin) | `{ "reason": "..." }` (required) | Disapprove a pending appointment → `cancelled_admin`; saves the reason and sends it in the rejection SMS |
+| POST | `/api/admin/appointments/create/` | JWT (admin) | `full_name`, `phone_number`, `date`, `time`, `reason?` | Walk-in booking, created directly as `scheduled` |
+| GET | `/api/admin/patients/` | JWT (admin) | `?search=` | List patients |
+| GET | `/api/admin/patients/<id>/` | JWT (admin) | — | Full patient dossier |
+| PUT/PATCH | `/api/admin/patients/<id>/` | JWT (admin) | `full_name?`, `national_id?` | Edit a patient's name/national ID |
+| POST | `/api/admin/patients/<id>/notes/` | JWT (admin) | `text` | Add a clinical note |
+| GET | `/api/admin/reviews/` | JWT (admin) | — | List all reviews, including pending |
+| PATCH | `/api/admin/reviews/<id>/` | JWT (admin) | `{"approved": true/false}` | Approve or reject a review |
+| DELETE | `/api/admin/reviews/<id>/` | JWT (admin) | — | Delete a review |
+| GET | `/api/articles/` | None | `?category=`, `?search=`, `?page=`, `?page_size=` | List published articles |
+| GET | `/api/articles/<slug>/` | None | — | Article detail (+1 view); Unicode slugs supported |
+| GET | `/api/articles/categories/` | None | — | List article categories (unpaginated) |
+| GET/POST | `/api/admin/articles/` | JWT (admin) | `?status=`, `?search=` / article fields | List / create articles |
+| GET/PUT/PATCH/DELETE | `/api/admin/articles/<id>/` | JWT (admin) | article fields | Retrieve / update / delete an article |
+| PATCH | `/api/admin/articles/<id>/toggle-status/` | JWT (admin) | — | Toggle draft ↔ published |
+| POST | `/api/admin/articles/upload-image/` | JWT (admin) | multipart `image` or `file` | Validate + optimize upload → WebP URL |
+| GET/POST | `/api/admin/articles/categories/` | JWT (admin) | `name`, `slug`, `description?` | List / create categories |
+| DELETE | `/api/admin/articles/categories/<id>/` | JWT (admin) | — | Delete a category (`204`) |

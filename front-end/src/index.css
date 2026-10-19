@@ -235,6 +235,15 @@ body {
   background: transparent;
 }
 
+/* No Scrollbar Utility */
+.no-scrollbar {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
 /* React Day Picker customizations for Glass Theme */
 .rdp-custom {
   --rdp-cell-size: 44px;
