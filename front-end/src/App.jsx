@@ -1,27 +1,32 @@
-// src/App.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { Routes, Route, Navigate, useLocation, useParams } from 'react-router-dom';
 
 /* Hooks & Stores */
 import { useScrollFade } from './hooks/useScrollFade';
+import { usePageReady } from './hooks/usePageReady';
 import { useThemeStore, applyThemeToDom } from './store/themeStore';
 
-/* Layout */
+/* Layout & Loading Fallbacks */
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
+import RouteLoadingFallback from './components/ui/RouteLoadingFallback';
+import InitialPageLoader from './components/ui/InitialPageLoader';
 
-/* Pages */
+/* Pages: Eager loaded for instant first paint */
 import HomePage from './pages/HomePage';
-import AboutPage from './pages/AboutPage';
-import TherapeuticServicesPage from './pages/TherapeuticServicesPage';
-import AestheticServicesPage from './pages/AestheticServicesPage';
-import FaqPage from './pages/FaqPage';
-import ResourcesPage from './pages/ResourcesPage';
-import ArticleDetailPage from './pages/ArticleDetailPage';
-import VideoPage from './pages/VideoPage';
 
-import AdminPage from './pages/admin/AdminPage';
-import AdminLogin from './pages/admin/AdminLogin';
+/* Pages: Lazy loaded chunks to optimize weak 3G/4G connections */
+const AboutPage = lazy(() => import('./pages/AboutPage'));
+const TherapeuticServicesPage = lazy(() => import('./pages/TherapeuticServicesPage'));
+const AestheticServicesPage = lazy(() => import('./pages/AestheticServicesPage'));
+const FaqPage = lazy(() => import('./pages/FaqPage'));
+const ResourcesPage = lazy(() => import('./pages/ResourcesPage'));
+const ArticleDetailPage = lazy(() => import('./pages/ArticleDetailPage'));
+const VideoPage = lazy(() => import('./pages/VideoPage'));
+
+/* Admin Pages: Heaviest chunks completely isolated from public visitors */
+const AdminPage = lazy(() => import('./pages/admin/AdminPage'));
+const AdminLogin = lazy(() => import('./pages/admin/AdminLogin'));
 import AdminProtectedRoute from './components/admin/AdminProtectedRoute';
 
 /* Chat & Modals */
@@ -40,6 +45,7 @@ const App = () => {
   const isAdminRoute = location.pathname.startsWith('/admin');
 
   const { activeTheme, fetchTheme } = useThemeStore();
+  const isPageReady = usePageReady();
   const [openAppointment, setOpenAppointment] = useState(false);
   const [openMyAppointments, setOpenMyAppointments] = useState(false);
   const [openChat, setOpenChat] = useState(false);
@@ -62,6 +68,9 @@ const App = () => {
 
   return (
     <div className="min-h-screen flex flex-col font-sans relative">
+      {/* Initial Page Readiness Preloader */}
+      <InitialPageLoader isReady={isPageReady} />
+
       {/* Top Scroll Progress Bar */}
       <div id="progress"></div>
 
@@ -73,50 +82,52 @@ const App = () => {
         />
       )}
 
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <HomePage
-              onOpenAppointment={() => setOpenAppointment(true)}
-              onOpenChat={() => setOpenChat(true)}
-            />
-          }
-        />
-        <Route path="/about" element={<AboutPage />} />
-        <Route
-          path="/services/therapeutic"
-          element={<TherapeuticServicesPage onOpenAppointment={() => setOpenAppointment(true)} />}
-        />
-        <Route
-          path="/services/aesthetic"
-          element={<AestheticServicesPage onOpenAppointment={() => setOpenAppointment(true)} />}
-        />
-        <Route
-          path="/services"
-          element={<Navigate to="/services/therapeutic" replace />}
-        />
-        <Route
-          path="/faq"
-          element={<FaqPage onOpenChat={() => setOpenChat(true)} />}
-        />
-        <Route path="/resources" element={<ResourcesPage />} />
-        <Route
-          path="/resources/:slug"
-          element={<ArticleDetailPage onOpenAppointment={() => setOpenAppointment(true)} />}
-        />
-        <Route path="/articles/:slug" element={<ArticleRedirect />} />
-        <Route path="/video" element={<Navigate to="/videos" replace />} />
-        <Route path="/videos" element={<VideoPage />} />
+      <Suspense fallback={<RouteLoadingFallback />}>
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <HomePage
+                onOpenAppointment={() => setOpenAppointment(true)}
+                onOpenChat={() => setOpenChat(true)}
+              />
+            }
+          />
+          <Route path="/about" element={<AboutPage />} />
+          <Route
+            path="/services/therapeutic"
+            element={<TherapeuticServicesPage onOpenAppointment={() => setOpenAppointment(true)} />}
+          />
+          <Route
+            path="/services/aesthetic"
+            element={<AestheticServicesPage onOpenAppointment={() => setOpenAppointment(true)} />}
+          />
+          <Route
+            path="/services"
+            element={<Navigate to="/services/therapeutic" replace />}
+          />
+          <Route
+            path="/faq"
+            element={<FaqPage onOpenChat={() => setOpenChat(true)} />}
+          />
+          <Route path="/resources" element={<ResourcesPage />} />
+          <Route
+            path="/resources/:slug"
+            element={<ArticleDetailPage onOpenAppointment={() => setOpenAppointment(true)} />}
+          />
+          <Route path="/articles/:slug" element={<ArticleRedirect />} />
+          <Route path="/video" element={<Navigate to="/videos" replace />} />
+          <Route path="/videos" element={<VideoPage />} />
 
-        <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin/login" element={<AdminLogin />} />
 
-        <Route element={<AdminProtectedRoute />}>
-          <Route path="/admin/*" element={<AdminPage />} />
-        </Route>
+          <Route element={<AdminProtectedRoute />}>
+            <Route path="/admin/*" element={<AdminPage />} />
+          </Route>
 
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Suspense>
 
       {!isAdminRoute && <Footer />}
 
