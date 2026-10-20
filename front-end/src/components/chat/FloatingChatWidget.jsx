@@ -327,6 +327,9 @@ export const FloatingChatWidget = ({ isOpen, onToggle, onOpenAppointment }) => {
                       <Send className="w-4 h-4 rotate-180" />
                     </button>
                   </form>
+                  <p className="text-[10px] sm:text-[11px] text-slate-500 text-center mt-2 font-medium leading-relaxed max-w-3xl mx-auto">
+                    ⚠️ دستیار هوشمند تریاژ جهت آموزش و ارزیابی اولیه بر اساس پروتکل‌های دکتر نگار معشوری طراحی شده و جایگزین ویزیت یا تشخیص پزشکی نیست.
+                  </p>
                 </div>
               </div>
             </div>

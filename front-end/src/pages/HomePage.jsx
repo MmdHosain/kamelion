@@ -9,25 +9,59 @@ import ContactHoursSection from '../components/sections/ContactHoursSection';
 
 const homeSchema = {
   '@context': 'https://schema.org',
-  '@type': 'MedicalClinic',
-  name: 'کلینیک تخصصی پستان دکتر نگار معشوری',
-  url: 'https://kamelion.ir',
-  logo: 'https://kamelion.ir/pink-ribbon.svg',
-  image: 'https://kamelion.ir/pink-ribbon.svg',
-  description:
-    'کلینیک تخصصی تشخیص، درمان، انکوپلاستی و جراحی‌های پستان توسط دکتر نگار معشوری.',
-  medicalSpecialty: ['SurgicalOncology', 'PlasticSurgery'],
-  availableService: [
-    { '@type': 'MedicalProcedure', name: 'جراحی انکوپلاستی و حفظ پستان' },
-    { '@type': 'MedicalProcedure', name: 'ماموپلاستی، ماستوپکسی و زیبایی پستان' },
-    { '@type': 'MedicalProcedure', name: 'غربالگری و سونوگرافی تخصصی پستان' },
+  '@graph': [
+    {
+      '@type': 'MedicalClinic',
+      '@id': 'https://kamelion.ir/#clinic',
+      name: 'کلینیک تخصصی پستان دکتر نگار معشوری',
+      url: 'https://kamelion.ir',
+      logo: 'https://kamelion.ir/pink-ribbon.svg',
+      image: 'https://kamelion.ir/pink-ribbon.svg',
+      description:
+        'کلینیک تخصصی تشخیص، درمان، انکوپلاستی و جراحی‌های پستان توسط دکتر نگار معشوری.',
+      medicalSpecialty: ['SurgicalOncology', 'PlasticSurgery', 'GeneralSurgery'],
+      availableService: [
+        { '@type': 'MedicalProcedure', name: 'جراحی انکوپلاستی و حفظ پستان' },
+        { '@type': 'MedicalProcedure', name: 'ماموپلاستی، ماستوپکسی و زیبایی پستان' },
+        { '@type': 'MedicalProcedure', name: 'غربالگری و سونوگرافی تخصصی پستان' },
+      ],
+      physician: {
+        '@id': 'https://kamelion.ir/#physician',
+      },
+    },
+    {
+      '@type': 'Physician',
+      '@id': 'https://kamelion.ir/#physician',
+      name: 'دکتر نگار معشوری',
+      jobTitle: 'متخصص جراحی عمومی و فلوشیپ فوق‌تخصصی بیماری‌ها و جراحی پستان',
+      medicalSpecialty: [
+        'SurgicalOncology',
+        'PlasticSurgery',
+        'GeneralSurgery',
+      ],
+      url: 'https://kamelion.ir/about',
+      alumniOf: {
+        '@type': 'CollegeOrUniversity',
+        name: 'دانشگاه علوم پزشکی تهران',
+      },
+      sameAs: [
+        'https://rimaclinic.com',
+        'https://linkedin.com',
+      ],
+    },
+    {
+      '@type': 'SoftwareApplication',
+      '@id': 'https://kamelion.ir/#ai-assistant',
+      name: 'دستیار هوشمند تریاژ و ارزیابی علائم دکتر نگار معشوری',
+      applicationCategory: 'HealthApplication',
+      operatingSystem: 'Web',
+      author: {
+        '@id': 'https://kamelion.ir/#physician',
+      },
+      description:
+        'دستیار هوشمند تریاژ و آموزش پزشکی بیماران جهت ارزیابی اولیه علائم و نوبت‌دهی، توسعه‌یافته بر اساس راهنماهای بالینی و پروتکل‌های علمی دکتر نگار معشوری.',
+    },
   ],
-  physician: {
-    '@type': 'Physician',
-    name: 'دکتر نگار معشوری',
-    medicalSpecialty:
-      'متخصص جراحی عمومی و فلوشیپ فوق‌تخصصی بیماری‌ها و جراحی پستان',
-  },
 };
 
 const HomePage = ({ onOpenAppointment, onOpenChat }) => {

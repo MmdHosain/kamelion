@@ -15,6 +15,9 @@ import {
   ShieldAlert,
   Loader2,
   FileQuestion,
+  CheckCircle2,
+  Bot,
+  MessageSquare,
 } from 'lucide-react';
 import articleService from '../api/articleService';
 import ArticleSidebar from '../components/articles/ArticleSidebar';
@@ -41,7 +44,7 @@ const sanitizeAndAddIdsToHeadings = (rawHtml) => {
   return { processedHtml, headings };
 };
 
-const ArticleDetailPage = ({ onOpenAppointment }) => {
+const ArticleDetailPage = ({ onOpenAppointment, onOpenChat }) => {
   const { slug } = useParams();
   const [article, setArticle] = useState(null);
   const [relatedArticles, setRelatedArticles] = useState([]);
@@ -186,9 +189,15 @@ const ArticleDetailPage = ({ onOpenAppointment }) => {
 
         {/* Article Header */}
         <header className="mb-8">
-          <span className="inline-block bg-primary/10 text-primary border border-primary/20 text-xs px-3.5 py-1 rounded-full font-bold mb-4 shadow-2xs">
-            {categoryName}
-          </span>
+          <div className="flex flex-wrap items-center gap-3 mb-4">
+            <span className="inline-block bg-primary/10 text-primary border border-primary/20 text-xs px-3.5 py-1 rounded-full font-bold shadow-2xs">
+              {categoryName}
+            </span>
+            <div className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-800 border border-emerald-200/80 px-3 py-1 rounded-full text-[11px] md:text-xs font-bold shadow-2xs">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+              <span>بررسی و تایید بالینی توسط {authorName}</span>
+            </div>
+          </div>
 
           <h1 className="text-2xl md:text-4xl lg:text-5xl font-black text-slate-800 leading-tight mb-6">
             {article.title}
@@ -294,6 +303,33 @@ const ArticleDetailPage = ({ onOpenAppointment }) => {
               className="article-rich-content text-slate-800 text-sm md:text-base leading-loose font-sans space-y-4"
               dangerouslySetInnerHTML={{ __html: processedHtml }}
             />
+
+            {/* Interactive AI Triage CTA Card (Chatbot-to-Content Flywheel) */}
+            {onOpenChat && (
+              <div className="bg-gradient-to-l from-primary/15 via-primary/5 to-white border border-primary/25 p-5 md:p-6 rounded-3xl flex flex-col sm:flex-row items-center justify-between gap-5 shadow-sm mt-8">
+                <div className="flex items-center gap-3.5">
+                  <div className="w-11 h-11 rounded-2xl bg-primary text-white flex items-center justify-center font-bold shadow-md shadow-primary/20 shrink-0">
+                    <Bot className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm md:text-base font-bold text-slate-800 mb-1">
+                      درباره این موضوع یا علائم خود سوالی دارید؟
+                    </h4>
+                    <p className="text-xs text-slate-500 font-medium">
+                      می‌توانید به رایگان با دستیار هوشمند تریاژ کلینیک مشورت کرده و راهنمایی اولیه دریافت کنید.
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={onOpenChat}
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary-dark text-white px-5 py-2.5 rounded-2xl text-xs font-bold transition-all shadow-md shadow-primary/20 shrink-0 cursor-pointer"
+                >
+                  <MessageSquare className="w-3.5 h-3.5" />
+                  <span>گفت‌وگو با دستیار</span>
+                </button>
+              </div>
+            )}
 
             {/* Clinical Disclaimer Box */}
             <div className="bg-amber-50/80 border border-amber-200/80 p-5 rounded-3xl flex items-start gap-3 text-amber-900 text-xs md:text-sm leading-relaxed mt-10">
