@@ -83,10 +83,10 @@ export const ChatPillButton = ({
                   key={i}
                   type="button"
                   onClick={() => onSubmitText(prompt.text)}
-                  className={`whitespace-nowrap px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full text-[10px] sm:text-[11px] font-bold border backdrop-blur-md shadow-xs transition-all duration-200 hover:scale-102 shrink-0 cursor-pointer ${
+                  className={`whitespace-nowrap px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full text-[10px] sm:text-[11px] font-bold border shadow-sm transition-all duration-200 hover:scale-102 shrink-0 cursor-pointer ${
                     prompt.isUrgent
-                      ? 'bg-red-500/15 border-red-500/35 text-red-700 hover:bg-red-500 hover:text-white'
-                      : 'bg-white/90 border-primary/25 text-textDark/85 hover:bg-primary hover:text-white hover:border-transparent'
+                      ? 'bg-rose-500 border-rose-600 text-white hover:bg-rose-600 active:bg-rose-700'
+                      : 'bg-white border-gray-200 text-gray-800 hover:bg-gray-50 active:bg-gray-100'
                   }`}
                 >
                   {prompt.text}
@@ -97,7 +97,7 @@ export const ChatPillButton = ({
               <button
                 type="button"
                 onClick={() => setIsMinimized(true)}
-                className="p-1 rounded-full text-textDark/40 hover:text-textDark hover:bg-white/80 transition-colors shrink-0 cursor-pointer"
+                className="p-1 rounded-full bg-white border border-gray-200 text-gray-500 hover:text-gray-800 hover:bg-gray-50 shadow-sm transition-colors shrink-0 cursor-pointer"
                 title="کوچک کردن"
                 aria-label="کوچک کردن ویجت"
               >

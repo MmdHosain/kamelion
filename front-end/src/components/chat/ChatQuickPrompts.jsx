@@ -34,17 +34,17 @@ export const ChatQuickPrompts = ({ onSelectPrompt, onOpenAppointment }) => {
                 onSelectPrompt(prompt.text);
               }
             }}
-            className={`flex items-center gap-2 p-2.5 sm:p-3 rounded-xl sm:rounded-2xl border text-right transition-all text-xs font-bold shadow-xs hover:scale-[1.02] active:scale-[0.98] cursor-pointer ${
+            className={`flex items-center gap-2 p-2.5 sm:p-3 rounded-xl sm:rounded-2xl border text-right transition-all text-xs font-bold shadow-sm hover:scale-[1.02] active:scale-[0.98] cursor-pointer ${
               prompt.isUrgent
-                ? 'bg-red-500/10 border-red-500/30 text-red-600 hover:bg-red-500/20'
-                : 'bg-white/90 border-primary/20 text-textDark hover:bg-primary/10 hover:border-primary/40'
+                ? 'bg-rose-500 border-rose-600 text-white hover:bg-rose-600'
+                : 'bg-white border-gray-200 text-gray-800 hover:bg-gray-50'
             }`}
           >
             <div
               className={`p-1.5 rounded-lg shrink-0 ${
                 prompt.isUrgent
-                  ? 'bg-red-500/20 text-red-600'
-                  : 'bg-primary/15 text-primary'
+                  ? 'bg-rose-600 text-white'
+                  : 'bg-gray-100 text-primary'
               }`}
             >
               <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />

@@ -196,10 +196,10 @@ export const FloatingChatWidget = ({ isOpen, onToggle, onOpenAppointment }) => {
                             handleSendMessage(prompt.text);
                           }
                         }}
-                        className={`text-right p-3 rounded-2xl text-xs font-bold border transition-all flex items-start gap-2.5 cursor-pointer ${
+                        className={`text-right p-3 rounded-2xl text-xs font-bold border shadow-sm transition-all flex items-start gap-2.5 cursor-pointer ${
                           prompt.isUrgent
-                            ? 'bg-red-500/10 border-red-500/30 text-red-700 hover:bg-red-500/20'
-                            : 'bg-white/70 border-primary/20 text-textDark hover:bg-white hover:border-primary hover:text-primary shadow-xs'
+                            ? 'bg-rose-500 border-rose-600 text-white hover:bg-rose-600'
+                            : 'bg-white border-gray-200 text-gray-800 hover:bg-gray-50'
                         }`}
                       >
                         <Icon className="w-4 h-4 shrink-0 mt-0.5" />
@@ -240,10 +240,10 @@ export const FloatingChatWidget = ({ isOpen, onToggle, onOpenAppointment }) => {
                           handleSendMessage(prompt.text);
                         }
                       }}
-                      className={`whitespace-nowrap px-3 py-1 rounded-full text-[11px] font-bold border shrink-0 transition-all cursor-pointer ${
+                      className={`whitespace-nowrap px-3 py-1 rounded-full text-[11px] font-bold border shadow-sm shrink-0 transition-all cursor-pointer ${
                         prompt.isUrgent
-                          ? 'bg-red-500/10 border-red-500/30 text-red-600'
-                          : 'bg-white/80 border-primary/20 text-textDark'
+                          ? 'bg-rose-500 border-rose-600 text-white hover:bg-rose-600 active:bg-rose-700'
+                          : 'bg-white border-gray-200 text-gray-800 hover:bg-gray-50 active:bg-gray-100'
                       }`}
                     >
                       {prompt.text}
