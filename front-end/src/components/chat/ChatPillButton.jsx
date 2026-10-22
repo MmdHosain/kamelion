@@ -83,10 +83,10 @@ export const ChatPillButton = ({
                   key={i}
                   type="button"
                   onClick={() => onSubmitText(prompt.text)}
-                  className={`whitespace-nowrap px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full text-[10px] sm:text-[11px] font-bold border shadow-sm transition-all duration-200 hover:scale-102 shrink-0 cursor-pointer ${
+                  className={`chat-suggestion-chip whitespace-nowrap px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full text-[10px] sm:text-[11px] font-bold border shrink-0 cursor-pointer select-none shadow-xs transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] hover:-translate-y-0.5 active:translate-y-0 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-white motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100 motion-reduce:transition-none ${
                     prompt.isUrgent
-                      ? 'bg-rose-500 border-rose-600 text-white hover:bg-rose-600 active:bg-rose-700'
-                      : 'bg-white border-gray-200 text-gray-800 hover:bg-gray-50 active:bg-gray-100'
+                      ? 'bg-rose-600 border-rose-700/80 text-white hover:brightness-110 hover:border-rose-600 hover:shadow-md hover:shadow-rose-600/30 active:brightness-90 focus-visible:ring-rose-500'
+                      : 'bg-white/95 backdrop-blur-md border-primary/20 text-textDark hover:bg-primary/10 hover:border-primary/50 hover:brightness-105 hover:shadow-md hover:shadow-primary/15 active:bg-primary/15 active:brightness-95 focus-visible:ring-primary'
                   }`}
                 >
                   {prompt.text}
@@ -97,7 +97,7 @@ export const ChatPillButton = ({
               <button
                 type="button"
                 onClick={() => setIsMinimized(true)}
-                className="p-1 rounded-full bg-white border border-gray-200 text-gray-500 hover:text-gray-800 hover:bg-gray-50 shadow-sm transition-colors shrink-0 cursor-pointer"
+                className="chat-suggestion-chip p-1 sm:p-1.5 rounded-full bg-white/95 backdrop-blur-md border border-primary/20 text-textDark/60 hover:text-textDark hover:bg-primary/10 hover:border-primary/50 hover:brightness-105 hover:-translate-y-0.5 hover:shadow-md hover:shadow-primary/15 active:translate-y-0 active:scale-95 shadow-xs transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] shrink-0 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-white motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100 motion-reduce:transition-none"
                 title="کوچک کردن"
                 aria-label="کوچک کردن ویجت"
               >

@@ -196,10 +196,10 @@ export const FloatingChatWidget = ({ isOpen, onToggle, onOpenAppointment }) => {
                             handleSendMessage(prompt.text);
                           }
                         }}
-                        className={`text-right p-3 rounded-2xl text-xs font-bold border shadow-sm transition-all flex items-start gap-2.5 cursor-pointer ${
+                        className={`chat-suggestion-chip text-right p-3 rounded-2xl text-xs font-bold border shrink-0 cursor-pointer select-none shadow-xs transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] flex items-start gap-2.5 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-white motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100 motion-reduce:transition-none ${
                           prompt.isUrgent
-                            ? 'bg-rose-500 border-rose-600 text-white hover:bg-rose-600'
-                            : 'bg-white border-gray-200 text-gray-800 hover:bg-gray-50'
+                            ? 'bg-rose-600 border-rose-700/80 text-white hover:brightness-110 hover:border-rose-600 hover:shadow-md hover:shadow-rose-600/30 active:brightness-90 focus-visible:ring-rose-500'
+                            : 'bg-white/95 border-primary/20 text-textDark hover:bg-primary/10 hover:border-primary/50 hover:brightness-105 hover:shadow-md hover:shadow-primary/15 active:bg-primary/15 active:brightness-95 focus-visible:ring-primary'
                         }`}
                       >
                         <Icon className="w-4 h-4 shrink-0 mt-0.5" />
@@ -240,10 +240,10 @@ export const FloatingChatWidget = ({ isOpen, onToggle, onOpenAppointment }) => {
                           handleSendMessage(prompt.text);
                         }
                       }}
-                      className={`whitespace-nowrap px-3 py-1 rounded-full text-[11px] font-bold border shadow-sm shrink-0 transition-all cursor-pointer ${
+                      className={`chat-suggestion-chip whitespace-nowrap px-3 py-1 rounded-full text-[11px] font-bold border shrink-0 cursor-pointer select-none shadow-xs transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] hover:-translate-y-0.5 active:translate-y-0 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-white motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100 motion-reduce:transition-none ${
                         prompt.isUrgent
-                          ? 'bg-rose-500 border-rose-600 text-white hover:bg-rose-600 active:bg-rose-700'
-                          : 'bg-white border-gray-200 text-gray-800 hover:bg-gray-50 active:bg-gray-100'
+                          ? 'bg-rose-600 border-rose-700/80 text-white hover:brightness-110 hover:border-rose-600 hover:shadow-md hover:shadow-rose-600/30 active:brightness-90 focus-visible:ring-rose-500'
+                          : 'bg-white/95 backdrop-blur-md border-primary/20 text-textDark hover:bg-primary/10 hover:border-primary/50 hover:brightness-105 hover:shadow-md hover:shadow-primary/15 active:bg-primary/15 active:brightness-95 focus-visible:ring-primary'
                       }`}
                     >
                       {prompt.text}

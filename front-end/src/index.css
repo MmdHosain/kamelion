@@ -501,6 +501,20 @@ body {
   }
 }
 
+/* ---------- Chat Suggestion Chips Micro-Interactions ---------- */
+.chat-suggestion-chip {
+  cursor: pointer;
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform, box-shadow, filter;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chat-suggestion-chip {
+    transition: none !important;
+    transform: none !important;
+  }
+}
+
 /* ---------- Rich Text Content & Article Typography ---------- */
 .rich-text-content,
 .article-rich-content {
