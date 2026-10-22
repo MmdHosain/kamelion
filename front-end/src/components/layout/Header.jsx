@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
   ChevronDown,
@@ -17,25 +17,46 @@ import MobileNavDrawer from './MobileNavDrawer';
 
 const Header = ({ onOpenAppointment, onOpenChat, onOpenMyAppointments }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const profileMenuRef = useRef(null);
 
   const location = useLocation();
   const { isAuthenticated, user, logout, openAuthModal } = useAuth();
 
   const isAdmin = user?.role === 'admin' || user?.is_staff === true || user?.is_superuser === true;
 
+  // Close profile dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(e.target)) {
+        setProfileMenuOpen(false);
+      }
+    };
+    if (profileMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [profileMenuOpen]);
+
+  // Close profile dropdown on route change
+  useEffect(() => {
+    setProfileMenuOpen(false);
+  }, [location.pathname]);
+
   return (
     <>
       <header
         id="site-header"
-        className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center px-6 py-3.5 bg-gradient-to-r from-bgLight/90 to-bgDark/90 backdrop-blur-xl border-b border-primary/20 transition-all duration-300 shadow-sm"
+        className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2.5 sm:py-3.5 bg-gradient-to-r from-bgLight/90 to-bgDark/90 backdrop-blur-xl border-b border-primary/20 transition-all duration-300 shadow-sm"
       >
-        <div className="flex items-center">
+        {/* Brand & Desktop Nav - Protected with flex-shrink-0 */}
+        <div className="flex items-center flex-shrink-0 min-w-0">
           <Link
             to="/"
-            className="text-textDark text-xl md:text-2xl font-black tracking-tight no-underline flex items-center gap-2.5"
+            className="text-textDark text-lg sm:text-xl md:text-2xl font-black tracking-tight no-underline flex items-center gap-2 sm:gap-2.5 flex-shrink-0"
           >
-            <RibbonLogo className="w-7 h-7 md:w-8 md:h-8" />
-            <span>دکتر معشوری</span>
+            <RibbonLogo className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 flex-shrink-0" />
+            <span className="whitespace-nowrap">دکتر معشوری</span>
           </Link>
 
           <nav className="hidden lg:flex gap-7 items-center mr-8">
@@ -140,42 +161,98 @@ const Header = ({ onOpenAppointment, onOpenChat, onOpenMyAppointments }) => {
           </nav>
         </div>
 
-        <div className="flex items-center gap-3">
+        {/* Action Buttons Container - Handles overflow gracefully with min-w-0 */}
+        <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3 min-w-0 flex-shrink-0">
           {isAuthenticated ? (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 sm:gap-1.5 md:gap-2 min-w-0">
               {isAdmin ? (
                 <Link
                   to="/admin/appointments"
-                  className="flex items-center gap-2 bg-white/70 hover:bg-white border border-primary/20 text-primary text-xs md:text-sm font-bold py-2 px-4 md:px-5 rounded-full transition-all hover:-translate-y-0.5 shadow-sm cursor-pointer"
+                  title="پنل مدیریت"
+                  className="flex items-center gap-1.5 sm:gap-2 bg-white/70 hover:bg-white border border-primary/20 text-primary text-xs md:text-sm font-bold p-2 sm:py-2 sm:px-4 md:px-5 rounded-full transition-all hover:-translate-y-0.5 shadow-sm cursor-pointer flex-shrink-0"
                 >
-                  <Shield className="w-4 h-4" />
+                  <Shield className="w-4 h-4 shrink-0" />
                   <span className="hidden sm:inline">پنل مدیریت</span>
                 </Link>
               ) : (
                 <>
+                  {/* Calendar / My Appointments: Round icon chip on mobile, full label on sm+ */}
                   <button
                     type="button"
                     onClick={onOpenMyAppointments}
                     title="مشاهده و لغو نوبت‌های من"
-                    className="flex items-center gap-2 bg-white/70 hover:bg-white border border-primary/20 text-primary text-xs md:text-sm font-bold py-2 px-4 md:px-5 rounded-full transition-all hover:-translate-y-0.5 shadow-sm cursor-pointer"
+                    className="flex items-center gap-1.5 sm:gap-2 bg-white/70 hover:bg-white border border-primary/20 text-primary text-xs md:text-sm font-bold p-2 sm:py-2 sm:px-4 md:px-5 rounded-full transition-all hover:-translate-y-0.5 shadow-sm cursor-pointer flex-shrink-0"
                   >
-                    <Calendar className="w-4 h-4" />
+                    <Calendar className="w-4 h-4 shrink-0" />
                     <span className="hidden sm:inline">نوبت‌های من</span>
                   </button>
 
-                  <div className="flex items-center gap-1.5 bg-white/70 border border-primary/20 text-textDark text-xs md:text-sm font-bold py-2 px-3 md:px-4 rounded-full shadow-sm">
-                    <User className="w-4 h-4 text-primary" />
-                    <span className="max-w-[120px] truncate">{user?.full_name || user?.phone_number || 'حساب کاربری'}</span>
+                  {/* User Profile Chip: Round icon chip on mobile, name with strict truncation on sm+ */}
+                  <div className="relative" ref={profileMenuRef}>
+                    <button
+                      type="button"
+                      onClick={() => setProfileMenuOpen(!profileMenuOpen)}
+                      title={user?.full_name || user?.phone_number || 'حساب کاربری'}
+                      aria-label="حساب کاربری"
+                      aria-expanded={profileMenuOpen}
+                      className="flex items-center gap-1.5 bg-white/70 hover:bg-white border border-primary/20 text-textDark text-xs md:text-sm font-bold p-2 sm:py-2 sm:px-3 md:px-4 rounded-full shadow-sm transition-all cursor-pointer flex-shrink-0 min-w-0"
+                    >
+                      <User className="w-4 h-4 text-primary shrink-0" />
+                      <span className="hidden sm:inline max-w-[70px] sm:max-w-[120px] truncate min-w-0">
+                        {user?.full_name || user?.phone_number || 'حساب کاربری'}
+                      </span>
+                    </button>
+
+                    {/* Profile Dropdown Menu for Mobile & Quick Actions */}
+                    {profileMenuOpen && (
+                      <div className="absolute left-0 top-full mt-2 w-48 bg-white/95 backdrop-blur-xl border border-primary/20 rounded-2xl shadow-xl py-2 z-50 animate-scaleUp text-right">
+                        <div className="px-4 py-2 border-b border-primary/10">
+                          <p className="text-xs font-bold text-textDark truncate">
+                            {user?.full_name || 'کاربر گرامی'}
+                          </p>
+                          {user?.phone_number && (
+                            <p className="text-[10px] text-textDark/60 font-mono mt-0.5" dir="ltr">
+                              {user.phone_number}
+                            </p>
+                          )}
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setProfileMenuOpen(false);
+                            onOpenMyAppointments?.();
+                          }}
+                          className="w-full text-right px-4 py-2 text-xs font-bold text-textDark/85 hover:text-primary hover:bg-primary/5 transition-colors flex items-center gap-2 cursor-pointer"
+                        >
+                          <Calendar className="w-3.5 h-3.5 text-primary shrink-0" />
+                          <span>نوبت‌های من</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setProfileMenuOpen(false);
+                            logout();
+                          }}
+                          className="w-full text-right px-4 py-2 text-xs font-bold text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2 cursor-pointer border-t border-primary/10 mt-1"
+                        >
+                          <LogOut className="w-3.5 h-3.5 shrink-0" />
+                          <span>خروج از حساب</span>
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </>
               )}
 
+              {/* Direct Logout Button: hidden on < md breakpoints to save space, visible on desktop */}
               <button
                 onClick={logout}
                 title="خروج از حساب"
-                className="flex items-center gap-2 bg-red-50 hover:bg-red-500 hover:text-white text-red-600 border border-red-200 text-xs md:text-sm font-bold py-2 px-3 md:px-4 rounded-full transition-all hover:-translate-y-0.5 cursor-pointer shadow-sm"
+                className="hidden md:flex items-center gap-2 bg-red-50 hover:bg-red-500 hover:text-white text-red-600 border border-red-200 text-xs md:text-sm font-bold py-2 px-3 md:px-4 rounded-full transition-all hover:-translate-y-0.5 cursor-pointer shadow-sm flex-shrink-0"
               >
-                <LogOut className="w-4 h-4" />
+                <LogOut className="w-4 h-4 shrink-0" />
                 <span className="hidden sm:inline">خروج</span>
               </button>
             </div>
@@ -183,16 +260,16 @@ const Header = ({ onOpenAppointment, onOpenChat, onOpenMyAppointments }) => {
             <button
               type="button"
               onClick={openAuthModal}
-              className="flex items-center gap-2 bg-white/70 hover:bg-white border border-primary/20 text-primary text-xs md:text-sm font-bold py-2 px-4 md:px-5 rounded-full transition-all hover:-translate-y-0.5 shadow-sm cursor-pointer"
+              className="flex items-center gap-1.5 sm:gap-2 bg-white/70 hover:bg-white border border-primary/20 text-primary text-xs md:text-sm font-bold py-2 px-3 sm:px-4 md:px-5 rounded-full transition-all hover:-translate-y-0.5 shadow-sm cursor-pointer flex-shrink-0"
             >
-              <LogIn className="w-4 h-4" />
-              <span>ورود / ثبت‌نام</span>
+              <LogIn className="w-4 h-4 shrink-0" />
+              <span className="whitespace-nowrap">ورود / ثبت‌نام</span>
             </button>
           )}
 
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden text-textDark/80 hover:text-primary p-2 rounded-xl hover:bg-white/50 transition-colors cursor-pointer flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-primary/30"
+            className="lg:hidden text-textDark/80 hover:text-primary p-2 rounded-xl hover:bg-white/50 transition-colors cursor-pointer flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-primary/30 flex-shrink-0"
             aria-label={mobileMenuOpen ? 'بستن منو' : 'باز کردن منو'}
             aria-expanded={mobileMenuOpen}
           >
@@ -207,10 +284,10 @@ const Header = ({ onOpenAppointment, onOpenChat, onOpenMyAppointments }) => {
         onClose={() => setMobileMenuOpen(false)}
         onOpenAppointment={onOpenAppointment}
         onOpenChat={onOpenChat}
+        onOpenMyAppointments={onOpenMyAppointments}
       />
     </>
   );
 };
-
 
 export default Header;
