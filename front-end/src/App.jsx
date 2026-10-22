@@ -136,7 +136,7 @@ const App = () => {
           {/* Floating AI Triage FAB in Bottom-Center */}
           <FloatingChatWidget
             isOpen={openChat}
-            onToggle={() => setOpenChat(!openChat)}
+            onToggle={(val) => setOpenChat(typeof val === 'boolean' ? val : !openChat)}
             onOpenAppointment={() => {
               setOpenChat(false);
               setOpenAppointment(true);
