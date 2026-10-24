@@ -242,8 +242,46 @@
 
 ---
 
+---
+
+### 📌 تسک FE-SEO-11: تزریق اسکیمای `SoftwareApplication` برای چت‌بات در گراف دانش
+- [x] **فایل هدف:** [`front-end/src/pages/HomePage.jsx`](file:///e:/GitHub%20Repo/kamelion/front-end/src/pages/HomePage.jsx)
+- [x] **اقدامات اجرایی:**
+  - ساختاردهی اسکیما در قالب `@graph` جهت اتصال ۳ نود کلیدی: درمانگاه (`MedicalClinic`)، پزشک ارشد (`Physician`) و نرم‌افزار هوش مصنوعی (`SoftwareApplication`).
+  - تعریف دستیار هوشمند با دسته‌بندی `HealthApplication` و انتساب به پزشک کلینیک (`author: Physician`) جهت جلوگیری از مشکل «Closed Box AI» در گوگل.
+
+---
+
+### 📌 تسک FE-SEO-12: سلب مسئولیت پزشکی و شفاف‌سازی چت‌بات (YMYL & E-E-A-T)
+- [x] **فایل‌های هدف:**
+  - [`front-end/src/components/chat/FloatingChatWidget.jsx`](file:///e:/GitHub%20Repo/kamelion/front-end/src/components/chat/FloatingChatWidget.jsx)
+  - [`front-end/src/components/chat/ChatContainer.jsx`](file:///e:/GitHub%20Repo/kamelion/front-end/src/components/chat/ChatContainer.jsx)
+- [x] **اقدام اجرایی:**
+  - درج متن سلب مسئولیت شفاف، رسمی و ایندکس‌پذیر زیر اینپوت چت‌بات تریاژ جهت اعلام ماهیت راهنمایی اولیه و جلوگیری از ریسک‌های اعتباری در الگوریتم‌های سلامت گوگل.
+
+---
+
+### 📌 تسک FE-SEO-13: تقویت صفحه درباره ما با تاییدیه نظام پزشکی و نظارت بالینی هوش مصنوعی
+- [x] **فایل هدف:** [`front-end/src/pages/AboutPage.jsx`](file:///e:/GitHub%20Repo/kamelion/front-end/src/pages/AboutPage.jsx)
+- [x] **اقدامات اجرایی:**
+  - درج بج معتبر نظام پزشکی در بالای صفحه بیوگرافی.
+  - افزودن فیلدهای `alumniOf` و آرایه `sameAs` به اسکیمای `Physician`.
+  - ایجاد بخش مجزا برای «سامانه هوشمند تریاژ و نظارت بالینی» جهت تشریح تدوین و بازبینی دوره‌ای سناریوها توسط دکتر نگار معشوری.
+
+---
+
+### 📌 تسک FE-SEO-14: نشان تایید بالینی و CTA هوشمند در مقالات (Chatbot-to-Content Flywheel)
+- [x] **فایل‌های هدف:**
+  - [`front-end/src/pages/ArticleDetailPage.jsx`](file:///e:/GitHub%20Repo/kamelion/front-end/src/pages/ArticleDetailPage.jsx)
+  - [`front-end/src/App.jsx`](file:///e:/GitHub%20Repo/kamelion/front-end/src/App.jsx)
+- [x] **اقدامات اجرایی:**
+  - افزودن نشان دیداری رسمی «بررسی و تایید بالینی توسط دکتر نگار معشوری» در سربرگ مقاله.
+  - اضافه کردن کارت CTA تعاملی «گفت‌وگو با دستیار هوشمند تریاژ پیرامون این موضوع» به همراه اتصال پراپ `onOpenChat`.
+
+---
+
 ### 📌 تسک FE-SEO-10: آزمون‌های نهایی، ابزارهای گوگل و Lighthouse
-- [x] **تست سلامت بیلد Vite:** اجرای `npm run build` و تولید موفقیت‌آمیز چانک‌های پروداکشن بدون هیچ‌گونه خطا (`built in 55.26s`).
+- [x] **تست سلامت بیلد Vite:** اجرای `npm run build` و تولید موفقیت‌آمیز چانک‌های پروداکشن بدون هیچ‌گونه خطا (`built in 20.07s`).
 - [ ] **تست ریچ‌اسنیپت گوگل:** بررسی لینک مقالات و سوالات متداول در [Google Rich Results Test](https://search.google.com/test/rich-results) پس از دیپلوی سرور.
 - [ ] **بررسی تگ‌های Open Graph:** بررسی لینک در ابزار [Telegram Web Page Bot](https://t.me/webpagebot) یا [Facebook Sharing Debugger](https://developers.facebook.com/tools/debug/) پس از اعمال پروکسی Nginx توسط بک‌اند.
 - [ ] **تست Lighthouse:** اجرای بازرسی Lighthouse در تب DevTools کروم و تایید امتیاز سئو بالای ۹۵.

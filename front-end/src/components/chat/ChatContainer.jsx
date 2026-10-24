@@ -56,6 +56,9 @@ const ChatContainer = ({
                 onSubmit={handleSendMessage}
               />
             </div>
+            <p className="text-[10px] text-slate-500 text-center mt-2 font-medium">
+              ⚠️ دستیار هوشمند تریاژ جهت آموزش و ارزیابی اولیه بر اساس پروتکل‌های دکتر نگار معشوری طراحی شده و جایگزین ویزیت یا تشخیص پزشکی نیست.
+            </p>
           </div>
         </div>
       </div>

@@ -138,7 +138,6 @@ export const FloatingChatWidget = ({ isOpen, onToggle, onOpenAppointment }) => {
       }
       onToggle?.(true);
 
-      // Retain/transfer focus synchronously without dropping virtual keyboard
       if (modalInputRef.current) {
         modalInputRef.current.focus({ preventScroll: true });
         const len = modalInputRef.current.value.length;
@@ -217,7 +216,7 @@ export const FloatingChatWidget = ({ isOpen, onToggle, onOpenAppointment }) => {
 
   return (
     <>
-      {/* ── 1. Floating Pill & Bottom FAB (Transitions out when expanded) ── */}
+      {/* ── 1. Floating Pill & Bottom FAB ── */}
       <ChatPillButton
         isOpen={isOpen}
         onToggle={onToggle}
@@ -230,7 +229,7 @@ export const FloatingChatWidget = ({ isOpen, onToggle, onOpenAppointment }) => {
         onOpenAppointment={onOpenAppointment}
       />
 
-      {/* ── 2. Full-Width / Full-Screen Popup Chat Modal with Spring Animations ── */}
+      {/* ── 2. Full-Width / Full-Screen Popup Chat Modal ── */}
       <div
         role="dialog"
         aria-modal="true"
@@ -304,7 +303,6 @@ export const FloatingChatWidget = ({ isOpen, onToggle, onOpenAppointment }) => {
             </div>
 
             <div className="flex items-center gap-1">
-              {/* Collapse Button */}
               <button
                 type="button"
                 onClick={handleClose}
@@ -435,7 +433,7 @@ export const FloatingChatWidget = ({ isOpen, onToggle, onOpenAppointment }) => {
                   />
                 ))}
 
-                {/* Loading Dots Indicator while awaiting backend AI generation */}
+                {/* Loading Dots Indicator */}
                 {isTyping && <TypingIndicator />}
 
                 {/* Scroll to bottom button if user scrolled up */}
@@ -451,7 +449,7 @@ export const FloatingChatWidget = ({ isOpen, onToggle, onOpenAppointment }) => {
                 )}
               </div>
 
-              {/* Modal Input Bar - Dynamic padding above virtual mobile keyboard */}
+              {/* Modal Input Bar with Medical Disclaimer */}
               <div
                 className={`p-3 sm:p-4 bg-white/90 border-t border-primary/20 backdrop-blur-xl shrink-0 transition-all ${
                   keyboardOffset > 0
@@ -484,6 +482,11 @@ export const FloatingChatWidget = ({ isOpen, onToggle, onOpenAppointment }) => {
                     <Send className="w-4 h-4 rotate-180" />
                   </button>
                 </form>
+
+                {/* پیام سلب مسئولیت پزشکی برگرفته از develop در جایگاه استاندارد */}
+                <p className="text-[10px] sm:text-[11px] text-slate-500 text-center mt-2 font-medium leading-relaxed max-w-3xl mx-auto">
+                  ⚠️ دستیار هوشمند تریاژ جهت آموزش و ارزیابی اولیه بر اساس پروتکل‌های دکتر نگار معشوری طراحی شده و جایگزین ویزیت یا تشخیص پزشکی نیست.
+                </p>
               </div>
             </div>
           </div>
