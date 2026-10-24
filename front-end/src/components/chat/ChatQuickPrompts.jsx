@@ -34,17 +34,17 @@ export const ChatQuickPrompts = ({ onSelectPrompt, onOpenAppointment }) => {
                 onSelectPrompt(prompt.text);
               }
             }}
-            className={`flex items-center gap-2 p-2.5 sm:p-3 rounded-xl sm:rounded-2xl border text-right transition-all text-xs font-bold shadow-xs hover:scale-[1.02] active:scale-[0.98] cursor-pointer ${
+            className={`chat-suggestion-chip flex items-center gap-2 p-2.5 sm:p-3 rounded-xl sm:rounded-2xl border text-right transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] text-xs font-bold shadow-xs hover:-translate-y-0.5 active:translate-y-0 active:scale-95 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-white motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100 motion-reduce:transition-none select-none ${
               prompt.isUrgent
-                ? 'bg-red-500/10 border-red-500/30 text-red-600 hover:bg-red-500/20'
-                : 'bg-white/90 border-primary/20 text-textDark hover:bg-primary/10 hover:border-primary/40'
+                ? 'bg-rose-600 border-rose-700/80 text-white hover:brightness-110 hover:border-rose-600 hover:shadow-md hover:shadow-rose-600/30 active:brightness-90 focus-visible:ring-rose-500'
+                : 'bg-white/95 border-primary/20 text-textDark hover:bg-primary/10 hover:border-primary/50 hover:brightness-105 hover:shadow-md hover:shadow-primary/15 active:bg-primary/15 active:brightness-95 focus-visible:ring-primary'
             }`}
           >
             <div
               className={`p-1.5 rounded-lg shrink-0 ${
                 prompt.isUrgent
-                  ? 'bg-red-500/20 text-red-600'
-                  : 'bg-primary/15 text-primary'
+                  ? 'bg-white/20 text-white'
+                  : 'bg-primary/10 text-primary'
               }`}
             >
               <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
