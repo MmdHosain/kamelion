@@ -40,6 +40,11 @@ const ChatContainer = ({
         <ChatHeader onMinimize={onMinimize} />
         <div className="flex-1 bg-chatBg-200 overflow-hidden relative flex flex-col">
           <div className="flex-1 overflow-y-auto p-4 space-y-4 chat-scroll">
+            <div className="bg-amber-500/10 border border-primary/20 rounded-2xl p-2.5 text-center shrink-0">
+              <p className="text-[11px] text-slate-600 leading-relaxed font-medium">
+                ⚠️ <strong className="text-primary font-bold">راهنمای مراجعین:</strong> دستیار هوشمند تریاژ جهت آموزش و ارزیابی اولیه بر اساس پروتکل‌های دکتر نگار معشوری طراحی شده و جایگزین ویزیت یا تشخیص پزشکی نیست.
+              </p>
+            </div>
             <ChatMessages
               messages={messages}
               onCtaAction={handleCtaWithAppointment}
@@ -56,9 +61,6 @@ const ChatContainer = ({
                 onSubmit={handleSendMessage}
               />
             </div>
-            <p className="text-[10px] text-slate-500 text-center mt-2 font-medium">
-              ⚠️ دستیار هوشمند تریاژ جهت آموزش و ارزیابی اولیه بر اساس پروتکل‌های دکتر نگار معشوری طراحی شده و جایگزین ویزیت یا تشخیص پزشکی نیست.
-            </p>
           </div>
         </div>
       </div>
