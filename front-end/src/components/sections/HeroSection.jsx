@@ -75,8 +75,8 @@ const HeroSection = ({ onOpenAppointment, onOpenChat }) => {
         <div className="relative w-56 h-56 sm:w-64 sm:h-64 md:w-80 md:h-80 rounded-[2.5rem] border border-primary/25 flex justify-center items-center bg-gradient-to-br from-white/70 to-white/30 shrink-0 overflow-hidden shadow-2xl backdrop-blur-md group">
           <div className="absolute inset-0 bg-gradient-to-tr from-primary/15 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 z-10 pointer-events-none"></div>
 
-          <div className="absolute top-5 left-5 bg-white/90 border border-primary/20 shadow-md p-3 rounded-2xl backdrop-blur-md z-20">
-            <RibbonLogo className="w-7 h-7 drop-shadow-[0_0_8px_rgba(231,84,128,0.4)]" />
+          <div className="absolute top-4 left-4 bg-gradient-to-br from-white/70 via-white/45 to-white/20 hover:from-white/90 hover:to-white/60 border border-white/50 shadow-sm p-1.5 sm:p-2 rounded-2xl backdrop-blur-md z-20 transition-all duration-300 hover:scale-105 opacity-90 hover:opacity-100">
+            <RibbonLogo className="w-5 h-5 sm:w-5.5 sm:h-5.5 drop-shadow-[0_0_6px_rgba(231,84,128,0.35)]" />
           </div>
 
           <img
