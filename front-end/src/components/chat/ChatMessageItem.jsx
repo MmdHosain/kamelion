@@ -12,9 +12,10 @@ import {
 } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
 import { useTypewriter } from '../../hooks/useTypewriter';
+import { CLINIC_PHONE_TEL } from '../../constants/contact';
 export { TypingIndicator } from './TypingIndicator';
 
-const CLINIC_PHONE = '02112345678';
+const CLINIC_PHONE = CLINIC_PHONE_TEL;
 
 export const ChatMessageItem = ({
   message,
