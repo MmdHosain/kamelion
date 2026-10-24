@@ -13,13 +13,24 @@ const ROTATING_PLACEHOLDERS = [
 export const ChatPillButton = ({
   isOpen,
   onToggle,
+  onExpand,
   onSubmitText,
+  inputValue = '',
+  setInputValue,
   isFooterVisible,
   bottomOffset,
+  onOpenAppointment,
 }) => {
-  const [inputValue, setInputValue] = useState('');
+  const [localInput, setLocalInput] = useState('');
   const [isMinimized, setIsMinimized] = useState(false);
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
+
+  const currentText = typeof inputValue === 'string' ? inputValue : localInput;
+
+  const handleTextChange = (val) => {
+    if (setInputValue) setInputValue(val);
+    else setLocalInput(val);
+  };
 
   // Rotate placeholder text smoothly
   useEffect(() => {
@@ -29,18 +40,29 @@ export const ChatPillButton = ({
     return () => clearInterval(interval);
   }, []);
 
-  if (isOpen) return null;
+  // Handle expansion trigger on focus / click / typing
+  const handleTriggerExpand = (initialText = '') => {
+    if (onExpand) {
+      onExpand(initialText || currentText);
+    } else if (onToggle) {
+      onToggle(true);
+    }
+  };
 
-  // 1. Compact Floating FAB when Approaching/Reaching Footer (Lifted cleanly above footer)
+  // 1. Compact Floating FAB when Approaching/Reaching Footer
   if (isFooterVisible) {
     return (
       <div
         style={{ bottom: `${bottomOffset}px` }}
-        className="fixed left-4 sm:left-6 z-[90] transition-[bottom] duration-150 ease-out animate-scaleUp pointer-events-auto"
+        className={`fixed left-4 sm:left-6 z-[90] transition-all duration-200 ease-out animate-scaleUp ${
+          isOpen
+            ? 'opacity-0 pointer-events-none scale-90'
+            : 'opacity-100 pointer-events-auto scale-100'
+        }`}
       >
         <button
           type="button"
-          onClick={() => onToggle && onToggle()}
+          onClick={() => handleTriggerExpand()}
           className="group bg-gradient-to-br from-primary to-primary-dark hover:brightness-110 text-white p-3 sm:p-3.5 rounded-full shadow-[0_12px_35px_-5px_rgba(231,84,128,0.5)] border-2 border-white/90 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center gap-2 cursor-pointer"
           aria-label="گفتگو با دستیار هوشمند تریاژ"
           title="دستیار هوشمند تریاژ مطب"
@@ -59,7 +81,13 @@ export const ChatPillButton = ({
 
   // 2. Floating Slim Chat Capsule at Bottom Center (Normal Page Scroll)
   return (
-    <div className="fixed bottom-3 sm:bottom-6 left-0 right-0 z-[90] pointer-events-none px-3 sm:px-4 flex justify-center pb-[calc(0.5rem+env(safe-area-inset-bottom))] animate-fadeIn">
+    <div
+      className={`fixed bottom-3 sm:bottom-6 left-0 right-0 z-[90] pointer-events-none px-3 sm:px-4 flex justify-center pb-[calc(0.5rem+env(safe-area-inset-bottom))] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+        isOpen
+          ? 'opacity-0 pointer-events-none translate-y-6 scale-95'
+          : 'opacity-100 pointer-events-auto translate-y-0 scale-100'
+      }`}
+    >
       <div className="w-full max-w-lg md:max-w-2xl pointer-events-auto transition-all duration-300">
         {isMinimized ? (
           /* Minimized Pill */
@@ -82,11 +110,17 @@ export const ChatPillButton = ({
                 <button
                   key={i}
                   type="button"
-                  onClick={() => onSubmitText(prompt.text)}
-                  className={`whitespace-nowrap px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full text-[10px] sm:text-[11px] font-bold border backdrop-blur-md shadow-xs transition-all duration-200 hover:scale-102 shrink-0 cursor-pointer ${
+                  onClick={() => {
+                    if (prompt.isBooking && onOpenAppointment) {
+                      onOpenAppointment();
+                    } else {
+                      onSubmitText(prompt.text);
+                    }
+                  }}
+                  className={`chat-suggestion-chip whitespace-nowrap px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full text-[10px] sm:text-[11px] font-bold border shrink-0 cursor-pointer select-none shadow-xs transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] hover:-translate-y-0.5 active:translate-y-0 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-white motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100 motion-reduce:transition-none ${
                     prompt.isUrgent
-                      ? 'bg-red-500/15 border-red-500/35 text-red-700 hover:bg-red-500 hover:text-white'
-                      : 'bg-white/90 border-primary/25 text-textDark/85 hover:bg-primary hover:text-white hover:border-transparent'
+                      ? 'bg-rose-600 border-rose-700/80 text-white hover:brightness-110 hover:border-rose-600 hover:shadow-md hover:shadow-rose-600/30 active:brightness-90 focus-visible:ring-rose-500'
+                      : 'bg-white/95 backdrop-blur-md border-primary/20 text-textDark hover:bg-primary/10 hover:border-primary/50 hover:brightness-105 hover:shadow-md hover:shadow-primary/15 active:bg-primary/15 active:brightness-95 focus-visible:ring-primary'
                   }`}
                 >
                   {prompt.text}
@@ -97,7 +131,7 @@ export const ChatPillButton = ({
               <button
                 type="button"
                 onClick={() => setIsMinimized(true)}
-                className="p-1 rounded-full text-textDark/40 hover:text-textDark hover:bg-white/80 transition-colors shrink-0 cursor-pointer"
+                className="chat-suggestion-chip p-1 sm:p-1.5 rounded-full bg-white/95 backdrop-blur-md border border-primary/20 text-textDark/60 hover:text-textDark hover:bg-primary/10 hover:border-primary/50 hover:brightness-105 hover:-translate-y-0.5 hover:shadow-md hover:shadow-primary/15 active:translate-y-0 active:scale-95 shadow-xs transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] shrink-0 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-white motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100 motion-reduce:transition-none"
                 title="کوچک کردن"
                 aria-label="کوچک کردن ویجت"
               >
@@ -105,17 +139,21 @@ export const ChatPillButton = ({
               </button>
             </div>
 
-            {/* Main Slim Capsule Input Bar */}
+            {/* Main Slim Capsule Input Bar - Auto-expands on focus, click or typing */}
             <form
               onSubmit={(e) => {
                 e.preventDefault();
-                const text = inputValue.trim();
+                const text = currentText.trim();
                 if (text) {
                   onSubmitText(text);
-                  setInputValue('');
+                  handleTextChange('');
                 }
               }}
-              className="bg-white/95 backdrop-blur-2xl border-2 border-primary/35 rounded-full p-1 sm:p-1.5 pr-3.5 sm:pr-4 pl-1 sm:pl-1.5 shadow-2xl shadow-primary/25 flex items-center gap-1.5 sm:gap-2 transition-all hover:border-primary/60 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/25"
+              onClick={(e) => {
+                if (e.target.closest('button[type="submit"]')) return;
+                handleTriggerExpand(currentText);
+              }}
+              className="bg-white/95 backdrop-blur-2xl border-2 border-primary/35 rounded-full p-1 sm:p-1.5 pr-3.5 sm:pr-4 pl-1 sm:pl-1.5 shadow-2xl shadow-primary/25 flex items-center gap-1.5 sm:gap-2 transition-all hover:border-primary/60 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/25 cursor-text"
             >
               <div className="text-primary shrink-0 animate-pulse flex items-center">
                 <Sparkles size={18} className="sm:w-5 sm:h-5" />
@@ -123,10 +161,17 @@ export const ChatPillButton = ({
 
               <input
                 type="text"
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
+                value={currentText}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  handleTextChange(val);
+                  handleTriggerExpand(val);
+                }}
+                onFocus={(e) => {
+                  handleTriggerExpand(e.target.value);
+                }}
                 placeholder={ROTATING_PLACEHOLDERS[placeholderIndex]}
-                className="flex-1 bg-transparent border-none outline-none text-xs sm:text-sm text-textDark placeholder:text-textDark/45 font-medium min-w-0"
+                className="flex-1 bg-transparent border-none outline-none text-xs sm:text-sm text-textDark placeholder:text-textDark/45 font-medium min-w-0 cursor-text"
               />
 
               <button

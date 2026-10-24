@@ -113,7 +113,12 @@ const App = () => {
           <Route path="/resources" element={<ResourcesPage />} />
           <Route
             path="/resources/:slug"
-            element={<ArticleDetailPage onOpenAppointment={() => setOpenAppointment(true)} />}
+            element={
+              <ArticleDetailPage
+                onOpenAppointment={() => setOpenAppointment(true)}
+                onOpenChat={() => setOpenChat(true)}
+              />
+            }
           />
           <Route path="/articles/:slug" element={<ArticleRedirect />} />
           <Route path="/video" element={<Navigate to="/videos" replace />} />
@@ -136,7 +141,7 @@ const App = () => {
           {/* Floating AI Triage FAB in Bottom-Center */}
           <FloatingChatWidget
             isOpen={openChat}
-            onToggle={() => setOpenChat(!openChat)}
+            onToggle={(val) => setOpenChat(typeof val === 'boolean' ? val : !openChat)}
             onOpenAppointment={() => {
               setOpenChat(false);
               setOpenAppointment(true);
