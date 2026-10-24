@@ -10,6 +10,7 @@
 - **کامپوننت‌های فرانت‌اند:**
   - جدول نوبت‌ها: [`src/components/admin/reservations/ReservationsList.jsx`](file:///e:/GitHub%20Repo/kamelion/front-end/src/components/admin/reservations/ReservationsList.jsx)
   - مودال ثبت دستی و تلفنی نوبت توسط ادمین: [`src/components/admin/reservations/AdminManualBookingModal.jsx`](file:///e:/GitHub%20Repo/kamelion/front-end/src/components/admin/reservations/AdminManualBookingModal.jsx)
+  - مودال ثبت علت رد نوبت و پیامک کنسلی: [`src/components/admin/reservations/DisapproveReasonModal.jsx`](file:///e:/GitHub%20Repo/kamelion/front-end/src/components/admin/reservations/DisapproveReasonModal.jsx)
   - مودال مشاهده و مدیریت جزئیات نوبت: [`src/components/admin/reservations/AppointmentDetailModal.jsx`](file:///e:/GitHub%20Repo/kamelion/front-end/src/components/admin/reservations/AppointmentDetailModal.jsx)
   - مودال پرونده بالینی و سوابق بیمار: [`src/components/admin/patients/PatientDetailModal.jsx`](file:///e:/GitHub%20Repo/kamelion/front-end/src/components/admin/patients/PatientDetailModal.jsx)
 - **سرویس‌های وب:**

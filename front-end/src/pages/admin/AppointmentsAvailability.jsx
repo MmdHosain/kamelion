@@ -1,8 +1,10 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Plus, Save, Calendar, Clock, AlertCircle, CheckCircle2 } from 'lucide-react';
 import ScheduleCard from '../../components/admin/availability/ScheduleCard';
 import ReservationsList from '../../components/admin/reservations/ReservationsList';
 import ExceptionsList from '../../components/admin/exceptions/ExceptionsList';
+import UpcomingAppointmentsContainer from '../../components/admin/upcoming/UpcomingAppointmentsContainer';
 import { useAdminExceptions } from '../../hooks/useAdminExceptions';
 import {
   getAdminSlots,
@@ -12,6 +14,7 @@ import {
 const TABS = [
   { id: 'Availability', label: 'زمان‌بندی هفتگی پزشک' },
   { id: 'Reservations', label: 'نوبت‌های رزرو شده' },
+  { id: 'Agenda', label: 'تقویم کاری و نوبت‌های آتی' },
   { id: 'Exceptions', label: 'تعطیلات و استثنائات' },
 ];
 
@@ -105,7 +108,23 @@ const buildBackendRows = (schedules) => {
 };
 
 const AppointmentsAvailability = () => {
-  const [activeTab, setActiveTab] = useState('Availability');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const urlTab = searchParams.get('tab');
+  const [activeTab, setActiveTab] = useState(
+    TABS.some((t) => t.id === urlTab) ? urlTab : 'Availability'
+  );
+
+  useEffect(() => {
+    if (urlTab && TABS.some((t) => t.id === urlTab) && urlTab !== activeTab) {
+      setActiveTab(urlTab);
+    }
+  }, [urlTab, activeTab]);
+
+  const handleTabChange = (tabId) => {
+    setActiveTab(tabId);
+    setSearchParams({ tab: tabId });
+  };
+
   const [saveStatus, setSaveStatus] = useState('idle');
   const [loadError, setLoadError] = useState('');
   const [schedules, setSchedules] = useState([]);
@@ -255,7 +274,7 @@ const AppointmentsAvailability = () => {
         {TABS.map((tab) => (
           <button
             key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
+            onClick={() => handleTabChange(tab.id)}
             className={`px-3 py-1.5 sm:px-5 sm:py-2.5 rounded-xl sm:rounded-2xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all duration-200 cursor-pointer ${
               activeTab === tab.id
                 ? 'bg-primary text-white shadow-md shadow-primary/25'
@@ -308,6 +327,7 @@ const AppointmentsAvailability = () => {
         )}
 
         {activeTab === 'Reservations' && <ReservationsList />}
+        {activeTab === 'Agenda' && <UpcomingAppointmentsContainer />}
         {activeTab === 'Exceptions' && <ExceptionsList {...exceptionsHook} />}
       </div>
     </div>
