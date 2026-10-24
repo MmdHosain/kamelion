@@ -423,11 +423,19 @@ export const FloatingChatWidget = ({ isOpen, onToggle, onOpenAppointment }) => {
                 className="flex-1 overflow-y-auto p-3.5 sm:p-5 md:p-6 flex flex-col gap-3 sm:gap-4 chat-scroll relative"
                 style={{ overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch' }}
               >
-                {/* Official Medical & AI Disclaimer Banner */}
-                <div className="bg-gradient-to-r from-amber-500/10 via-primary/5 to-amber-500/10 border border-primary/20 rounded-2xl p-3 text-center shrink-0 shadow-xs mb-1">
-                  <p className="text-[11px] text-slate-600 leading-relaxed font-medium">
-                    ⚠️ <strong className="text-primary font-bold">راهنمای مراجعین:</strong> دستیار هوشمند تریاژ جهت آموزش و ارزیابی اولیه بر اساس پروتکل‌های دکتر نگار معشوری طراحی شده و جایگزین ویزیت یا تشخیص پزشکی نیست.
-                  </p>
+                {/* Official Medical & AI Disclaimer Banner - High Contrast Card */}
+                <div className="bg-white border border-amber-200 shadow-sm rounded-2xl p-3 sm:p-3.5 shrink-0 mb-1 flex items-start gap-2.5 text-right">
+                  <div className="w-7 h-7 rounded-xl bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center shrink-0 mt-0.5">
+                    <AlertCircle size={16} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <span className="block text-xs font-black text-slate-800 mb-0.5">
+                      راهنمای مراجعین و سلب مسئولیت پزشکی
+                    </span>
+                    <p className="text-[11px] sm:text-xs text-slate-600 leading-relaxed font-medium">
+                      دستیار هوشمند تریاژ جهت آموزش و ارزیابی اولیه بر اساس پروتکل‌های دکتر نگار معشوری طراحی شده و جایگزین ویزیت یا تشخیص پزشکی نیست.
+                    </p>
+                  </div>
                 </div>
 
                 {messages.map((msg) => (
