@@ -45,10 +45,9 @@ export const FloatingChatWidget = ({ isOpen, onToggle, onOpenAppointment }) => {
 
   // 4. Universal Virtual Keyboard & Viewport Tracking
   const {
-    viewportHeight,
-    keyboardHeight,
     isKeyboardOpen,
     isMobile,
+    offsetTop,
   } = useVirtualKeyboard();
 
   // 5. Mobile Touch Drag-Down to Collapse/Close
@@ -207,6 +206,15 @@ export const FloatingChatWidget = ({ isOpen, onToggle, onOpenAppointment }) => {
             ? 'bg-black/60 backdrop-blur-md opacity-100 pointer-events-auto'
             : 'bg-black/0 backdrop-blur-none opacity-0 pointer-events-none'
         }`}
+        style={
+          isMobile
+            ? {
+                height: 'var(--visual-viewport-height, 100dvh)',
+                maxHeight: 'var(--visual-viewport-height, 100dvh)',
+                top: offsetTop > 0 ? `${offsetTop}px` : 0,
+              }
+            : undefined
+        }
         onClick={(e) => {
           if (e.target === e.currentTarget) {
             handleClose();
@@ -216,26 +224,14 @@ export const FloatingChatWidget = ({ isOpen, onToggle, onOpenAppointment }) => {
         <div
           ref={modalRef}
           style={{
-            '--visual-viewport-height': `${viewportHeight}px`,
-            height: isMobile
-              ? isKeyboardOpen
-                ? `${viewportHeight}px`
-                : '100dvh'
-              : undefined,
-            maxHeight: isMobile
-              ? isKeyboardOpen
-                ? `${viewportHeight}px`
-                : '100dvh'
-              : undefined,
-            marginBottom: isMobile && isKeyboardOpen ? `${keyboardHeight}px` : 0,
             transform: dragTranslateY > 0 ? `translateY(${dragTranslateY}px)` : undefined,
             transition: dragTranslateY > 0
               ? 'none'
-              : 'transform 0.3s cubic-bezier(0.16,1,0.3,1), margin-bottom 0.15s ease-out, height 0.15s ease-out',
+              : 'transform 0.3s cubic-bezier(0.16,1,0.3,1)',
             overscrollBehavior: 'contain',
           }}
           onClick={(e) => e.stopPropagation()}
-          className={`w-full md:max-h-[86vh] md:h-[86vh] md:max-w-5xl rounded-t-[2rem] md:rounded-[2.5rem] bg-gradient-to-br from-bgLight/95 via-white/95 to-bgDark/95 backdrop-blur-2xl border-t md:border border-primary/30 flex flex-col shadow-2xl overflow-hidden relative ${
+          className={`w-full h-full max-h-[var(--visual-viewport-height,100dvh)] md:max-h-[86vh] md:h-[86vh] md:max-w-5xl rounded-t-[2rem] md:rounded-[2.5rem] bg-gradient-to-br from-bgLight/95 via-white/95 to-bgDark/95 backdrop-blur-2xl border-t md:border border-primary/30 flex flex-col shadow-2xl overflow-hidden relative ${
             isOpen
               ? 'translate-y-0 scale-100'
               : 'translate-y-full md:translate-y-12 md:scale-95'
