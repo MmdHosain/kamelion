@@ -77,7 +77,7 @@ jobs:
           mkdir -p "$HOME/.ssh"
           chmod 700 "$HOME/.ssh"
 
-          printf '%s\n' "$VPS_SSH_KEY" \
+          printf '%s\n' "$VPS_SSH_KEY" | tr -d '\r' \
             > "$HOME/.ssh/kamelion_deploy"
 
           chmod 600 "$HOME/.ssh/kamelion_deploy"
@@ -113,7 +113,9 @@ jobs:
             -p "$VPS_PORT"
             -o BatchMode=yes
             -o StrictHostKeyChecking=yes
-            -o ConnectTimeout=30
+            -o IdentitiesOnly=yes
+            -o KexAlgorithms=curve25519-sha256
+            -o ConnectTimeout=30  
           )
 
           # Connection 1: Authenticate Docker on the VPS.
