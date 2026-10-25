@@ -254,7 +254,7 @@ const AuthModal = () => {
       className="fixed inset-0 z-[110] bg-black/60 backdrop-blur-sm flex items-center justify-center px-4 transition-all duration-300 animate-fadeIn"
     >
       <div
-        className="bg-gradient-to-br from-bgLight via-white to-bgDark border border-primary/30 rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl relative transform transition-all duration-300 max-h-[92dvh] overflow-y-auto chat-scroll"
+        className="bg-gradient-to-br from-bgLight via-white to-bgDark border border-primary/30 rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl relative transform transition-all duration-300 max-h-[var(--visual-viewport-height,92dvh)] overflow-y-auto chat-scroll"
         id="auth-modal-content"
         style={{ overscrollBehavior: 'contain' }}
       >

@@ -23,6 +23,7 @@ import { adminApi } from '../../../api/admin';
 import { getApiErrorMessage } from '../../../utils/errorUtils';
 import { toPersianDigits } from '../../../utils/jalaliDateUtils';
 import useBodyScrollLock from '../../../hooks/useBodyScrollLock';
+import DisapproveReasonModal from './DisapproveReasonModal';
 
 export const getStatusConfig = (status) => {
   switch (status) {
@@ -94,6 +95,7 @@ export default function AppointmentDetailModal({
 
   const [isApproving, setIsApproving] = useState(false);
   const [isDisapproving, setIsDisapproving] = useState(false);
+  const [isDisapproveModalOpen, setIsDisapproveModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [actionError, setActionError] = useState('');
   const [actionSuccess, setActionSuccess] = useState('');
@@ -122,20 +124,21 @@ export default function AppointmentDetailModal({
     }
   };
 
-  const handleDisapprove = async () => {
-    if (!window.confirm('آیا از رد کردن این نوبت اطمینان دارید؟ اسلات این نوبت آزاد خواهد شد.')) {
-      return;
-    }
+  const handleDisapprove = () => {
+    setIsDisapproveModalOpen(true);
+  };
 
+  const handleConfirmDisapprove = async (reason) => {
     setIsDisapproving(true);
     setActionError('');
     setActionSuccess('');
 
     try {
-      const res = await adminApi.disapproveAppointment(appointment.id);
-      setActionSuccess('نوبت رد شد و اسلات آزاد گردید.');
+      const res = await adminApi.disapproveAppointment(appointment.id, reason);
+      setActionSuccess('نوبت با موفقیت رد شد، پیامک ارسال و اسلات آزاد گردید.');
+      setIsDisapproveModalOpen(false);
       if (onStatusChange) {
-        onStatusChange(appointment.id, 'cancelled_admin', res);
+        onStatusChange(appointment.id, 'cancelled_admin', { ...res, disapproval_reason: reason });
       }
     } catch (err) {
       setActionError(getApiErrorMessage(err, 'خطا در رد نوبت.'));
@@ -345,6 +348,19 @@ export default function AppointmentDetailModal({
           </div>
         )}
 
+        {/* Disapproval Reason Display (if rejected) */}
+        {appointment.disapproval_reason && (
+          <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-2xl flex flex-col gap-1 text-xs">
+            <span className="font-bold text-rose-800 flex items-center gap-1.5">
+              <AlertTriangle size={14} className="text-rose-500" />
+              علت رد نوبت (پیامک ارسالی به بیمار):
+            </span>
+            <p className="text-rose-700 leading-relaxed font-medium">
+              {appointment.disapproval_reason}
+            </p>
+          </div>
+        )}
+
         {/* Footer Actions */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-gray-100">
           <div className="flex items-center gap-2 w-full sm:w-auto">
@@ -406,6 +422,15 @@ export default function AppointmentDetailModal({
           </div>
         </div>
       </div>
+
+      {/* Disapprove Reason Custom Message Modal */}
+      <DisapproveReasonModal
+        isOpen={isDisapproveModalOpen}
+        onClose={() => setIsDisapproveModalOpen(false)}
+        onConfirm={handleConfirmDisapprove}
+        appointment={appointment}
+        loading={isDisapproving}
+      />
     </div>,
     document.body
   );

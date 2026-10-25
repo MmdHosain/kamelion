@@ -40,9 +40,10 @@ const CommentModal = ({ open, onClose, onSubmitSuccess }) => {
       aria-modal="true"
       aria-label="ثبت نظر"
       className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[999] flex items-end sm:items-center justify-center px-4"
+      style={{ height: 'var(--visual-viewport-height, 100dvh)' }}
     >
       <div
-        className="bg-white w-full max-w-lg rounded-t-3xl sm:rounded-3xl p-6 relative animate-slideUp shadow-2xl"
+        className="bg-white w-full max-w-lg rounded-t-3xl sm:rounded-3xl p-6 relative animate-slideUp shadow-2xl max-h-[var(--visual-viewport-height,90dvh)] overflow-y-auto chat-scroll"
         style={{ overscrollBehavior: 'contain' }}
       >
 

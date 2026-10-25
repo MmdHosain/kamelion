@@ -173,7 +173,7 @@ const ArticleDetailPage = ({ onOpenAppointment, onOpenChat }) => {
       />
       <article className="glass-panel fade-section is-visible max-w-6xl w-full mx-auto px-4 md:px-8">
         {/* Breadcrumb Navigation */}
-        <nav className="flex items-center gap-2 text-xs text-textDark/60 mb-8 font-medium overflow-x-auto pb-1 scrollbar-none">
+        <nav className="flex flex-wrap items-center gap-2 text-xs text-textDark/60 mb-8 font-medium">
           <Link to="/" className="hover:text-primary transition-colors shrink-0">
             خانه
           </Link>
@@ -184,7 +184,7 @@ const ArticleDetailPage = ({ onOpenAppointment, onOpenChat }) => {
           <ChevronLeft className="w-3.5 h-3.5 text-textDark/30 shrink-0" />
           <span className="text-primary font-bold shrink-0">{categoryName}</span>
           <ChevronLeft className="w-3.5 h-3.5 text-textDark/30 shrink-0" />
-          <span className="text-textDark/80 truncate max-w-xs">{article.title}</span>
+          <span className="text-textDark/80 truncate max-w-[180px] sm:max-w-xs">{article.title}</span>
         </nav>
 
         {/* Article Header */}
@@ -204,7 +204,7 @@ const ArticleDetailPage = ({ onOpenAppointment, onOpenChat }) => {
           </h1>
 
           {/* Metadata & Author Bar */}
-          <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl bg-white/60 border border-primary/15 shadow-2xs">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-white/60 border border-primary/15 shadow-2xs">
             <div className="flex items-center gap-3">
               <div className="w-11 h-11 rounded-2xl bg-primary text-white flex items-center justify-center font-bold text-base shadow-md shadow-primary/20 shrink-0">
                 د
@@ -215,7 +215,7 @@ const ArticleDetailPage = ({ onOpenAppointment, onOpenChat }) => {
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-4 text-xs text-slate-500 font-medium">
+            <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs text-slate-500 font-medium">
               <span className="flex items-center gap-1.5">
                 <Calendar className="w-3.5 h-3.5 text-primary" />
                 {article.created_at
@@ -241,7 +241,8 @@ const ArticleDetailPage = ({ onOpenAppointment, onOpenChat }) => {
             </div>
 
             {/* Quick Share Buttons */}
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2 w-full sm:w-auto justify-end sm:justify-start pt-2 sm:pt-0 border-t sm:border-t-0 border-primary/10">
+              <span className="text-xs text-slate-500 font-medium sm:hidden ml-auto">اشتراک‌گذاری:</span>
               <button
                 type="button"
                 onClick={handleCopyLink}
@@ -272,11 +273,20 @@ const ArticleDetailPage = ({ onOpenAppointment, onOpenChat }) => {
 
         {/* Cover Image */}
         {article.cover_image && (
-          <div className="mb-10 rounded-3xl overflow-hidden aspect-video max-h-[460px] w-full border border-primary/20 shadow-md">
+          <div className="relative mb-10 rounded-3xl overflow-hidden max-h-[520px] w-full border border-primary/20 shadow-md bg-slate-900/5 backdrop-blur-xs flex items-center justify-center min-h-[220px] sm:min-h-[340px]">
+            {/* Ambient blurred background */}
+            <img
+              src={formatMediaUrl(article.cover_image)}
+              alt=""
+              aria-hidden="true"
+              tabIndex="-1"
+              className="absolute inset-0 w-full h-full object-cover blur-2xl opacity-35 scale-110 pointer-events-none select-none"
+            />
+            {/* Main crisp cover image */}
             <img
               src={formatMediaUrl(article.cover_image)}
               alt={article.title}
-              className="w-full h-full object-cover"
+              className="relative z-10 max-h-[520px] w-auto max-w-full object-contain mx-auto"
             />
           </div>
         )}

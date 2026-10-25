@@ -9,6 +9,7 @@
 - **وضعیت پیاده‌سازی:** ✅ پیاده‌سازی کامل (Completed)
 - **کامپوننت‌های فرانت‌اند:**
   - هدر شیشه‌ای و ناوبری: [`src/components/layout/Header.jsx`](file:///e:/GitHub%20Repo/kamelion/front-end/src/components/layout/Header.jsx)
+  - منوی کپسولی حساب کاربری: [`src/components/layout/UserAccountDropdown.jsx`](file:///e:/GitHub%20Repo/kamelion/front-end/src/components/layout/UserAccountDropdown.jsx)
   - شیت شناور ناوبری موبایل: [`src/components/layout/MobileNavDrawer.jsx`](file:///e:/GitHub%20Repo/kamelion/front-end/src/components/layout/MobileNavDrawer.jsx)
   - فوتر کلینیک: [`src/components/layout/Footer.jsx`](file:///e:/GitHub%20Repo/kamelion/front-end/src/components/layout/Footer.jsx)
   - فریم‌ورک اصلی و روتینگ: [`src/App.jsx`](file:///e:/GitHub%20Repo/kamelion/front-end/src/App.jsx)
@@ -65,11 +66,15 @@ graph TD
    - به محض باز شدن منو، اسکرول صفحه پس‌زمینه با هوک `useBodyScrollLock` به صورت iOS-Safe قفل می‌شود.
 5. **فوتر جامع (Clinic Footer):**
    - اطلاعات تماس، ساعات کاری دقیق روزهای شنبه تا چهارشنبه، آدرس کلینیک در تهران، لینک‌های مجوز و حقوق معنوی.
+6. **دکمه یکپارچه حساب کاربری (Unified User Account Dropdown):**
+   - پس از ورود کاربر، تمامی دسترسی‌های حساب (مشاهده و لغو نوبت‌های من، ورود به پنل مدیریت برای ادمین، و خروج از حساب) درون یک دکمه کپسولی شیشه‌ای با آیکون کاربر و نشانگر بازشو (`ChevronDown`) تجمیع می‌شود و از پراکندگی دکمه‌ها در هدر جلوگیری می‌گردد.
+   - در نسخه موبایل، منوی همبرگری صرفاً اطلاعات نام کاربر را نمایش می‌دهد و تعاملات اصلی حساب منحصراً از طریق همین دکمه در بالای هدر انجام می‌پذیرد.
 
 ---
 
 ### ۶. مشخصات رابط کاربری و تجربه کاربری (UI/UX)
 - **سبک طراحی:** Glassmorphism ملایم، گرادیانت‌های اختصاصی منطبق بر تم فعال (`--primary`، `--bg-light`، `--text-dark`).
+- **منوی شناور موبایل (Mobile Drawer):** پس‌زمینه شیشه‌ای سفید برفی یکپارچه (`bg-white/95 backdrop-blur-2xl`) با کارت‌های تعاملی با کنتراست بالا (`bg-white/85`)، تایپوگرافی تقویت‌شده (`text-textDark` با خوانایی بالا، رنگ عناوین فرعی `text-primary-dark`)، و آیکون‌های هدایتگر با وضوح بهینه جهت خوانایی بی‌نقص حتی در نور مستقیم آفتاب.
 - **جهت‌گیری:** ۱۰۰٪ راست‌به‌چپ (RTL) با تایپوگرافی فارسی استاندارد.
 - **ریسپانسیو:** سازگاری کامل با عرض‌های ۳۶۰px (موبایل کوچک)، ۷۶۸px (تبلت) و ۱۰۲۴px به بالا (دسکتاپ).
 - **مخفی‌سازی در پنل ادمین:** هدر و فوتر عمومی در مسیرهای `/admin/*` مخفی شده و لایوت اختصاصی ادمین (`AdminLayout`) جایگزین می‌شود.
