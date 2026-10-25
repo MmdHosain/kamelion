@@ -74,17 +74,17 @@ const MobileNavDrawer = ({
         aria-hidden="true"
       />
 
-      {/* Floating Modern Sheet from Top */}
+      {/* Floating Modern Sheet from Top - Pure Frosted Glass */}
       <div
         id="mobile-nav-sheet"
         role="dialog"
         aria-modal="true"
         aria-label="منوی ناوبری موبایل"
-        className="fixed top-3 left-3 right-3 sm:left-6 sm:right-6 sm:max-w-lg sm:mx-auto max-h-[88dvh] bg-gradient-to-b from-white/98 via-bgLight/95 to-white/98 backdrop-blur-2xl border border-primary/25 rounded-[2.5rem] shadow-[0_25px_70px_-15px_rgba(231,84,128,0.35)] flex flex-col overflow-hidden animate-slideDown z-[96]"
+        className="fixed top-3 left-3 right-3 sm:left-6 sm:right-6 sm:max-w-lg sm:mx-auto max-h-[88dvh] bg-white/95 backdrop-blur-2xl border border-primary/20 rounded-[2.5rem] shadow-[0_25px_70px_-15px_rgba(231,84,128,0.25)] flex flex-col overflow-hidden animate-slideDown z-[96]"
         style={{ overscrollBehavior: 'contain' }}
       >
         {/* Sheet Header: Clinic Logo, Doctor Title & Close Button */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-primary/15 bg-white/80 backdrop-blur-xl shrink-0">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-primary/15 bg-white/90 backdrop-blur-xl shrink-0">
           <Link
             to="/"
             onClick={handleLinkClick}
@@ -97,7 +97,7 @@ const MobileNavDrawer = ({
               <span className="text-base font-black text-textDark leading-tight tracking-tight">
                 دکتر نگار معشوری
               </span>
-              <span className="text-[11px] text-primary font-bold mt-0.5">
+              <span className="text-[11px] text-primary-dark font-bold mt-0.5">
                 جراح و متخصص بیماری‌های پستان
               </span>
             </div>
@@ -130,11 +130,11 @@ const MobileNavDrawer = ({
                 <div className="w-7 h-7 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center">
                   <Calendar size={15} className="text-white" />
                 </div>
-                <ArrowUpLeft size={16} className="text-white/70 group-hover:translate-x-[-2px] group-hover:translate-y-[2px] transition-transform" />
+                <ArrowUpLeft size={16} className="text-white/90 group-hover:translate-x-[-2px] group-hover:translate-y-[2px] transition-transform" />
               </div>
               <div>
                 <span className="block text-xs font-black text-white">رزرو وقت ویزیت</span>
-                <span className="block text-[10px] text-white/80 font-medium mt-0.5">انتخاب نوبت آنلاین</span>
+                <span className="block text-[10px] text-white/95 font-medium mt-0.5">انتخاب نوبت آنلاین</span>
               </div>
             </button>
 
@@ -158,7 +158,7 @@ const MobileNavDrawer = ({
               </div>
               <div>
                 <span className="block text-xs font-black text-textDark group-hover:text-primary transition-colors">تریاژ و مشاوره</span>
-                <span className="block text-[10px] text-textDark/65 font-medium mt-0.5">بررسی هوشمند علائم</span>
+                <span className="block text-[10px] text-textDark/90 font-medium mt-0.5">بررسی هوشمند علائم</span>
               </div>
             </button>
           </div>
@@ -166,7 +166,7 @@ const MobileNavDrawer = ({
           {/* Relocated User Account & Logout Section */}
           {/* User Account Info Chip (Clean Display - Full actions are in Header User Account Menu) */}
           {isAuthenticated ? (
-            <div className="flex items-center gap-3 p-3 bg-white/80 border border-primary/20 rounded-2xl shrink-0">
+            <div className="flex items-center gap-3 p-3 bg-white/90 border border-primary/20 rounded-2xl shrink-0 shadow-2xs">
               <div className="w-9 h-9 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 text-primary flex items-center justify-center shrink-0 font-bold shadow-xs">
                 <User size={18} />
               </div>
@@ -175,18 +175,18 @@ const MobileNavDrawer = ({
                   {user?.full_name || 'کاربر گرامی'}
                 </span>
                 {user?.phone_number ? (
-                  <span className="text-[10px] text-textDark/60 font-mono mt-0.5" dir="ltr">
+                  <span className="text-[10px] text-textDark/85 font-mono font-medium mt-0.5" dir="ltr">
                     {user.phone_number}
                   </span>
                 ) : (
-                  <span className="text-[10px] text-primary/80 font-medium mt-0.5">
+                  <span className="text-[10px] text-primary-dark font-bold mt-0.5">
                     خوش آمدید
                   </span>
                 )}
               </div>
             </div>
           ) : (
-            <div className="p-2.5 bg-white/80 border border-primary/20 rounded-2xl shrink-0">
+            <div className="p-2.5 bg-white/90 border border-primary/20 rounded-2xl shrink-0 shadow-2xs">
               <button
                 type="button"
                 onClick={() => {
@@ -207,38 +207,38 @@ const MobileNavDrawer = ({
             <Link
               to="/"
               onClick={handleLinkClick}
-              className={`flex items-center justify-between font-bold text-sm py-3 px-4 rounded-2xl transition-all duration-200 ${
+              className={`group flex items-center justify-between font-bold text-sm py-3 px-4 rounded-2xl transition-all duration-200 ${
                 location.pathname === '/'
                   ? 'bg-gradient-to-r from-primary to-primary-dark text-white shadow-md shadow-primary/20'
-                  : 'text-textDark bg-white/60 hover:bg-white hover:text-primary border border-primary/10'
+                  : 'text-textDark bg-white/85 hover:bg-white hover:text-primary border border-primary/15 shadow-2xs'
               }`}
             >
               <span className="flex items-center gap-3">
-                <Home size={18} />
+                <Home size={18} className={location.pathname === '/' ? 'text-white' : 'text-primary'} />
                 <span>صفحه اصلی</span>
               </span>
-              <ArrowUpLeft size={15} className="opacity-60" />
+              <ArrowUpLeft size={16} className={location.pathname === '/' ? 'text-white/90' : 'text-primary/75 group-hover:text-primary group-hover:-translate-x-0.5 group-hover:translate-y-0.5 transition-all'} />
             </Link>
 
             {/* آشنایی با پزشک */}
             <Link
               to="/about"
               onClick={handleLinkClick}
-              className={`flex items-center justify-between font-bold text-sm py-3 px-4 rounded-2xl transition-all duration-200 ${
+              className={`group flex items-center justify-between font-bold text-sm py-3 px-4 rounded-2xl transition-all duration-200 ${
                 location.pathname === '/about'
                   ? 'bg-gradient-to-r from-primary to-primary-dark text-white shadow-md shadow-primary/20'
-                  : 'text-textDark bg-white/60 hover:bg-white hover:text-primary border border-primary/10'
+                  : 'text-textDark bg-white/85 hover:bg-white hover:text-primary border border-primary/15 shadow-2xs'
               }`}
             >
               <span className="flex items-center gap-3">
-                <UserCheck size={18} />
+                <UserCheck size={18} className={location.pathname === '/about' ? 'text-white' : 'text-primary'} />
                 <span>بیوگرافی و سوابق پزشک</span>
               </span>
-              <ArrowUpLeft size={15} className="opacity-60" />
+              <ArrowUpLeft size={16} className={location.pathname === '/about' ? 'text-white/90' : 'text-primary/75 group-hover:text-primary group-hover:-translate-x-0.5 group-hover:translate-y-0.5 transition-all'} />
             </Link>
 
             {/* خدمات درمانی و زیبایی (Expandable Accordion) */}
-            <div className="rounded-2xl border border-primary/15 overflow-hidden bg-white/70 shadow-xs transition-all">
+            <div className="rounded-2xl border border-primary/15 overflow-hidden bg-white/85 shadow-2xs transition-all">
               <button
                 type="button"
                 onClick={() => setServicesOpen(!servicesOpen)}
@@ -257,22 +257,22 @@ const MobileNavDrawer = ({
               </button>
 
               {servicesOpen && (
-                <div className="flex flex-col gap-1.5 p-2.5 border-t border-primary/10 bg-primary/[0.03] animate-fadeSlide">
+                <div className="flex flex-col gap-2 p-2.5 border-t border-primary/10 bg-primary/[0.04] animate-fadeSlide">
                   <Link
                     to="/services/aesthetic"
                     onClick={handleLinkClick}
-                    className="flex items-center gap-2.5 text-xs font-medium py-2.5 px-3.5 rounded-xl text-textDark/85 hover:bg-white hover:text-primary transition-all"
+                    className="flex items-center gap-2.5 text-xs font-bold py-2.5 px-3.5 rounded-xl text-textDark bg-white/70 hover:bg-white hover:text-primary border border-primary/10 hover:border-primary/30 shadow-2xs transition-all"
                   >
-                    <Scissors size={14} className="text-primary/70 shrink-0" />
+                    <Scissors size={14} className="text-primary shrink-0" />
                     <span>جراحی‌های زیبایی پستان (ماموپلاستی، پروتز، لیفت)</span>
                   </Link>
 
                   <Link
                     to="/services/therapeutic"
                     onClick={handleLinkClick}
-                    className="flex items-center gap-2.5 text-xs font-medium py-2.5 px-3.5 rounded-xl text-textDark/85 hover:bg-white hover:text-primary transition-all"
+                    className="flex items-center gap-2.5 text-xs font-bold py-2.5 px-3.5 rounded-xl text-textDark bg-white/70 hover:bg-white hover:text-primary border border-primary/10 hover:border-primary/30 shadow-2xs transition-all"
                   >
-                    <HeartPulse size={14} className="text-primary/70 shrink-0" />
+                    <HeartPulse size={14} className="text-primary shrink-0" />
                     <span>درمان بیماری‌ها، توده‌ها و انکولوژی</span>
                   </Link>
                 </div>
@@ -280,7 +280,7 @@ const MobileNavDrawer = ({
             </div>
 
             {/* راهنما و دانستنی‌های پزشکی (Expandable Accordion) */}
-            <div className="rounded-2xl border border-primary/15 overflow-hidden bg-white/70 shadow-xs transition-all">
+            <div className="rounded-2xl border border-primary/15 overflow-hidden bg-white/85 shadow-2xs transition-all">
               <button
                 type="button"
                 onClick={() => setResourcesOpen(!resourcesOpen)}
@@ -299,31 +299,31 @@ const MobileNavDrawer = ({
               </button>
 
               {resourcesOpen && (
-                <div className="flex flex-col gap-1.5 p-2.5 border-t border-primary/10 bg-primary/[0.03] animate-fadeSlide">
+                <div className="flex flex-col gap-2 p-2.5 border-t border-primary/10 bg-primary/[0.04] animate-fadeSlide">
                   <Link
                     to="/video"
                     onClick={handleLinkClick}
-                    className="flex items-center gap-2.5 text-xs font-medium py-2.5 px-3.5 rounded-xl text-textDark/85 hover:bg-white hover:text-primary transition-all"
+                    className="flex items-center gap-2.5 text-xs font-bold py-2.5 px-3.5 rounded-xl text-textDark bg-white/70 hover:bg-white hover:text-primary border border-primary/10 hover:border-primary/30 shadow-2xs transition-all"
                   >
-                    <Film size={14} className="text-primary/70 shrink-0" />
+                    <Film size={14} className="text-primary shrink-0" />
                     <span>ویدیوهای آموزشی و بالینی</span>
                   </Link>
 
                   <Link
                     to="/resources"
                     onClick={handleLinkClick}
-                    className="flex items-center gap-2.5 text-xs font-medium py-2.5 px-3.5 rounded-xl text-textDark/85 hover:bg-white hover:text-primary transition-all"
+                    className="flex items-center gap-2.5 text-xs font-bold py-2.5 px-3.5 rounded-xl text-textDark bg-white/70 hover:bg-white hover:text-primary border border-primary/10 hover:border-primary/30 shadow-2xs transition-all"
                   >
-                    <FileText size={14} className="text-primary/70 shrink-0" />
+                    <FileText size={14} className="text-primary shrink-0" />
                     <span>مقالات و مطالب آموزشی</span>
                   </Link>
 
                   <Link
                     to="/faq"
                     onClick={handleLinkClick}
-                    className="flex items-center gap-2.5 text-xs font-medium py-2.5 px-3.5 rounded-xl text-textDark/85 hover:bg-white hover:text-primary transition-all"
+                    className="flex items-center gap-2.5 text-xs font-bold py-2.5 px-3.5 rounded-xl text-textDark bg-white/70 hover:bg-white hover:text-primary border border-primary/10 hover:border-primary/30 shadow-2xs transition-all"
                   >
-                    <HelpCircle size={14} className="text-primary/70 shrink-0" />
+                    <HelpCircle size={14} className="text-primary shrink-0" />
                     <span>پرسش‌های متداول بیماران</span>
                   </Link>
                 </div>
@@ -334,20 +334,20 @@ const MobileNavDrawer = ({
             <a
               href="#contact"
               onClick={handleLinkClick}
-              className="flex items-center justify-between font-bold text-sm py-3 px-4 rounded-2xl text-textDark bg-white/60 hover:bg-white hover:text-primary border border-primary/10 transition-all duration-200"
+              className="group flex items-center justify-between font-bold text-sm py-3 px-4 rounded-2xl text-textDark bg-white/85 hover:bg-white hover:text-primary border border-primary/15 shadow-2xs transition-all duration-200"
             >
               <span className="flex items-center gap-3">
                 <MapPin size={18} className="text-primary" />
                 <span>اطلاعات تماس و آدرس مطب</span>
               </span>
-              <ArrowUpLeft size={15} className="opacity-60" />
+              <ArrowUpLeft size={16} className="text-primary/75 group-hover:text-primary group-hover:-translate-x-0.5 group-hover:translate-y-0.5 transition-all" />
             </a>
           </div>
         </div>
 
         {/* Minimalist Aesthetic Footer */}
-        <div className="px-6 py-3.5 border-t border-primary/15 bg-white/70 backdrop-blur-md flex items-center justify-center shrink-0">
-          <p className="text-[11px] text-textDark/60 font-medium text-center">
+        <div className="px-6 py-3.5 border-t border-primary/15 bg-white/90 backdrop-blur-md flex items-center justify-center shrink-0">
+          <p className="text-[11px] text-textDark font-semibold text-center">
             کلینیک تخصصی بیماری‌ها و جراحی پستان دکتر نگار معشوری
           </p>
         </div>
