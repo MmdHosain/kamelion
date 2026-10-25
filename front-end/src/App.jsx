@@ -5,6 +5,7 @@ import { Routes, Route, Navigate, useLocation, useParams } from 'react-router-do
 import { useScrollFade } from './hooks/useScrollFade';
 import { usePageReady } from './hooks/usePageReady';
 import { useThemeStore, applyThemeToDom } from './store/themeStore';
+import useVirtualKeyboard from './hooks/useVirtualKeyboard';
 
 /* Layout & Loading Fallbacks */
 import Header from './components/layout/Header';
@@ -60,6 +61,7 @@ const App = () => {
   }, [activeTheme]);
 
   useScrollFade();
+  useVirtualKeyboard();
 
   // Scroll to top on route change
   useEffect(() => {

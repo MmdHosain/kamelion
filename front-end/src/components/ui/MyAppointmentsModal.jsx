@@ -141,7 +141,7 @@ export default function MyAppointmentsModal({ open, onClose, onOpenNewBooking })
       className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-fadeSlide"
     >
       <div
-        className="w-full max-w-4xl max-h-[92dvh] rounded-[2.5rem] bg-white/95 backdrop-blur-2xl border border-primary/20 p-5 sm:p-8 flex flex-col shadow-[0_25px_60px_-15px_rgba(231,84,128,0.2)] overflow-y-auto chat-scroll relative"
+        className="w-full max-w-4xl max-h-[var(--visual-viewport-height,92dvh)] rounded-[2.5rem] bg-white/95 backdrop-blur-2xl border border-primary/20 p-5 sm:p-8 flex flex-col shadow-[0_25px_60px_-15px_rgba(231,84,128,0.2)] overflow-y-auto chat-scroll relative"
         style={{ overscrollBehavior: 'contain' }}
       >
         {/* Close Button */}

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import useBodyScrollLock from "../hooks/useBodyScrollLock";
+import useVirtualKeyboard from "../hooks/useVirtualKeyboard";
 
 const CommentModal = ({ open, onClose, onSubmitSuccess }) => {
   const [rate, setRate] = useState(5);
@@ -7,6 +8,7 @@ const CommentModal = ({ open, onClose, onSubmitSuccess }) => {
   const [mobile, setMobile] = useState("");
 
   useBodyScrollLock(open);
+  const { keyboardHeight, isKeyboardOpen, isMobile } = useVirtualKeyboard();
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -42,8 +44,12 @@ const CommentModal = ({ open, onClose, onSubmitSuccess }) => {
       className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[999] flex items-end sm:items-center justify-center px-4"
     >
       <div
-        className="bg-white w-full max-w-lg rounded-t-3xl sm:rounded-3xl p-6 relative animate-slideUp shadow-2xl"
-        style={{ overscrollBehavior: 'contain' }}
+        className="bg-white w-full max-w-lg rounded-t-3xl sm:rounded-3xl p-6 relative animate-slideUp shadow-2xl max-h-[90dvh] overflow-y-auto chat-scroll"
+        style={{
+          marginBottom: isMobile && isKeyboardOpen ? `${keyboardHeight}px` : undefined,
+          transition: 'margin-bottom 0.15s ease-out',
+          overscrollBehavior: 'contain',
+        }}
       >
 
         <div className="w-12 h-1 bg-primary rounded-full mx-auto mb-4 sm:hidden" />
