@@ -18,9 +18,7 @@ import {
   MapPin,
   FileText,
   User,
-  LogOut,
   LogIn,
-  Shield,
 } from 'lucide-react';
 import RibbonLogo from '../ui/RibbonLogo';
 import useBodyScrollLock from '../../hooks/useBodyScrollLock';
@@ -37,8 +35,7 @@ const MobileNavDrawer = ({
   const [resourcesOpen, setResourcesOpen] = useState(false);
 
   const location = useLocation();
-  const { isAuthenticated, user, logout, openAuthModal } = useAuth();
-  const isAdmin = user?.role === 'admin' || user?.is_staff === true || user?.is_superuser === true;
+  const { isAuthenticated, user, openAuthModal } = useAuth();
 
   // 1. Lock background page body scroll when mobile menu is open
   useBodyScrollLock(isOpen);
@@ -167,61 +164,26 @@ const MobileNavDrawer = ({
           </div>
 
           {/* Relocated User Account & Logout Section */}
+          {/* User Account Info Chip (Clean Display - Full actions are in Header User Account Menu) */}
           {isAuthenticated ? (
-            <div className="flex flex-col gap-2 p-3 bg-white/80 border border-primary/20 rounded-2xl shrink-0">
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0 font-bold">
-                    <User size={16} />
-                  </div>
-                  <div className="flex flex-col min-w-0">
-                    <span className="text-xs font-bold text-textDark truncate">
-                      {user?.full_name || 'کاربر گرامی'}
-                    </span>
-                    {user?.phone_number && (
-                      <span className="text-[10px] text-textDark/60 font-mono" dir="ltr">
-                        {user.phone_number}
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                {isAdmin ? (
-                  <Link
-                    to="/admin/appointments"
-                    onClick={handleLinkClick}
-                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-primary/10 hover:bg-primary text-primary hover:text-white text-xs font-bold transition-colors shrink-0"
-                  >
-                    <Shield size={14} />
-                    <span>پنل مدیریت</span>
-                  </Link>
-                ) : onOpenMyAppointments ? (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      handleLinkClick();
-                      onOpenMyAppointments();
-                    }}
-                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-primary/10 hover:bg-primary text-primary hover:text-white text-xs font-bold transition-colors cursor-pointer shrink-0"
-                  >
-                    <Calendar size={14} />
-                    <span>نوبت‌های من</span>
-                  </button>
-                ) : null}
+            <div className="flex items-center gap-3 p-3 bg-white/80 border border-primary/20 rounded-2xl shrink-0">
+              <div className="w-9 h-9 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 text-primary flex items-center justify-center shrink-0 font-bold shadow-xs">
+                <User size={18} />
               </div>
-
-              {/* Relocated Direct Logout Action inside Hamburger Drawer */}
-              <button
-                type="button"
-                onClick={() => {
-                  handleLinkClick();
-                  logout();
-                }}
-                className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-red-50 hover:bg-red-500 hover:text-white text-red-600 border border-red-200 text-xs font-bold transition-all cursor-pointer shadow-2xs active:scale-98"
-              >
-                <LogOut size={15} />
-                <span>خروج از حساب کاربری</span>
-              </button>
+              <div className="flex flex-col min-w-0">
+                <span className="text-xs font-black text-textDark truncate">
+                  {user?.full_name || 'کاربر گرامی'}
+                </span>
+                {user?.phone_number ? (
+                  <span className="text-[10px] text-textDark/60 font-mono mt-0.5" dir="ltr">
+                    {user.phone_number}
+                  </span>
+                ) : (
+                  <span className="text-[10px] text-primary/80 font-medium mt-0.5">
+                    خوش آمدید
+                  </span>
+                )}
+              </div>
             </div>
           ) : (
             <div className="p-2.5 bg-white/80 border border-primary/20 rounded-2xl shrink-0">
