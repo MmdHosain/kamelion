@@ -16,7 +16,7 @@
   - نشانگر سطح تریاژ: [`src/components/admin/patients/TriageLevelBadge.jsx`](file:///e:/GitHub%20Repo/kamelion/front-end/src/components/admin/patients/TriageLevelBadge.jsx)
   - سرویس چت: [`src/api/chatService.js`](file:///e:/GitHub%20Repo/kamelion/front-end/src/api/chatService.js)
   - هوک مدیریت نشست و چت: [`src/hooks/useChatSession.js`](file:///e:/GitHub%20Repo/kamelion/front-end/src/hooks/useChatSession.js)
-  - هوک‌های فرعی: [`src/hooks/useBodyScrollLock.js`](file:///e:/GitHub%20Repo/kamelion/front-end/src/hooks/useBodyScrollLock.js), [`src/hooks/useFooterOverlap.js`](file:///e:/GitHub%20Repo/kamelion/front-end/src/hooks/useFooterOverlap.js)
+  - هوک‌های فرعی: [`src/hooks/useBodyScrollLock.js`](file:///e:/GitHub%20Repo/kamelion/front-end/src/hooks/useBodyScrollLock.js), [`src/hooks/useFooterOverlap.js`](file:///e:/GitHub%20Repo/kamelion/front-end/src/hooks/useFooterOverlap.js), [`src/hooks/useVirtualKeyboard.js`](file:///e:/GitHub%20Repo/kamelion/front-end/src/hooks/useVirtualKeyboard.js)
 
 ---
 
@@ -51,7 +51,7 @@ graph TD
    - **تغییر هوشمند به دکمه گوشه بالای فوتر (Smart Lift above Footer):** با نزدیک شدن اسکرول کاربر به انتهای سایت و ورود `#site-footer` به صفحه، کپسول عریض به یک FAB جمع‌وجور با آیکون جرقه و نشانگر آنلاین در گوشه پایین چپ تغییر شکل می‌دهد و با هوک `useFooterOverlap` به صورت داینامیک دقیقاً ۲۴ پیکسل بالاتر از لبه بالایی فوتر قرار می‌گیرد تا هیچ بخشی از متن یا پیوندهای فوتر پوشانده نشود.
 2. **پنجره چت گلس‌مورفیک (Expanded Chat Window):**
    - با کلیک روی کپسول، پنجره گفتگو با افکت اسلاید باز می‌شود و اسکرول صفحه پس‌زمینه با `useBodyScrollLock` قفل می‌گردد.
-   - ریسپانسیو کامل در موبایل با ارتفاع داینامیک ویوپورت (`100dvh`) و رعایت حاشیه امن (`safe-area-inset-bottom`).
+   - ریسپانسیو کامل در موبایل با مهار کیبورد مجازی (هوک اختصاصی `useVirtualKeyboard` و استایل پویا `marginBottom` بالای کیبورد) همراه با حفظ دستگیره و ژستور لمسی کشیدن به پایین (Pull-to-Close) و رعایت حاشیه امن (`safe-area-inset-bottom`).
    - اسکرول کاملاً ایزوله در سطح کانتینر چت بدون پرش صفحه پس‌زمینه، همراه با تشخیص اسکرول کاربر (جلوگیری از پرش اجباری در صورت اسکرول به بالا برای مطالعه پیام‌های پیشین).
 3. **پرامپت‌های پیشنهادی سریع (Quick Prompts):**
    - «درد یا خونریزی شدید دارم» (با آیکون هشدار و وضعیت Urgent).
