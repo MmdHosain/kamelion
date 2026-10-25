@@ -78,7 +78,7 @@ export const DisapproveReasonModal = ({
         }
       }}
     >
-      <div className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-red-100 overflow-hidden transform transition-all animate-scaleUp">
+      <div className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-red-100 overflow-hidden transform transition-all animate-scaleUp max-h-[var(--visual-viewport-height,90dvh)] overflow-y-auto chat-scroll">
         {/* Header */}
         <div className="flex items-center justify-between p-5 bg-gradient-to-l from-red-50 to-rose-50 border-b border-red-100">
           <div className="flex items-center gap-3">

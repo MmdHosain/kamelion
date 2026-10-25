@@ -46,6 +46,8 @@
   --bg-dark: #e4d1f0;
   --text-dark: #4a2545;
   --glass-blur: 24px;
+  --visual-viewport-height: 100dvh;
+  --keyboard-height: 0px;
 }
 
 html {
