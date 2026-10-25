@@ -13,6 +13,7 @@ import {
 import useBodyScrollLock from '../../hooks/useBodyScrollLock';
 import useFooterOverlap from '../../hooks/useFooterOverlap';
 import useChatSession from '../../hooks/useChatSession';
+import useVirtualKeyboard from '../../hooks/useVirtualKeyboard';
 import ChatPillButton from './ChatPillButton';
 import ChatMessageItem from './ChatMessageItem';
 import TypingIndicator from './TypingIndicator';
@@ -42,50 +43,13 @@ export const FloatingChatWidget = ({ isOpen, onToggle, onOpenAppointment }) => {
     clearErrorNotice,
   } = useChatSession();
 
-  // 4. Dynamic Visual Viewport & Mobile Virtual Keyboard Height Tracking
-  const [viewportHeight, setViewportHeight] = useState(() =>
-    typeof window !== 'undefined' ? window.innerHeight : 800
-  );
-  const [keyboardOffset, setKeyboardOffset] = useState(0);
-  const [isMobile, setIsMobile] = useState(() =>
-    typeof window !== 'undefined' ? window.innerWidth < 768 : false
-  );
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    const updateViewport = () => {
-      const windowHeight = window.innerHeight;
-      const mobileCheck = window.innerWidth < 768;
-      setIsMobile(mobileCheck);
-
-      if (window.visualViewport) {
-        const vv = window.visualViewport;
-        const currentKeyboardHeight = Math.max(0, windowHeight - vv.height - (vv.offsetTop || 0));
-        setViewportHeight(vv.height);
-        setKeyboardOffset(currentKeyboardHeight);
-      } else {
-        setViewportHeight(windowHeight);
-        setKeyboardOffset(0);
-      }
-    };
-
-    if (window.visualViewport) {
-      window.visualViewport.addEventListener('resize', updateViewport);
-      window.visualViewport.addEventListener('scroll', updateViewport);
-    }
-    window.addEventListener('resize', updateViewport);
-
-    updateViewport();
-
-    return () => {
-      if (window.visualViewport) {
-        window.visualViewport.removeEventListener('resize', updateViewport);
-        window.visualViewport.removeEventListener('scroll', updateViewport);
-      }
-      window.removeEventListener('resize', updateViewport);
-    };
-  }, []);
+  // 4. Universal Virtual Keyboard & Viewport Tracking
+  const {
+    viewportHeight,
+    keyboardHeight,
+    isKeyboardOpen,
+    isMobile,
+  } = useVirtualKeyboard();
 
   // 5. Mobile Touch Drag-Down to Collapse/Close
   const touchStartY = useRef(0);
@@ -126,6 +90,9 @@ export const FloatingChatWidget = ({ isOpen, onToggle, onOpenAppointment }) => {
   }, [isOpen, onToggle]);
 
   const handleClose = useCallback(() => {
+    if (typeof document !== 'undefined' && document.activeElement && typeof document.activeElement.blur === 'function') {
+      document.activeElement.blur();
+    }
     setDragTranslateY(0);
     onToggle?.(false);
   }, [onToggle]);
@@ -235,7 +202,7 @@ export const FloatingChatWidget = ({ isOpen, onToggle, onOpenAppointment }) => {
         aria-modal="true"
         aria-hidden={!isOpen}
         aria-label="دستیار هوشمند تریاژ و مشاوره آنلاین"
-        className={`fixed inset-0 z-[100] flex items-end md:items-center justify-center p-0 md:p-6 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+        className={`fixed inset-0 z-[100] flex flex-col justify-end md:items-center md:justify-center p-0 md:p-6 transition-colors duration-300 ${
           isOpen
             ? 'bg-black/60 backdrop-blur-md opacity-100 pointer-events-auto'
             : 'bg-black/0 backdrop-blur-none opacity-0 pointer-events-none'
@@ -250,13 +217,25 @@ export const FloatingChatWidget = ({ isOpen, onToggle, onOpenAppointment }) => {
           ref={modalRef}
           style={{
             '--visual-viewport-height': `${viewportHeight}px`,
-            height: isMobile ? `${viewportHeight}px` : undefined,
-            maxHeight: isMobile ? `${viewportHeight}px` : undefined,
+            height: isMobile
+              ? isKeyboardOpen
+                ? `${viewportHeight}px`
+                : '100dvh'
+              : undefined,
+            maxHeight: isMobile
+              ? isKeyboardOpen
+                ? `${viewportHeight}px`
+                : '100dvh'
+              : undefined,
+            marginBottom: isMobile && isKeyboardOpen ? `${keyboardHeight}px` : 0,
             transform: dragTranslateY > 0 ? `translateY(${dragTranslateY}px)` : undefined,
+            transition: dragTranslateY > 0
+              ? 'none'
+              : 'transform 0.3s cubic-bezier(0.16,1,0.3,1), margin-bottom 0.15s ease-out, height 0.15s ease-out',
             overscrollBehavior: 'contain',
           }}
           onClick={(e) => e.stopPropagation()}
-          className={`w-full max-h-[var(--visual-viewport-height,100dvh)] md:max-h-[86vh] md:h-[86vh] md:max-w-5xl rounded-t-[2rem] md:rounded-[2.5rem] bg-gradient-to-br from-bgLight/95 via-white/95 to-bgDark/95 backdrop-blur-2xl border-t md:border border-primary/30 flex flex-col shadow-2xl overflow-hidden relative transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+          className={`w-full md:max-h-[86vh] md:h-[86vh] md:max-w-5xl rounded-t-[2rem] md:rounded-[2.5rem] bg-gradient-to-br from-bgLight/95 via-white/95 to-bgDark/95 backdrop-blur-2xl border-t md:border border-primary/30 flex flex-col shadow-2xl overflow-hidden relative ${
             isOpen
               ? 'translate-y-0 scale-100'
               : 'translate-y-full md:translate-y-12 md:scale-95'
@@ -467,7 +446,7 @@ export const FloatingChatWidget = ({ isOpen, onToggle, onOpenAppointment }) => {
               {/* Modal Input Bar with Medical Disclaimer */}
               <div
                 className={`p-3 sm:p-4 bg-white/90 border-t border-primary/20 backdrop-blur-xl shrink-0 transition-all ${
-                  keyboardOffset > 0
+                  isKeyboardOpen
                     ? 'pb-2.5 sm:pb-3'
                     : 'pb-[calc(0.75rem+env(safe-area-inset-bottom))]'
                 }`}
