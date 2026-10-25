@@ -8,45 +8,45 @@ import {
   Shield,
   ChevronDown,
 } from 'lucide-react';
+import { useAuth } from '../../hooks/useAuth';
 
 /**
- * Unified User Account Dropdown Component
+ * UserAccountDropdown Component
  *
- * Consolidates user profile information, appointment management,
- * administrative shortcuts, and secure logout into a single sleek pill dropdown.
+ * Consolidates all user profile actions (My Appointments, Admin Panel, Logout)
+ * into a single unified glassmorphic capsule button with an interactive popover menu.
  *
  * @param {Object} props
- * @param {Object} props.user - Active user profile object
- * @param {boolean} props.isAdmin - Whether the user has admin role
- * @param {Function} props.onOpenMyAppointments - Callback to trigger MyAppointmentsModal
- * @param {Function} props.logout - Callback to log out the user
+ * @param {Function} [props.onOpenMyAppointments] - Callback to trigger the appointments modal
  */
-export const UserAccountDropdown = ({
-  user,
-  isAdmin = false,
-  onOpenMyAppointments,
-  logout,
-}) => {
+export const UserAccountDropdown = ({ onOpenMyAppointments }) => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
   const location = useLocation();
+  const { user, logout } = useAuth();
 
-  const displayName = user?.full_name || user?.phone_number || 'حساب کاربری';
+  const isAdmin = user?.role === 'admin' || user?.is_staff === true || user?.is_superuser === true;
 
-  // 1. Close dropdown on outside click
+  // Close dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
         setIsOpen(false);
       }
     };
+
     if (isOpen) {
       document.addEventListener('mousedown', handleClickOutside);
     }
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isOpen]);
 
-  // 2. Close on ESC key
+  // Close dropdown on route change
+  useEffect(() => {
+    setIsOpen(false);
+  }, [location.pathname]);
+
+  // Close on Escape key
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape' && isOpen) {
@@ -57,136 +57,128 @@ export const UserAccountDropdown = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen]);
 
-  // 3. Close on route navigation
-  useEffect(() => {
-    setIsOpen(false);
-  }, [location.pathname]);
+  const displayName = user?.full_name || user?.phone_number || 'حساب کاربری';
 
   return (
     <div className="relative flex-shrink-0" ref={menuRef}>
-      {/* Consolidated Account Trigger Pill */}
+      {/* Trigger Capsule Button */}
       <button
         type="button"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => setIsOpen((prev) => !prev)}
         title={displayName}
-        aria-label="منوی حساب کاربری"
-        aria-haspopup="true"
+        aria-label="حساب کاربری و منوی دسترسی‌ها"
         aria-expanded={isOpen}
-        className={`flex items-center gap-1.5 sm:gap-2 bg-white/80 hover:bg-white border text-textDark text-xs md:text-sm font-bold py-2 px-2.5 sm:px-3.5 md:px-4 rounded-full shadow-xs hover:shadow-md transition-all cursor-pointer flex-shrink-0 min-w-0 ${
-          isOpen
-            ? 'border-primary ring-2 ring-primary/20 bg-white'
-            : 'border-primary/25 hover:border-primary/50'
-        }`}
+        aria-haspopup="true"
+        className="flex items-center gap-1.5 sm:gap-2 bg-white/80 hover:bg-white border border-primary/25 hover:border-primary/50 text-textDark text-xs md:text-sm font-bold p-2 sm:py-2 sm:px-3.5 md:px-4 rounded-full shadow-xs hover:shadow-md transition-all duration-200 cursor-pointer flex-shrink-0 group"
       >
-        <div className="w-6 h-6 sm:w-6 sm:h-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-primary">
-          {isAdmin ? <Shield className="w-3.5 h-3.5" /> : <User className="w-3.5 h-3.5" />}
+        <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0 group-hover:scale-105 transition-transform">
+          <User className="w-3.5 h-3.5" />
         </div>
 
-        <span className="max-w-[75px] sm:max-w-[110px] md:max-w-[140px] truncate min-w-0 select-none">
+        <span className="hidden sm:inline max-w-[85px] sm:max-w-[120px] md:max-w-[140px] truncate min-w-0">
           {displayName}
         </span>
 
         <ChevronDown
-          className={`w-3.5 h-3.5 text-primary/70 shrink-0 transition-transform duration-200 ${
-            isOpen ? 'rotate-180 text-primary' : ''
+          className={`w-3.5 h-3.5 text-primary/80 transition-transform duration-200 shrink-0 ${
+            isOpen ? 'rotate-180' : ''
           }`}
         />
       </button>
 
-      {/* Modern Glassmorphic Dropdown Popover */}
+      {/* Popover Dropdown Menu */}
       {isOpen && (
         <div
           role="menu"
-          aria-label="گزینه‌های حساب کاربری"
+          aria-label="منوی حساب کاربری"
           className="absolute left-0 top-full mt-2 w-56 sm:w-64 bg-white/95 backdrop-blur-2xl border border-primary/20 rounded-2xl shadow-2xl py-2 z-50 animate-scaleUp text-right overflow-hidden"
-          style={{ transformOrigin: 'top left' }}
         >
-          {/* User Info Header Card */}
-          <div className="px-4 py-3 bg-gradient-to-l from-primary/5 via-white/50 to-transparent border-b border-primary/10">
-            <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-9 h-9 rounded-2xl bg-gradient-to-br from-primary to-primary-dark text-white flex items-center justify-center font-black shadow-sm shrink-0">
-                {isAdmin ? (
-                  <Shield size={18} />
-                ) : (
-                  <span className="text-xs">
-                    {(user?.full_name?.[0] || 'ک').toUpperCase()}
-                  </span>
-                )}
+          {/* User Profile Header Card */}
+          <div className="px-4 py-2.5 border-b border-primary/10 bg-primary/[0.03]">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center text-primary shrink-0 font-bold">
+                <User className="w-4 h-4" />
               </div>
-              <div className="flex flex-col min-w-0 flex-1">
+              <div className="flex flex-col min-w-0">
                 <span className="text-xs font-black text-textDark truncate">
                   {user?.full_name || 'کاربر گرامی'}
                 </span>
-                {user?.phone_number && (
-                  <span className="text-[11px] text-textDark/60 font-mono mt-0.5" dir="ltr">
+                {user?.phone_number ? (
+                  <span className="text-[10px] text-textDark/60 font-mono mt-0.5" dir="ltr">
                     {user.phone_number}
+                  </span>
+                ) : (
+                  <span className="text-[10px] text-primary/75 font-medium mt-0.5">
+                    کلینیک دکتر نگار معشوری
                   </span>
                 )}
               </div>
             </div>
 
             {isAdmin && (
-              <span className="inline-block mt-2 text-[10px] bg-primary/15 text-primary font-bold px-2 py-0.5 rounded-full">
-                مدیر کلینیک
-              </span>
+              <div className="mt-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-bold">
+                <Shield className="w-3 h-3" />
+                <span>دسترسی مدیریت کلینیک</span>
+              </div>
             )}
           </div>
 
           {/* Action Items List */}
           <div className="py-1 flex flex-col">
-            {/* 1. Admin Dashboard Link (if applicable) */}
+            {/* 1. My Appointments (نوبت‌های من) */}
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => {
+                setIsOpen(false);
+                onOpenMyAppointments?.();
+              }}
+              className="w-full text-right px-4 py-2.5 text-xs font-bold text-textDark/85 hover:text-primary hover:bg-primary/5 transition-colors flex items-center justify-between cursor-pointer group"
+            >
+              <span className="flex items-center gap-2.5">
+                <div className="w-7 h-7 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-colors shrink-0">
+                  <Calendar className="w-3.5 h-3.5" />
+                </div>
+                <span>نوبت‌های من</span>
+              </span>
+              <span className="text-[10px] text-primary/70 font-normal">پیگیری و لغو</span>
+            </button>
+
+            {/* 2. Admin Panel Link (For Admins) */}
             {isAdmin && (
               <Link
                 to="/admin/appointments"
-                onClick={() => setIsOpen(false)}
                 role="menuitem"
-                className="w-full text-right px-4 py-2.5 text-xs font-bold text-textDark/90 hover:text-primary hover:bg-primary/5 transition-colors flex items-center gap-2.5 cursor-pointer"
+                onClick={() => setIsOpen(false)}
+                className="w-full text-right px-4 py-2.5 text-xs font-bold text-textDark/85 hover:text-primary hover:bg-primary/5 transition-colors flex items-center justify-between cursor-pointer group"
               >
-                <div className="w-6 h-6 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                  <Shield size={14} />
-                </div>
-                <span>ورود به پنل مدیریت</span>
+                <span className="flex items-center gap-2.5">
+                  <div className="w-7 h-7 rounded-xl bg-purple-100 flex items-center justify-center text-purple-700 group-hover:bg-purple-600 group-hover:text-white transition-colors shrink-0">
+                    <Shield className="w-3.5 h-3.5" />
+                  </div>
+                  <span>ورود به پنل مدیریت</span>
+                </span>
+                <span className="text-[10px] text-purple-600 font-normal">داشبورد</span>
               </Link>
             )}
 
-            {/* 2. My Appointments Action */}
-            {onOpenMyAppointments && (
-              <button
-                type="button"
-                onClick={() => {
-                  setIsOpen(false);
-                  onOpenMyAppointments();
-                }}
-                role="menuitem"
-                className="w-full text-right px-4 py-2.5 text-xs font-bold text-textDark/90 hover:text-primary hover:bg-primary/5 transition-colors flex items-center justify-between cursor-pointer group"
-              >
-                <div className="flex items-center gap-2.5">
-                  <div className="w-6 h-6 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                    <Calendar size={14} />
-                  </div>
-                  <span>نوبت‌های من</span>
-                </div>
-                <span className="text-[10px] text-primary/70 font-normal">پیگیری / لغو</span>
-              </button>
-            )}
+            {/* Separator */}
+            <div className="border-t border-primary/10 my-1" />
 
-            {/* Divider */}
-            <div className="my-1 border-t border-primary/10" />
-
-            {/* 3. Secure Logout Action */}
+            {/* 3. Logout Action (خروج از حساب) */}
             <button
               type="button"
+              role="menuitem"
               onClick={() => {
                 setIsOpen(false);
                 logout();
               }}
-              role="menuitem"
-              className="w-full text-right px-4 py-2.5 text-xs font-bold text-rose-600 hover:bg-rose-50/80 transition-colors flex items-center gap-2.5 cursor-pointer group"
+              className="w-full text-right px-4 py-2.5 text-xs font-bold text-rose-600 hover:bg-rose-50 hover:text-rose-700 transition-colors flex items-center gap-2.5 cursor-pointer group"
             >
-              <div className="w-6 h-6 rounded-lg bg-rose-100/70 text-rose-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                <LogOut size={14} />
+              <div className="w-7 h-7 rounded-xl bg-rose-50 border border-rose-200/60 flex items-center justify-center text-rose-600 group-hover:bg-rose-600 group-hover:text-white transition-colors shrink-0">
+                <LogOut className="w-3.5 h-3.5" />
               </div>
-              <span>خروج از حساب</span>
+              <span>خروج از حساب کاربری</span>
             </button>
           </div>
         </div>
