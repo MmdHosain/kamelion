@@ -49,12 +49,12 @@ export const ChatPillButton = ({
     }
   };
 
-  // 1. Compact Floating FAB when Approaching/Reaching Footer
-  if (isFooterVisible) {
+  // 1. Compact Floating FAB when Approaching/Reaching Footer OR when Minimized by user
+  if (isFooterVisible || isMinimized) {
     return (
       <div
-        style={{ bottom: `${bottomOffset}px` }}
-        className={`fixed left-4 sm:left-6 z-[90] transition-all duration-200 ease-out animate-scaleUp ${
+        style={isFooterVisible ? { bottom: `${bottomOffset}px` } : undefined}
+        className={`fixed ${isFooterVisible ? '' : 'bottom-4 sm:bottom-6'} left-4 sm:left-6 z-[90] transition-all duration-300 ease-out animate-scaleUp ${
           isOpen
             ? 'opacity-0 pointer-events-none scale-90'
             : 'opacity-100 pointer-events-auto scale-100'
@@ -62,7 +62,10 @@ export const ChatPillButton = ({
       >
         <button
           type="button"
-          onClick={() => handleTriggerExpand()}
+          onClick={() => {
+            setIsMinimized(false);
+            handleTriggerExpand();
+          }}
           className="group bg-gradient-to-br from-primary to-primary-dark hover:brightness-110 text-white p-3 sm:p-3.5 rounded-full shadow-[0_12px_35px_-5px_rgba(231,84,128,0.5)] border-2 border-white/90 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center gap-2 cursor-pointer"
           aria-label="گفتگو با دستیار هوشمند تریاژ"
           title="دستیار هوشمند تریاژ مطب"
@@ -89,24 +92,10 @@ export const ChatPillButton = ({
       }`}
     >
       <div className="w-full max-w-lg md:max-w-2xl pointer-events-auto transition-all duration-300">
-        {isMinimized ? (
-          /* Minimized Pill */
-          <div className="flex justify-center">
-            <button
-              type="button"
-              onClick={() => setIsMinimized(false)}
-              className="bg-white/95 backdrop-blur-xl border-2 border-primary/30 text-primary hover:bg-primary hover:text-white px-4 py-2 sm:px-5 sm:py-2.5 rounded-full text-xs font-black shadow-2xl flex items-center gap-2 transition-all hover:scale-105 cursor-pointer"
-            >
-              <Sparkles size={15} />
-              <span>دستیار هوشمند تریاژ</span>
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            </button>
-          </div>
-        ) : (
-          <div className="flex flex-col gap-1.5 sm:gap-2">
-            {/* Quick Suggestion Chips */}
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 px-1 chat-scroll justify-start sm:justify-center">
-              {QUICK_PROMPTS.slice(0, 3).map((prompt, i) => (
+        <div className="flex flex-col gap-1.5 sm:gap-2">
+          {/* Quick Suggestion Chips */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 px-1 chat-scroll justify-start sm:justify-center">
+            {QUICK_PROMPTS.slice(0, 3).map((prompt, i) => (
                 <button
                   key={i}
                   type="button"
@@ -183,7 +172,6 @@ export const ChatPillButton = ({
               </button>
             </form>
           </div>
-        )}
       </div>
     </div>
   );

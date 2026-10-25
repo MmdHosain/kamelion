@@ -423,6 +423,21 @@ export const FloatingChatWidget = ({ isOpen, onToggle, onOpenAppointment }) => {
                 className="flex-1 overflow-y-auto p-3.5 sm:p-5 md:p-6 flex flex-col gap-3 sm:gap-4 chat-scroll relative"
                 style={{ overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch' }}
               >
+                {/* Official Medical & AI Disclaimer Banner - High Contrast Card */}
+                <div className="bg-white border border-amber-200 shadow-sm rounded-2xl p-3 sm:p-3.5 shrink-0 mb-1 flex items-start gap-2.5 text-right">
+                  <div className="w-7 h-7 rounded-xl bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center shrink-0 mt-0.5">
+                    <AlertCircle size={16} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <span className="block text-xs font-black text-slate-800 mb-0.5">
+                      راهنمای مراجعین و سلب مسئولیت پزشکی
+                    </span>
+                    <p className="text-[11px] sm:text-xs text-slate-600 leading-relaxed font-medium">
+                      دستیار هوشمند تریاژ جهت آموزش و ارزیابی اولیه بر اساس پروتکل‌های دکتر نگار معشوری طراحی شده و جایگزین ویزیت یا تشخیص پزشکی نیست.
+                    </p>
+                  </div>
+                </div>
+
                 {messages.map((msg) => (
                   <ChatMessageItem
                     key={msg.id}
@@ -482,11 +497,6 @@ export const FloatingChatWidget = ({ isOpen, onToggle, onOpenAppointment }) => {
                     <Send className="w-4 h-4 rotate-180" />
                   </button>
                 </form>
-
-                {/* پیام سلب مسئولیت پزشکی برگرفته از develop در جایگاه استاندارد */}
-                <p className="text-[10px] sm:text-[11px] text-slate-500 text-center mt-2 font-medium leading-relaxed max-w-3xl mx-auto">
-                  ⚠️ دستیار هوشمند تریاژ جهت آموزش و ارزیابی اولیه بر اساس پروتکل‌های دکتر نگار معشوری طراحی شده و جایگزین ویزیت یا تشخیص پزشکی نیست.
-                </p>
               </div>
             </div>
           </div>

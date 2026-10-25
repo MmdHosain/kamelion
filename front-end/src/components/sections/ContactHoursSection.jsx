@@ -1,5 +1,6 @@
 import React from 'react';
 import { MapPin, Phone, Clock, CalendarDays } from 'lucide-react';
+import { CLINIC_PHONE_DISPLAY, CLINIC_PHONE_TEL } from '../../constants/contact';
 
 const ContactHoursSection = () => {
   return (
@@ -33,11 +34,11 @@ const ContactHoursSection = () => {
             <div className="flex flex-col gap-1 mt-0.5">
               <strong className="text-textDark font-bold text-base">تلفن نوبت‌دهی و پشتیبانی</strong>
               <a
-                href="tel:02112345678"
+                href={`tel:${CLINIC_PHONE_TEL}`}
                 className="text-primary hover:text-primary-dark font-bold text-base tracking-wider transition-colors inline-block text-right"
                 dir="ltr"
               >
-                021 - 1234 5678
+                {CLINIC_PHONE_DISPLAY}
               </a>
             </div>
           </div>

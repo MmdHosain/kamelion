@@ -1,34 +1,22 @@
 import {
   LayoutDashboard,
   Users,
-  Calendar,
   CalendarClock,
   MessageSquare,
   Palette,
-  Film,
-  BookOpen,
+  Layers,
 } from 'lucide-react';
 
 export const ADMIN_NAV_ITEMS = [
   {
     label: 'نوبت‌ها و زمان‌بندی',
-    icon: Calendar,
+    icon: CalendarClock,
     path: '/admin/appointments',
   },
   {
-    label: 'تقویم کاری و نوبت‌های آتی',
-    icon: CalendarClock,
-    path: '/admin/agenda',
-  },
-  {
-    label: 'مدیریت مقالات',
-    icon: BookOpen,
-    path: '/admin/articles',
-  },
-  {
-    label: 'مدیریت ویدیوها',
-    icon: Film,
-    path: '/admin/videos',
+    label: 'مدیریت محتوا و رسانه',
+    icon: Layers,
+    path: '/admin/content',
   },
   {
     label: 'بیماران',
@@ -51,4 +39,5 @@ export const ADMIN_NAV_ITEMS = [
     path: '/admin/settings',
   },
 ];
+
 

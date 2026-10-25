@@ -1,5 +1,5 @@
-// src/components/chat/ChatContainer.jsx
 import React from 'react';
+import { AlertCircle } from 'lucide-react';
 import ChatHeader from './ChatHeader';
 import ChatMessages from './ChatMessages';
 import ChatInput from './ChatInput';
@@ -40,6 +40,19 @@ const ChatContainer = ({
         <ChatHeader onMinimize={onMinimize} />
         <div className="flex-1 bg-chatBg-200 overflow-hidden relative flex flex-col">
           <div className="flex-1 overflow-y-auto p-4 space-y-4 chat-scroll">
+            <div className="bg-white border border-amber-200 shadow-sm rounded-2xl p-3 sm:p-3.5 shrink-0 flex items-start gap-2.5 text-right">
+              <div className="w-7 h-7 rounded-xl bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center shrink-0 mt-0.5">
+                <AlertCircle size={16} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <span className="block text-xs font-black text-slate-800 mb-0.5">
+                  راهنمای مراجعین و سلب مسئولیت پزشکی
+                </span>
+                <p className="text-[11px] sm:text-xs text-slate-600 leading-relaxed font-medium">
+                  دستیار هوشمند تریاژ جهت آموزش و ارزیابی اولیه بر اساس پروتکل‌های دکتر نگار معشوری طراحی شده و جایگزین ویزیت یا تشخیص پزشکی نیست.
+                </p>
+              </div>
+            </div>
             <ChatMessages
               messages={messages}
               onCtaAction={handleCtaWithAppointment}
@@ -56,9 +69,6 @@ const ChatContainer = ({
                 onSubmit={handleSendMessage}
               />
             </div>
-            <p className="text-[10px] text-slate-500 text-center mt-2 font-medium">
-              ⚠️ دستیار هوشمند تریاژ جهت آموزش و ارزیابی اولیه بر اساس پروتکل‌های دکتر نگار معشوری طراحی شده و جایگزین ویزیت یا تشخیص پزشکی نیست.
-            </p>
           </div>
         </div>
       </div>

@@ -15,14 +15,25 @@ const ArticleCard = ({ article }) => {
     <article className="bg-white/70 backdrop-blur-md border border-primary/20 hover:border-primary/40 rounded-3xl overflow-hidden shadow-xs hover:shadow-lg transition-all duration-300 flex flex-col justify-between hover:-translate-y-1.5 group">
       <div>
         {/* Cover Image with 16:9 Aspect Ratio (Zero CLS) */}
-        <Link to={detailUrl} className="block relative aspect-video overflow-hidden bg-slate-100">
+        <Link to={detailUrl} className="block relative aspect-video overflow-hidden bg-slate-900/5 group/img">
           {article.cover_image ? (
-            <img
-              src={formatMediaUrl(article.cover_image)}
-              alt={`${article.title} — دکتر نگار معشوری`}
-              loading="lazy"
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-            />
+            <>
+              {/* Ambient blurred background for non-16:9 / vertical images */}
+              <img
+                src={formatMediaUrl(article.cover_image)}
+                alt=""
+                aria-hidden="true"
+                tabIndex="-1"
+                className="absolute inset-0 w-full h-full object-cover blur-xl opacity-40 scale-110 pointer-events-none select-none"
+              />
+              {/* Main crisp image */}
+              <img
+                src={formatMediaUrl(article.cover_image)}
+                alt={`${article.title} — دکتر نگار معشوری`}
+                loading="lazy"
+                className="relative z-10 w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
+              />
+            </>
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-primary/5 text-primary/60 font-bold text-xs text-center p-3">
               کلینیک تخصصی پستان دکتر نگار معشوری
@@ -30,7 +41,7 @@ const ArticleCard = ({ article }) => {
           )}
 
           {/* Category Badge */}
-          <span className="absolute top-3 right-3 bg-white/90 backdrop-blur-xs text-primary border border-primary/20 text-xs px-3 py-1 rounded-full font-bold shadow-xs">
+          <span className="absolute top-3 right-3 z-20 bg-white/90 backdrop-blur-xs text-primary border border-primary/20 text-xs px-3 py-1 rounded-full font-bold shadow-xs">
             {categoryName}
           </span>
         </Link>

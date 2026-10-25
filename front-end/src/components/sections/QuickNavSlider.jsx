@@ -208,11 +208,11 @@ const QuickNavSlider = () => {
             );
 
             return isHash ? (
-              <a key={card.id} href={card.link} className="no-underline text-inherit block shrink-0">
+              <a key={card.id} href={card.link} className="no-underline text-inherit flex flex-col shrink-0 h-full">
                 {CardContent}
               </a>
             ) : (
-              <Link key={card.id} to={card.link} className="no-underline text-inherit block shrink-0">
+              <Link key={card.id} to={card.link} className="no-underline text-inherit flex flex-col shrink-0 h-full">
                 {CardContent}
               </Link>
             );

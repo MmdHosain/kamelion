@@ -26,6 +26,7 @@ import {
 import AppointmentDetailModal, { getStatusConfig } from './AppointmentDetailModal';
 import PatientDetailModal from '../patients/PatientDetailModal';
 import AdminManualBookingModal from './AdminManualBookingModal';
+import DisapproveReasonModal from './DisapproveReasonModal';
 
 const ROW_OPTIONS = [10, 25, 50, 100];
 const TABLE_HEADERS = [
@@ -130,6 +131,8 @@ export default function ReservationsList() {
 
   // Add Modal State
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  // Disapprove Reason Modal State
+  const [disapprovingAppointment, setDisapprovingAppointment] = useState(null);
 
   const handleOpenAppointmentDetail = (appointment) => {
     setActiveAppointment(appointment);
@@ -201,14 +204,22 @@ export default function ReservationsList() {
     }
   };
 
-  const handleDisapprove = async (id) => {
-    if (!window.confirm('آیا از رد این نوبت و آزادسازی ساعت اطمینان دارید؟')) return;
+  const handleDisapprove = (appointment) => {
+    setDisapprovingAppointment(appointment);
+  };
+
+  const handleConfirmDisapprove = async (reason) => {
+    if (!disapprovingAppointment) return;
+    const id = disapprovingAppointment.id;
     setActionLoadingId(id);
     try {
-      await reservationService.disapproveReservation(id);
+      await reservationService.disapproveReservation(id, reason);
       setReservations((prev) =>
-        prev.map((r) => (r.id === id ? { ...r, status: 'cancelled_admin' } : r))
+        prev.map((r) =>
+          r.id === id ? { ...r, status: 'cancelled_admin', disapproval_reason: reason } : r
+        )
       );
+      setDisapprovingAppointment(null);
     } catch (error) {
       alert(getApiErrorMessage(error, 'خطا در رد نوبت.'));
     } finally {
@@ -480,7 +491,7 @@ export default function ReservationsList() {
                                     type="button"
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      handleDisapprove(r.id);
+                                      handleDisapprove(r);
                                     }}
                                     className="inline-flex items-center justify-center p-2 rounded-xl text-rose-500 hover:bg-rose-50 transition-colors cursor-pointer"
                                     title="رد نوبت و آزادسازی ساعت"
@@ -637,6 +648,15 @@ export default function ReservationsList() {
           }
         />
       )}
+
+      {/* Disapprove Reason Custom Message Modal */}
+      <DisapproveReasonModal
+        isOpen={Boolean(disapprovingAppointment)}
+        onClose={() => setDisapprovingAppointment(null)}
+        onConfirm={handleConfirmDisapprove}
+        appointment={disapprovingAppointment}
+        loading={Boolean(actionLoadingId)}
+      />
     </>
   );
 }

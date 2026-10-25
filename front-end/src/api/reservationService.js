@@ -73,8 +73,9 @@ export const reservationService = {
     return response.data;
   },
 
-  disapproveReservation: async (id) => {
-    const response = await apiClient.post(`/admin/appointments/${id}/disapprove/`);
+  disapproveReservation: async (id, reason) => {
+    const payload = typeof reason === 'object' ? reason : { reason };
+    const response = await apiClient.post(`/admin/appointments/${id}/disapprove/`, payload);
     return response.data;
   },
 

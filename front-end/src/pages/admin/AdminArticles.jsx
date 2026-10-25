@@ -22,6 +22,21 @@ import ArticleStatusBadge from '../../components/admin/articles/ArticleStatusBad
 import CategoryManagerModal from '../../components/admin/articles/CategoryManagerModal';
 import { useOfflineArticleSync } from '../../hooks/useOfflineArticleSync';
 import { formatMediaUrl } from '../../utils/mediaUtils';
+const formatArticleDate = (article) => {
+  const rawDate = article.created_at || article.published_at || article.updated_at;
+  if (!rawDate) {
+    return article.status === 'draft' ? 'پیش‌نویس' : 'ثبت نشده';
+  }
+  const d = new Date(rawDate);
+  if (isNaN(d.getTime())) {
+    return 'ثبت نشده';
+  }
+  return d.toLocaleDateString('fa-IR', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  });
+};
 
 const AdminArticles = () => {
   const navigate = useNavigate();
@@ -260,7 +275,7 @@ const AdminArticles = () => {
                   <th className="py-2.5 px-3 sm:py-4 sm:px-5">وضعیت</th>
                   <th className="py-2.5 px-3 sm:py-4 sm:px-5">بازدید</th>
                   <th className="py-2.5 px-3 sm:py-4 sm:px-5">تاریخ ثبت</th>
-                  <th className="py-2.5 px-3 sm:py-4 sm:px-5 text-center">عملیات</th>
+                  <th className="py-2.5 px-3 sm:py-4 sm:px-5 text-center sticky left-0 bg-slate-50/95 backdrop-blur-xs shadow-[-4px_0_8px_-2px_rgba(0,0,0,0.06)] z-10">عملیات</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-xs sm:text-sm">
@@ -318,14 +333,23 @@ const AdminArticles = () => {
 
                     {/* Date */}
                     <td className="py-2.5 px-3 sm:py-3 sm:px-5 text-xs text-slate-500 font-medium whitespace-nowrap">
-                      <div className="flex items-center gap-1">
+                      <div
+                        className="flex items-center gap-1"
+                        title={
+                          article.created_at
+                            ? `تاریخ ثبت: ${new Date(article.created_at).toLocaleDateString('fa-IR')}`
+                            : article.published_at
+                            ? `تاریخ انتشار: ${new Date(article.published_at).toLocaleDateString('fa-IR')}`
+                            : 'تاریخ نامشخص'
+                        }
+                      >
                         <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                        {new Date(article.created_at).toLocaleDateString('fa-IR')}
+                        <span>{formatArticleDate(article)}</span>
                       </div>
                     </td>
 
                     {/* Actions */}
-                    <td className="py-2.5 px-3 sm:py-3 sm:px-5 text-center whitespace-nowrap">
+                    <td className="py-2.5 px-3 sm:py-3 sm:px-5 text-center whitespace-nowrap sticky left-0 bg-white/95 backdrop-blur-xs group-hover:bg-slate-50/95 shadow-[-4px_0_8px_-2px_rgba(0,0,0,0.06)] z-10">
                       <div className="flex items-center justify-center gap-1">
                         {/* Toggle Status */}
                         <button
