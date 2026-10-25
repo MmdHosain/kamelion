@@ -277,17 +277,17 @@ export const FloatingChatWidget = ({ isOpen, onToggle, onOpenAppointment }) => {
               </div>
             </div>
 
-            <div className="flex items-center gap-1">
+            {/* Desktop Close Button (On mobile, the dedicated top pill bar is used) */}
+            <div className="hidden md:flex items-center gap-1">
               <button
                 type="button"
                 onClick={handleClose}
                 className="text-textDark/60 hover:text-primary hover:bg-white/80 transition-colors p-2 rounded-xl flex items-center gap-1 text-xs font-bold cursor-pointer"
-                aria-label="کوچک کردن پنجره چت"
+                aria-label="کوچک کردن پنجره گفتگو"
                 title="کوچک کردن"
               >
-                <span className="hidden sm:inline text-[11px] text-textDark/70">کوچک کردن</span>
-                <ChevronDown className="w-4 h-4 md:hidden text-primary" />
-                <X className="hidden md:block w-5 h-5" />
+                <span className="text-[11px] text-textDark/70">کوچک کردن</span>
+                <X className="w-5 h-5 text-primary" />
               </button>
             </div>
           </div>
