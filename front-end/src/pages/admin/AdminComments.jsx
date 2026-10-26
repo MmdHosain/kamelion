@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useCommentsStore } from '../../store/commentsStore';
 import ToastNotification from '../../components/ui/ToastNotification';
+import { toPersianDigits } from '../../utils/jalaliDateUtils';
 
 const THEMES_LIST = [
   'from-[#e75480] to-[#ba2d63]',
@@ -138,7 +139,7 @@ const AdminComments = () => {
         <div className="flex items-center gap-3">
           <div className="bg-primary/10 border border-primary/25 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl text-primary font-bold text-xs sm:text-sm flex items-center gap-2 self-start sm:self-auto">
             {loading && <Loader2 className="w-4 h-4 animate-spin text-primary" />}
-            <span>کل دیدگاه‌ها: {rawComments.length}</span>
+            <span>کل دیدگاه‌ها: {toPersianDigits(rawComments.length)}</span>
           </div>
         </div>
       </div>
@@ -161,7 +162,7 @@ const AdminComments = () => {
                 activeFilter === 'all' ? 'bg-white/25 text-white' : 'bg-primary/10 text-primary'
               }`}
             >
-              {rawComments.length}
+              {toPersianDigits(rawComments.length)}
             </span>
           </button>
 
@@ -183,7 +184,7 @@ const AdminComments = () => {
                     : 'bg-amber-500/15 text-amber-700'
                 }`}
               >
-                {pendingCount}
+                {toPersianDigits(pendingCount)}
               </span>
             )}
           </button>
@@ -205,7 +206,7 @@ const AdminComments = () => {
                   : 'bg-emerald-500/15 text-emerald-700'
               }`}
             >
-              {approvedCount}
+              {toPersianDigits(approvedCount)}
             </span>
           </button>
         </div>
@@ -296,7 +297,7 @@ const AdminComments = () => {
                         </div>
 
                         <div className="flex items-center gap-2 text-xs text-textDark/50 mt-0.5">
-                          <span>{comment.date}</span>
+                          <span>{toPersianDigits(comment.date)}</span>
                           {comment.email && <span>• {comment.email}</span>}
                         </div>
                       </div>
@@ -308,7 +309,7 @@ const AdminComments = () => {
                         <Star key={i} className="w-3.5 h-3.5 fill-current" />
                       ))}
                       <span className="text-xs font-bold text-amber-700 mr-1.5">
-                        {comment.rating || 5} از ۵
+                        {toPersianDigits(comment.rating || 5)} از ۵
                       </span>
                     </div>
                   </div>
