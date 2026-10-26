@@ -1,6 +1,6 @@
-// ScheduleCard.jsx
 import React, { useState } from 'react';
 import { Trash2, ChevronDown, ChevronUp, GripVertical, Clock, Calendar } from 'lucide-react';
+import { toPersianDigits } from '../../../utils/jalaliDateUtils';
 
 const DAYS_MAP = [
   { code: 'Sat', fa: 'شنبه' },
@@ -139,9 +139,9 @@ const ScheduleCard = ({
       <div className="flex items-center justify-between text-xs text-textDark/70 font-bold border-t border-primary/10 pt-2.5">
         <div className="flex items-center gap-1 font-mono text-primary">
           <Clock size={13} />
-          <span>{schedule.startTime}</span>
+          <span>{toPersianDigits(schedule.startTime)}</span>
           <span>تا</span>
-          <span>{schedule.endTime}</span>
+          <span>{toPersianDigits(schedule.endTime)}</span>
         </div>
         <span className="text-[11px] text-textDark/60 truncate max-w-[140px]">
           {schedule.selectedDays.length === 7
@@ -193,7 +193,7 @@ const ScheduleCard = ({
               >
                 {SLOT_OPTIONS.map((min) => (
                   <option key={min} value={min}>
-                    {min} دقیقه
+                    {toPersianDigits(min)} دقیقه
                   </option>
                 ))}
               </select>
@@ -209,7 +209,7 @@ const ScheduleCard = ({
               >
                 {GAP_OPTIONS.map((min) => (
                   <option key={min} value={min}>
-                    {min} دقیقه
+                    {toPersianDigits(min)} دقیقه
                   </option>
                 ))}
               </select>

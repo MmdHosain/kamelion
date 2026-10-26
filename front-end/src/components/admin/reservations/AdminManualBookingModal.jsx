@@ -276,7 +276,7 @@ export default function AdminManualBookingModal({ isOpen, onClose, onCreated }) 
     if (!trimmedPhone) {
       newErrors.phoneNumber = 'شماره تماس بیمار الزامی است.';
     } else if (!/^09\d{9}$/.test(trimmedPhone) && !/^\+989\d{9}$/.test(trimmedPhone)) {
-      newErrors.phoneNumber = 'شماره موبایل نامعتبر است (مثال: 09123456789).';
+      newErrors.phoneNumber = 'شماره موبایل نامعتبر است (مثال: ۰۹۱۲۳۴۵۶۷۸۹).';
     }
 
     const trimmedName = fullName.trim();
@@ -737,7 +737,7 @@ export default function AdminManualBookingModal({ isOpen, onClose, onCreated }) 
                           ref={phoneInputRef}
                           type="tel"
                           dir="ltr"
-                          placeholder="مثال: 09123456789"
+                          placeholder="مثال: ۰۹۱۲۳۴۵۶۷۸۹"
                           value={phoneNumber}
                           onChange={(e) => {
                             setPhoneNumber(e.target.value);
