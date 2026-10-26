@@ -483,7 +483,7 @@ export default function AppointmentModal({ open, onClose, onOpenMyAppointments }
                 {bookedAppointment.id && (
                   <div className="flex justify-between items-center">
                     <span className="text-textDark/60">کد رهگیری نوبت:</span>
-                    <span className="font-mono text-gray-800">#{bookedAppointment.id}</span>
+                    <span className="font-mono text-gray-800">#{toPersianDigits(bookedAppointment.id)}</span>
                   </div>
                 )}
               </div>

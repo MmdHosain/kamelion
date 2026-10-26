@@ -393,7 +393,7 @@ export default function DateOfBirthInput({
           `${gy}/${String(gm).padStart(2, '0')}/${String(gd).padStart(2, '0')}`
         );
         const j = gregorianToJalali(gy, gm, gd);
-        setConversionPreview(`معادل شمسی: ${j.jy}/${String(j.jm).padStart(2, '0')}/${String(j.jd).padStart(2, '0')}`);
+        setConversionPreview(`معادل شمسی: ${toPersianDigits(`${j.jy}/${String(j.jm).padStart(2, '0')}/${String(j.jd).padStart(2, '0')}`)}`);
       }
     }
   }, [value, calendarType]);
@@ -521,7 +521,7 @@ export default function DateOfBirthInput({
         setConversionPreview(`معادل میلادی: ${isoString}`);
       } else {
         const j = gregorianToJalali(gy, gm, gd);
-        setConversionPreview(`معادل شمسی: ${j.jy}/${String(j.jm).padStart(2, '0')}/${String(j.jd).padStart(2, '0')}`);
+        setConversionPreview(`معادل شمسی: ${toPersianDigits(`${j.jy}/${String(j.jm).padStart(2, '0')}/${String(j.jd).padStart(2, '0')}`)}`);
       }
 
       onChange?.(isoString, {
