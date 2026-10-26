@@ -17,7 +17,7 @@ import useAuthStore from '../../store/authStore';
 import { useAuth } from '../../hooks/useAuth';
 import useBodyScrollLock from '../../hooks/useBodyScrollLock';
 import DateOfBirthInput from './DateOfBirthInput';
-import { formatJalaliDisplay } from '../../utils/jalaliDateUtils';
+import { formatJalaliDisplay, toPersianDigits } from '../../utils/jalaliDateUtils';
 
 export const toEnglishDigits = (str) => {
   if (!str) return '';
@@ -152,7 +152,7 @@ const AuthModal = () => {
 
     const cleaned = normalizePhone(phone);
     if (!cleaned || cleaned.length < 10) {
-      setLocalError('لطفاً یک شماره تلفن همراه معتبر (مثلاً 09121234567) وارد کنید.');
+      setLocalError('لطفاً یک شماره تلفن همراه معتبر (مثلاً ۰۹۱۲۱۲۳۴۵۶۷) وارد کنید.');
       return;
     }
 
@@ -286,7 +286,7 @@ const AuthModal = () => {
                 <input
                   ref={phoneInputRef}
                   type="tel"
-                  placeholder="09121234567"
+                  placeholder="۰۹۱۲۱۲۳۴۵۶۷"
                   dir="ltr"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
@@ -330,7 +330,7 @@ const AuthModal = () => {
               <p className="text-textDark/70 text-sm font-medium">
                 کد تأیید ۶ رقمی به شماره{' '}
                 <span className="font-mono font-bold text-primary" dir="ltr">
-                  {tempAuthData?.phone || phone}
+                  {toPersianDigits(tempAuthData?.phone || phone)}
                 </span>{' '}
                 ارسال شد
               </p>
@@ -432,7 +432,7 @@ const AuthModal = () => {
                 </label>
                 <input
                   type="text"
-                  placeholder="0012345678"
+                  placeholder="۰۰۱۲۳۴۵۶۷۸"
                   maxLength={10}
                   dir="ltr"
                   inputMode="numeric"
@@ -503,7 +503,7 @@ const AuthModal = () => {
               </p>
               <div className="mt-2 inline-flex items-center gap-1.5 bg-primary/10 border border-primary/20 px-3 py-1 rounded-full text-xs font-mono font-bold text-primary">
                 <Phone className="w-3 h-3" />
-                <span dir="ltr">{tempAuthData?.phone || phone}</span>
+                <span dir="ltr">{toPersianDigits(tempAuthData?.phone || phone)}</span>
               </div>
             </div>
 
@@ -570,14 +570,14 @@ const AuthModal = () => {
               <div className="flex justify-between items-center">
                 <span className="text-textDark/60 font-medium">شماره تماس:</span>
                 <span className="font-mono font-bold" dir="ltr">
-                  {user?.phone_number || tempAuthData?.phone || phone}
+                  {toPersianDigits(user?.phone_number || tempAuthData?.phone || phone)}
                 </span>
               </div>
               {user?.national_id && (
                 <div className="flex justify-between items-center">
                   <span className="text-textDark/60 font-medium">کد ملی:</span>
                   <span className="font-mono font-bold" dir="ltr">
-                    {user.national_id}
+                    {toPersianDigits(user.national_id)}
                   </span>
                 </div>
               )}
