@@ -13,6 +13,7 @@ import {
 import useAuthStore from '../../store/authStore';
 import { useTypewriter } from '../../hooks/useTypewriter';
 import { CLINIC_PHONE_TEL } from '../../constants/contact';
+import { toPersianDigits } from '../../utils/jalaliDateUtils';
 export { TypingIndicator } from './TypingIndicator';
 
 const CLINIC_PHONE = CLINIC_PHONE_TEL;
@@ -154,7 +155,7 @@ export const ChatMessageItem = ({
                   کد تریاژ اورژانس صادر شد
                 </div>
                 <div className="text-xl sm:text-3xl font-mono font-black text-red-600 bg-white py-1.5 sm:py-2 rounded-2xl shadow-inner mb-2.5 sm:mb-3 tracking-widest">
-                  {message.emergencyCode}
+                  {toPersianDigits(message.emergencyCode)}
                 </div>
                 <div className="flex gap-2">
                   <button
@@ -204,7 +205,7 @@ export const ChatMessageItem = ({
       </div>
 
       <span className="text-[11px] px-2 mt-0.5 font-bold text-textDark/60">
-        {message.time}
+        {toPersianDigits(message.time)}
       </span>
     </div>
   );
