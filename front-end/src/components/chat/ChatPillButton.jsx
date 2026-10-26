@@ -93,9 +93,11 @@ export const ChatPillButton = ({
     >
       <div className="w-full max-w-lg md:max-w-2xl pointer-events-auto transition-all duration-300">
         <div className="flex flex-col gap-1.5 sm:gap-2">
-          {/* Quick Suggestion Chips */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 px-1 chat-scroll justify-start sm:justify-center">
-            {QUICK_PROMPTS.slice(0, 3).map((prompt, i) => (
+          {/* Quick Suggestion Chips & Detached Minimize Button Row */}
+          <div className="flex items-center gap-1.5 w-full">
+            {/* Scrollable Suggestion Chips (takes available flex width, scrolls smoothly) */}
+            <div className="flex-1 min-w-0 flex items-center gap-1.5 overflow-x-auto pb-1 px-1 chat-scroll justify-start sm:justify-center">
+              {QUICK_PROMPTS.slice(0, 3).map((prompt, i) => (
                 <button
                   key={i}
                   type="button"
@@ -115,18 +117,19 @@ export const ChatPillButton = ({
                   {prompt.text}
                 </button>
               ))}
-
-              {/* Minimize Button */}
-              <button
-                type="button"
-                onClick={() => setIsMinimized(true)}
-                className="chat-suggestion-chip p-1 sm:p-1.5 rounded-full bg-white/95 backdrop-blur-md border border-primary/20 text-textDark/60 hover:text-textDark hover:bg-primary/10 hover:border-primary/50 hover:brightness-105 hover:-translate-y-0.5 hover:shadow-md hover:shadow-primary/15 active:translate-y-0 active:scale-95 shadow-xs transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] shrink-0 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-white motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100 motion-reduce:transition-none"
-                title="کوچک کردن"
-                aria-label="کوچک کردن ویجت"
-              >
-                <X size={14} />
-              </button>
             </div>
+
+            {/* Detached Minimize Button: Fixed on Left in RTL, outside the scroll area */}
+            <button
+              type="button"
+              onClick={() => setIsMinimized(true)}
+              className="chat-suggestion-chip w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/95 backdrop-blur-md border border-primary/25 text-textDark/60 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-300 hover:brightness-105 hover:-translate-y-0.5 hover:shadow-md hover:shadow-rose-500/15 active:translate-y-0 active:scale-95 shadow-xs transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] shrink-0 flex items-center justify-center cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-white motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100 motion-reduce:transition-none mb-1"
+              title="کوچک کردن"
+              aria-label="کوچک کردن ویجت"
+            >
+              <X size={14} />
+            </button>
+          </div>
 
             {/* Main Slim Capsule Input Bar - Auto-expands on focus, click or typing */}
             <form
