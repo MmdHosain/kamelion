@@ -126,9 +126,17 @@ export default function AppointmentModal({ open, onClose, onOpenMyAppointments }
   const [bookedAppointment, setBookedAppointment] = useState(null);
   const [isReasonHighlighted, setIsReasonHighlighted] = useState(false);
 
+  const modalContainerRef = useRef(null);
   const reasonContainerRef = useRef(null);
   const reasonInputRef = useRef(null);
   const highlightTimeoutRef = useRef(null);
+
+  // Auto-scroll modal container to top on mobile step switch (ensures time slots are in viewport on iOS Safari)
+  useEffect(() => {
+    if (modalContainerRef.current) {
+      modalContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [mobileStep]);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -154,6 +162,9 @@ export default function AppointmentModal({ open, onClose, onOpenMyAppointments }
       setBookingSuccess(false);
       setBookedAppointment(null);
       setIsReasonHighlighted(false);
+      if (modalContainerRef.current) {
+        modalContainerRef.current.scrollTo({ top: 0, behavior: 'instant' });
+      }
     } else {
       clearCache();
     }
@@ -193,8 +204,11 @@ export default function AppointmentModal({ open, onClose, onOpenMyAppointments }
     if (!day) return;
     setSelectedDate(day);
     fetchSlots(day);
-    // On mobile, advance smoothly to Step 2 (Time & Reason)
+    // On mobile, advance smoothly to Step 2 (Time & Reason) and reset scroll to top
     setMobileStep(2);
+    if (modalContainerRef.current) {
+      modalContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   const handleSlotSelect = (time) => {
@@ -414,8 +428,12 @@ export default function AppointmentModal({ open, onClose, onOpenMyAppointments }
       className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-fadeSlide"
     >
       <div
+        ref={modalContainerRef}
         className="w-full max-w-4xl max-h-[var(--visual-viewport-height,92dvh)] rounded-[2.5rem] bg-white/95 backdrop-blur-2xl border border-primary/20 p-5 sm:p-8 flex flex-col shadow-[0_25px_60px_-15px_rgba(231,84,128,0.2)] overflow-y-auto chat-scroll relative"
-        style={{ overscrollBehavior: 'contain' }}
+        style={{
+          overscrollBehavior: 'contain',
+          WebkitOverflowScrolling: 'touch',
+        }}
       >
         
         {/* Close Button ("X") */}
@@ -483,7 +501,7 @@ export default function AppointmentModal({ open, onClose, onOpenMyAppointments }
                 {bookedAppointment.id && (
                   <div className="flex justify-between items-center">
                     <span className="text-textDark/60">کد رهگیری نوبت:</span>
-                    <span className="font-mono text-gray-800">#{bookedAppointment.id}</span>
+                    <span className="font-mono text-gray-800">#{toPersianDigits(bookedAppointment.id)}</span>
                   </div>
                 )}
               </div>
@@ -598,10 +616,13 @@ export default function AppointmentModal({ open, onClose, onOpenMyAppointments }
               </div>
 
               {/* Column 2: Step 2 (Time Slots, Reason & Confirm Button) */}
-              <div className={`${
-                mobileStep === 2 ? 'flex' : 'hidden lg:flex'
-              } flex-col justify-between bg-white border border-primary/15 rounded-3xl p-5 sm:p-6 shadow-xs animate-fadeSlide min-h-[460px]`}>
-                <div className="flex flex-col gap-4">
+              <div
+                className={`${
+                  mobileStep === 2 ? 'flex' : 'hidden lg:flex'
+                } flex-col justify-between bg-white border border-primary/15 rounded-3xl p-5 sm:p-6 shadow-xs animate-fadeSlide min-h-[460px]`}
+                style={{ transform: 'translateZ(0)' }}
+              >
+                <div className="flex flex-col gap-4 min-h-0">
                   
                   {/* Mobile Back to Calendar Bar */}
                   <div className="flex lg:hidden items-center justify-between border-b border-primary/10 pb-3">
@@ -660,8 +681,15 @@ export default function AppointmentModal({ open, onClose, onOpenMyAppointments }
                   )}
 
                   {!isLoadingSlots && !errors.date && availableSlots.length > 0 && (
-                    <div className="flex flex-col gap-2">
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-40 overflow-y-auto chat-scroll p-1">
+                    <div className="flex flex-col gap-2 min-h-0">
+                      <div
+                        key={selectedDate ? formatDateForApi(selectedDate) : 'no-slots-selected'}
+                        className="grid grid-cols-2 sm:grid-cols-3 gap-2 min-h-[110px] max-h-40 overflow-y-auto chat-scroll p-1"
+                        style={{
+                          transform: 'translateZ(0)',
+                          WebkitOverflowScrolling: 'touch',
+                        }}
+                      >
                         {availableSlots.map((slot, index) => {
                           const isAvailable = slot.status === 'available';
                           const isSelected = selectedTime === slot.time;

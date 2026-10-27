@@ -9,6 +9,7 @@ import {
   ChevronDown,
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
+import { toPersianDigits } from '../../utils/jalaliDateUtils';
 
 /**
  * UserAccountDropdown Component
@@ -57,7 +58,7 @@ export const UserAccountDropdown = ({ onOpenMyAppointments }) => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen]);
 
-  const displayName = user?.full_name || user?.phone_number || 'حساب کاربری';
+  const displayName = user?.full_name || (user?.phone_number ? toPersianDigits(user.phone_number) : 'حساب کاربری');
 
   return (
     <div className="relative flex-shrink-0" ref={menuRef}>
@@ -105,7 +106,7 @@ export const UserAccountDropdown = ({ onOpenMyAppointments }) => {
                 </span>
                 {user?.phone_number ? (
                   <span className="text-[10px] text-textDark/60 font-mono mt-0.5" dir="ltr">
-                    {user.phone_number}
+                    {toPersianDigits(user.phone_number)}
                   </span>
                 ) : (
                   <span className="text-[10px] text-primary/75 font-medium mt-0.5">

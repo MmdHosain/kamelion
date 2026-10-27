@@ -205,16 +205,21 @@ export function formatJalaliDisplay(date, showWeekday = true) {
   const weekdayIndex = getJalaliDayOfWeekIndex(date);
   const weekdayName = PERSIAN_WEEKDAY_NAMES[weekdayIndex].full;
 
+  const faDay = toPersianDigits(jd);
+  const faYear = toPersianDigits(jy);
+
   if (showWeekday) {
-    return `${weekdayName}، ${jd} ${monthName} ${jy}`;
+    return `${weekdayName}، ${faDay} ${monthName} ${faYear}`;
   }
-  return `${jd} ${monthName} ${jy}`;
+  return `${faDay} ${monthName} ${faYear}`;
 }
 
 /**
- * Converts Persian numbers to English if needed
+ * Converts English/Latin digits to Persian digits safely
  */
 export function toPersianDigits(num) {
+  if (num === null || num === undefined || num === '') return '';
   const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
   return String(num).replace(/\d/g, (x) => persianDigits[Number(x)]);
 }
+

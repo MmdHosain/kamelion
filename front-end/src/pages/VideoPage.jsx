@@ -12,6 +12,7 @@ import {
   Calendar,
 } from 'lucide-react';
 import { videoService } from '../api/videoService';
+import { toPersianDigits } from '../utils/jalaliDateUtils';
 import SEO from '../components/seo/SEO';
 
 const DEFAULT_VIDEOS = [
@@ -131,7 +132,7 @@ export default function VideoPage() {
 
           <div className="flex items-center gap-2 text-xs font-bold text-primary-dark bg-primary/10 px-4 py-2 rounded-2xl">
             <Sparkles size={14} className="text-primary" />
-            <span>تعداد ویدیوها: {filteredVideos.length} مورد</span>
+            <span>تعداد ویدیوها: {toPersianDigits(filteredVideos.length)} مورد</span>
           </div>
         </div>
 

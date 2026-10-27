@@ -4,6 +4,7 @@ import { Search, Users, Eye, Phone, Calendar, ArrowUpDown, ChevronLeft, ChevronR
 import PatientDetailModal from './PatientDetailModal';
 import TriageLevelBadge from './TriageLevelBadge';
 import { adminApi } from '../../../api/admin';
+import { toPersianDigits } from '../../../utils/jalaliDateUtils';
 
 const mockPatients = [
   {
@@ -33,9 +34,9 @@ const ROWS_OPTIONS = [10, 20, 50];
 const formatDate = (iso) => {
   if (!iso) return '—';
   try {
-    return new Date(iso).toLocaleDateString('fa-IR', { day: 'numeric', month: 'short', year: 'numeric' });
+    return toPersianDigits(new Date(iso).toLocaleDateString('fa-IR', { day: 'numeric', month: 'short', year: 'numeric' }));
   } catch {
-    return iso;
+    return toPersianDigits(iso);
   }
 };
 
@@ -158,7 +159,7 @@ export default function PatientsList() {
                       {patient.fullName}
                     </td>
                     <td className="px-3 sm:px-5 py-2.5 sm:py-4 font-mono font-bold text-primary-dark whitespace-nowrap" dir="ltr">
-                      {patient.phoneNumber}
+                      {toPersianDigits(patient.phoneNumber)}
                     </td>
                     <td className="px-3 sm:px-5 py-2.5 sm:py-4 text-textDark/75 font-medium whitespace-nowrap">
                       {formatDate(patient.lastAppointment)}
@@ -193,7 +194,7 @@ export default function PatientsList() {
             >
               {ROWS_OPTIONS.map((n) => (
                 <option key={n} value={n}>
-                  {n}
+                  {toPersianDigits(n)}
                 </option>
               ))}
             </select>
@@ -209,7 +210,7 @@ export default function PatientsList() {
               قبلی
             </button>
             <span className="text-xs font-bold text-primary px-2">
-              صفحه {currentPage} از {totalPages}
+              صفحه {toPersianDigits(currentPage)} از {toPersianDigits(totalPages)}
             </span>
             <button
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}

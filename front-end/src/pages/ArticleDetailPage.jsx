@@ -24,6 +24,7 @@ import ArticleSidebar from '../components/articles/ArticleSidebar';
 import ArticleMediaEmbed from '../components/articles/ArticleMediaEmbed';
 import ArticleRelatedGrid from '../components/articles/ArticleRelatedGrid';
 import { formatMediaUrl, formatMediaHtml } from '../utils/mediaUtils';
+import { toPersianDigits } from '../utils/jalaliDateUtils';
 import SEO from '../components/seo/SEO';
 
 const sanitizeAndAddIdsToHeadings = (rawHtml) => {
@@ -219,23 +220,25 @@ const ArticleDetailPage = ({ onOpenAppointment, onOpenChat }) => {
               <span className="flex items-center gap-1.5">
                 <Calendar className="w-3.5 h-3.5 text-primary" />
                 {article.created_at
-                  ? new Date(article.created_at).toLocaleDateString('fa-IR', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                    })
+                  ? toPersianDigits(
+                      new Date(article.created_at).toLocaleDateString('fa-IR', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                      })
+                    )
                   : 'امروز'}
               </span>
 
               <span className="flex items-center gap-1.5">
                 <Clock className="w-3.5 h-3.5 text-primary" />
-                {article.reading_time_minutes || 5} دقیقه مطالعه
+                {toPersianDigits(article.reading_time_minutes || 5)} دقیقه مطالعه
               </span>
 
               {article.views_count > 0 && (
                 <span className="flex items-center gap-1.5">
                   <Eye className="w-3.5 h-3.5 text-slate-400" />
-                  {article.views_count} بازدید
+                  {toPersianDigits(article.views_count)} بازدید
                 </span>
               )}
             </div>

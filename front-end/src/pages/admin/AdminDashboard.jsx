@@ -12,6 +12,7 @@ import {
 } from 'recharts';
 import { TrendingUp, Users, Calendar, CheckCircle2, DollarSign, Activity, Loader2 } from 'lucide-react';
 import { adminApi } from '../../api/admin';
+import { toPersianDigits } from '../../utils/jalaliDateUtils';
 
 const DEFAULT_STATISTICS_DATA = [
   { month: 'فروردین', value: 120 },
@@ -98,10 +99,10 @@ const AdminDashboard = () => {
               <Users size={18} />
             </div>
           </div>
-          <div className="text-xl sm:text-2xl font-black text-primary mb-1">{typeof totalVisits === 'number' ? `${totalVisits} بیمار` : totalVisits}</div>
+          <div className="text-xl sm:text-2xl font-black text-primary mb-1">{typeof totalVisits === 'number' ? `${toPersianDigits(totalVisits)} بیمار` : toPersianDigits(totalVisits)}</div>
           <span className="text-[11px] font-bold text-emerald-600 flex items-center gap-1">
             <TrendingUp size={12} />
-            {visitsGrowth}
+            {toPersianDigits(visitsGrowth)}
           </span>
         </div>
 
@@ -112,10 +113,10 @@ const AdminDashboard = () => {
               <Calendar size={18} />
             </div>
           </div>
-          <div className="text-xl sm:text-2xl font-black text-primary mb-1">{typeof onlineBookings === 'number' ? `${onlineBookings} نوبت` : onlineBookings}</div>
+          <div className="text-xl sm:text-2xl font-black text-primary mb-1">{typeof onlineBookings === 'number' ? `${toPersianDigits(onlineBookings)} نوبت` : toPersianDigits(onlineBookings)}</div>
           <span className="text-[11px] font-bold text-emerald-600 flex items-center gap-1">
             <CheckCircle2 size={12} />
-            {attendanceRate} درصد حضور موفق
+            {toPersianDigits(attendanceRate)} درصد حضور موفق
           </span>
         </div>
 
@@ -126,8 +127,8 @@ const AdminDashboard = () => {
               <Activity size={18} />
             </div>
           </div>
-          <div className="text-xl sm:text-2xl font-black text-primary mb-1">{typeof triageChats === 'number' ? `${triageChats} گفتگو` : triageChats}</div>
-          <span className="text-[11px] font-bold text-primary">{typeof emergencyCodes === 'number' ? `${emergencyCodes} کد اورژانس صادرشده` : emergencyCodes}</span>
+          <div className="text-xl sm:text-2xl font-black text-primary mb-1">{typeof triageChats === 'number' ? `${toPersianDigits(triageChats)} گفتگو` : toPersianDigits(triageChats)}</div>
+          <span className="text-[11px] font-bold text-primary">{typeof emergencyCodes === 'number' ? `${toPersianDigits(emergencyCodes)} کد اورژانس صادرشده` : toPersianDigits(emergencyCodes)}</span>
         </div>
 
         <div className="bg-white/85 border border-primary/20 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 shadow-sm">
@@ -137,8 +138,8 @@ const AdminDashboard = () => {
               <CheckCircle2 size={18} />
             </div>
           </div>
-          <div className="text-xl sm:text-2xl font-black text-primary mb-1">{satisfactionRating}</div>
-          <span className="text-[11px] font-bold text-amber-500">بر اساس {reviewsCount} دیدگاه</span>
+          <div className="text-xl sm:text-2xl font-black text-primary mb-1">{toPersianDigits(satisfactionRating)}</div>
+          <span className="text-[11px] font-bold text-amber-500">بر اساس {toPersianDigits(reviewsCount)} دیدگاه</span>
         </div>
       </div>
 
@@ -160,8 +161,10 @@ const AdminDashboard = () => {
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData}>
                 <XAxis dataKey="month" stroke="#4a2545" tick={{ fill: '#4a2545', fontSize: 12 }} />
-                <YAxis stroke="#4a2545" tick={{ fill: '#4a2545', fontSize: 12 }} />
+                <YAxis stroke="#4a2545" tick={{ fill: '#4a2545', fontSize: 12 }} tickFormatter={(val) => toPersianDigits(val)} />
                 <Tooltip
+                  formatter={(value) => [toPersianDigits(value), 'تعداد']}
+                  labelFormatter={(label) => label}
                   contentStyle={{
                     backgroundColor: 'rgba(255,255,255,0.95)',
                     borderRadius: '16px',
@@ -201,7 +204,7 @@ const AdminDashboard = () => {
               </Pie>
             </PieChart>
             <div className="absolute text-xl font-black text-primary">
-              {completedPercentage}٪
+              {toPersianDigits(completedPercentage)}٪
             </div>
           </div>
 
@@ -211,14 +214,14 @@ const AdminDashboard = () => {
                 <span className="w-3 h-3 rounded-full bg-[#e75480]"></span>
                 ویزیت‌های تکمیل‌شده
               </span>
-              <span className="font-mono text-primary font-black">{completedPercentage}٪</span>
+              <span className="font-mono text-primary font-black">{toPersianDigits(completedPercentage)}٪</span>
             </div>
             <div className="flex justify-between items-center pt-1">
               <span className="flex items-center gap-2">
                 <span className="w-3 h-3 rounded-full bg-[#f7d6e4]"></span>
                 در انتظار ویزیت
               </span>
-              <span className="font-mono text-textDark/60 font-black">{pendingPercentage}٪</span>
+              <span className="font-mono text-textDark/60 font-black">{toPersianDigits(pendingPercentage)}٪</span>
             </div>
           </div>
         </div>

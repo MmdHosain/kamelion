@@ -22,6 +22,7 @@ import ArticleStatusBadge from '../../components/admin/articles/ArticleStatusBad
 import CategoryManagerModal from '../../components/admin/articles/CategoryManagerModal';
 import { useOfflineArticleSync } from '../../hooks/useOfflineArticleSync';
 import { formatMediaUrl } from '../../utils/mediaUtils';
+import { toPersianDigits } from '../../utils/jalaliDateUtils';
 const formatArticleDate = (article) => {
   const rawDate = article.created_at || article.published_at || article.updated_at;
   if (!rawDate) {
@@ -31,11 +32,13 @@ const formatArticleDate = (article) => {
   if (isNaN(d.getTime())) {
     return 'ثبت نشده';
   }
-  return d.toLocaleDateString('fa-IR', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  });
+  return toPersianDigits(
+    d.toLocaleDateString('fa-IR', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    })
+  );
 };
 
 const AdminArticles = () => {
@@ -327,7 +330,7 @@ const AdminArticles = () => {
                     <td className="py-2.5 px-3 sm:py-3 sm:px-5 text-xs text-slate-600 font-medium whitespace-nowrap">
                       <div className="flex items-center gap-1">
                         <Eye className="w-3.5 h-3.5 text-slate-400" />
-                        {article.views_count || 0}
+                        {toPersianDigits(article.views_count || 0)}
                       </div>
                     </td>
 
@@ -337,9 +340,9 @@ const AdminArticles = () => {
                         className="flex items-center gap-1"
                         title={
                           article.created_at
-                            ? `تاریخ ثبت: ${new Date(article.created_at).toLocaleDateString('fa-IR')}`
+                            ? `تاریخ ثبت: ${toPersianDigits(new Date(article.created_at).toLocaleDateString('fa-IR'))}`
                             : article.published_at
-                            ? `تاریخ انتشار: ${new Date(article.published_at).toLocaleDateString('fa-IR')}`
+                            ? `تاریخ انتشار: ${toPersianDigits(new Date(article.published_at).toLocaleDateString('fa-IR'))}`
                             : 'تاریخ نامشخص'
                         }
                       >

@@ -2,6 +2,7 @@
 import { useState, useCallback } from 'react';
 import { chatService } from '../api/chatService';
 import useAuthStore from '../store/authStore';
+import { toPersianDigits } from '../utils/jalaliDateUtils';
 
 const STORAGE_SESSION_KEY = 'kamelion_triage_session_id';
 
@@ -28,10 +29,11 @@ const INITIAL_BOT_MESSAGES = [
 ];
 
 const getCurrentTimeDisplay = () => {
-  return new Intl.DateTimeFormat('fa-IR', {
+  const formatted = new Intl.DateTimeFormat('fa-IR', {
     hour: '2-digit',
     minute: '2-digit',
   }).format(new Date());
+  return toPersianDigits(formatted);
 };
 
 export const useChatSession = () => {
