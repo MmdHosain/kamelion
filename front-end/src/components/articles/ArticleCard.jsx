@@ -3,6 +3,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Clock, Calendar, ArrowLeft, Eye } from 'lucide-react';
 import { formatMediaUrl } from '../../utils/mediaUtils';
+import { toPersianDigits } from '../../utils/jalaliDateUtils';
 
 const ArticleCard = ({ article }) => {
   if (!article) return null;
@@ -51,12 +52,12 @@ const ArticleCard = ({ article }) => {
           <div className="flex items-center gap-3 text-xs text-textDark/60 mb-3 font-medium">
             <span className="flex items-center gap-1">
               <Clock className="w-3.5 h-3.5 text-primary" />
-              {readingTime} دقیقه مطالعه
+              {toPersianDigits(readingTime)} دقیقه مطالعه
             </span>
             {article.views_count > 0 && (
               <span className="flex items-center gap-1">
                 <Eye className="w-3.5 h-3.5 text-slate-400" />
-                {article.views_count} بازدید
+                {toPersianDigits(article.views_count)} بازدید
               </span>
             )}
           </div>
@@ -78,10 +79,12 @@ const ArticleCard = ({ article }) => {
         <span className="text-textDark/50 flex items-center gap-1">
           <Calendar className="w-3.5 h-3.5" />
           {article.created_at
-            ? new Date(article.created_at).toLocaleDateString('fa-IR', {
-                year: 'numeric',
-                month: 'long',
-              })
+            ? toPersianDigits(
+                new Date(article.created_at).toLocaleDateString('fa-IR', {
+                  year: 'numeric',
+                  month: 'long',
+                })
+              )
             : 'اخیر'}
         </span>
 

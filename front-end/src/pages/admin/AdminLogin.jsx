@@ -64,7 +64,7 @@ const AdminLogin = () => {
               </div>
               <input
                 type="text"
-                placeholder="0912..."
+                placeholder="۰۹۱۲..."
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
                 className="flex-1 px-3 py-3 text-sm outline-none bg-transparent text-textDark font-mono"

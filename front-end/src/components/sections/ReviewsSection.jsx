@@ -13,6 +13,7 @@ import {
 import { useCommentsStore } from '../../store/commentsStore';
 import ToastNotification from '../ui/ToastNotification';
 import useBodyScrollLock from '../../hooks/useBodyScrollLock';
+import { toPersianDigits } from '../../utils/jalaliDateUtils';
 
 const THEMES_LIST = [
   {
@@ -166,7 +167,7 @@ const ReviewsSection = () => {
               </div>
               <div className="flex flex-col">
                 <span className={`text-sm font-bold ${t.text}`}>{comment.name}</span>
-                <span className="text-textDark/50 text-xs">{comment.date}</span>
+                <span className="text-textDark/50 text-xs">{toPersianDigits(comment.date)}</span>
               </div>
             </div>
           </div>
@@ -181,7 +182,7 @@ const ReviewsSection = () => {
             className="bg-gradient-to-l from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white font-bold py-3 px-8 rounded-full shadow-[0_6px_20px_-4px_rgba(231,84,128,0.5)] hover:shadow-[0_8px_25px_-4px_rgba(186,45,99,0.7)] transition-all duration-300 flex items-center gap-2.5 text-sm cursor-pointer hover:-translate-y-0.5"
           >
             <MessagesSquare className="w-4 h-4" />
-            <span>مشاهده همه پیام‌ها ({approvedComments.length} دیدگاه)</span>
+            <span>مشاهده همه پیام‌ها ({toPersianDigits(approvedComments.length)} دیدگاه)</span>
           </button>
         </div>
       )}
@@ -283,11 +284,11 @@ const ReviewsSection = () => {
                     <h3 className="text-lg md:text-xl font-bold text-textDark flex items-center gap-2">
                       <span>دیدگاه‌ها و تجربیات مراجعین</span>
                       <span className="text-xs bg-primary/15 text-primary px-2.5 py-0.5 rounded-full font-bold">
-                        {approvedComments.length} پیام
+                        {toPersianDigits(approvedComments.length)} پیام
                       </span>
                     </h3>
                     <p className="text-textDark/60 text-xs mt-0.5">
-                      میانگین رضایت: {avgRating} از ۵ ★
+                      میانگین رضایت: {toPersianDigits(avgRating)} از ۵ ★
                     </p>
                   </div>
                 </div>
@@ -334,7 +335,7 @@ const ReviewsSection = () => {
                         : 'bg-white/60 text-textDark/70 hover:bg-white/90 border border-primary/15'
                     }`}
                   >
-                    همه ({approvedComments.length})
+                    همه ({toPersianDigits(approvedComments.length)})
                   </button>
                   {[5, 4, 3].map((star) => {
                     const count = approvedComments.filter((c) => (c.rating || 5) === star).length;
@@ -349,9 +350,9 @@ const ReviewsSection = () => {
                             : 'bg-white/60 text-textDark/70 hover:bg-white/90 border border-primary/15'
                         }`}
                       >
-                        <span>{star}</span>
+                        <span>{toPersianDigits(star)}</span>
                         <Star className="w-3 h-3 fill-current" />
-                        <span className="opacity-75">({count})</span>
+                        <span className="opacity-75">({toPersianDigits(count)})</span>
                       </button>
                     );
                   })}
@@ -392,7 +393,7 @@ const ReviewsSection = () => {
                                 <Star key={i} className="w-3.5 h-3.5 fill-current" />
                               ))}
                             </div>
-                            <span className="text-textDark/45 text-[11px] font-medium">{comment.date}</span>
+                            <span className="text-textDark/45 text-[11px] font-medium">{toPersianDigits(comment.date)}</span>
                           </div>
                           <p className="text-textDark/90 font-medium leading-relaxed text-xs md:text-sm mb-4">
                             «{comment.text}»
@@ -416,7 +417,7 @@ const ReviewsSection = () => {
               {/* Modal Footer */}
               <div className="p-4 bg-white/80 border-t border-primary/10 flex flex-wrap items-center justify-between gap-3 text-xs">
                 <div className="text-textDark/60 font-medium">
-                  نمایش {filteredComments.length} از {approvedComments.length} دیدگاه
+                  نمایش {toPersianDigits(filteredComments.length)} از {toPersianDigits(approvedComments.length)} دیدگاه
                 </div>
                 <div className="flex items-center gap-3">
                   <button

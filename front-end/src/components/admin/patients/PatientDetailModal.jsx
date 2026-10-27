@@ -47,18 +47,20 @@ const formatNoteDate = (isoOrText) => {
   try {
     const d = new Date(isoOrText);
     if (!isNaN(d.getTime())) {
-      return d.toLocaleDateString('fa-IR', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      });
+      return toPersianDigits(
+        d.toLocaleDateString('fa-IR', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        })
+      );
     }
   } catch {
     // Return original string if already formatted
   }
-  return isoOrText;
+  return toPersianDigits(isoOrText);
 };
 
 const PatientDetailModal = ({
@@ -247,7 +249,7 @@ const PatientDetailModal = ({
             <Phone size={16} className="text-primary shrink-0" />
             <div>
               <div className="text-gray-400 text-[10px] font-medium">شماره تماس</div>
-              <div className="font-mono font-bold text-gray-800 dir-ltr text-right">{phone}</div>
+              <div className="font-mono font-bold text-gray-800 dir-ltr text-right">{toPersianDigits(phone)}</div>
             </div>
           </div>
 

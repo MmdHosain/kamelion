@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { X, AlertTriangle, MessageSquare, Send, CheckCircle2 } from 'lucide-react';
+import { toPersianDigits } from '../../../utils/jalaliDateUtils';
 
 const PRESET_REASONS = [
   'تداخل با برنامه جراحی اورژانسی پزشک در بیمارستان',
@@ -51,7 +52,7 @@ export const DisapproveReasonModal = ({
       return;
     }
     if (trimmed.length > MAX_CHAR_COUNT) {
-      setError(`علت لغو نمی‌تواند بیش از ${MAX_CHAR_COUNT} کاراکتر باشد.`);
+      setError(`علت لغو نمی‌تواند بیش از ${toPersianDigits(MAX_CHAR_COUNT)} کاراکتر باشد.`);
       return;
     }
     setError('');
@@ -116,8 +117,8 @@ export const DisapproveReasonModal = ({
             </div>
             {(appointment.appointment_date || appointment.date) && (
               <div className="flex items-center gap-2 text-slate-600">
-                <span>تاریخ: {appointment.appointment_date || appointment.date}</span>
-                {appointment.start_time && <span>- ساعت: {appointment.start_time.slice(0, 5)}</span>}
+                <span>تاریخ: {toPersianDigits(appointment.appointment_date || appointment.date)}</span>
+                {appointment.start_time && <span>- ساعت: {toPersianDigits(appointment.start_time.slice(0, 5))}</span>}
               </div>
             )}
           </div>
@@ -137,7 +138,7 @@ export const DisapproveReasonModal = ({
                 }`}
                 dir="ltr"
               >
-                {reason.length} / {MAX_CHAR_COUNT}
+                {toPersianDigits(reason.length)} / {toPersianDigits(MAX_CHAR_COUNT)}
               </span>
             </div>
 

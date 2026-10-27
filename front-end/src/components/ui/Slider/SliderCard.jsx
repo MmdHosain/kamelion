@@ -1,5 +1,6 @@
 import React from 'react';
 import { ArrowLeft } from 'lucide-react';
+import { toPersianDigits } from '../../../utils/jalaliDateUtils';
 
 export default function SliderCard({
   title = 'بدون عنوان',
@@ -26,7 +27,7 @@ export default function SliderCard({
         
         {price && (
           <span className="mb-2 px-2 py-1 bg-yellow-500/90 text-[10px] font-bold rounded-md backdrop-blur-sm text-black shadow-[0_0_10px_rgba(234,179,8,0.5)]">
-            {price}
+            {toPersianDigits(price)}
           </span>
         )}
 

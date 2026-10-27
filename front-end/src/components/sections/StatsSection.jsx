@@ -12,12 +12,12 @@ export default function StatsSection() {
         </div>
 
         <div className="p-6 rounded-3xl bg-lightText shadow-sm">
-          <div className="text-3xl font-extrabold text-primary">173</div>
+          <div className="text-3xl font-extrabold text-primary">۱۷۳</div>
           <h2 className="text-primary text-lg font-semibold mt-2">
             جراحی موفق
           </h2>
           <p className="text-sm mt-1">
-            در طول بیش از <b>۱۰</b>سال تجربه کاری 
+            در طول بیش از <b>۱۰</b> سال تجربه کاری 
           </p>
         </div>
 
