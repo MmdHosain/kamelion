@@ -1,0 +1,161 @@
+
+name: Build and Deploy Kamelion
+
+on:
+  push:
+    branches:
+      - test-ai
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Use official npm registry in CI
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          sed -i \
+            's|https://mirror-npm.runflare.com/|https://registry.npmjs.org/|g' \
+            front-end/package-lock.json
+
+      - name: Build and push backend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend_core
+          file: ./backend_core/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/mmdhosain/kamelion-backend:latest
+            ghcr.io/mmdhosain/kamelion-backend:${{ github.sha }}
+
+      - name: Build and push frontend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./front-end
+          file: ./front-end/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/mmdhosain/kamelion-frontend:latest
+            ghcr.io/mmdhosain/kamelion-frontend:${{ github.sha }}
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Configure SSH
+        shell: bash
+        env:
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_PORT: ${{ secrets.VPS_PORT }}
+        run: |
+          set -Eeuo pipefail
+
+          : "${VPS_SSH_KEY:?Missing VPS_SSH_KEY}"
+          : "${VPS_HOST:?Missing VPS_HOST}"
+          : "${VPS_PORT:?Missing VPS_PORT}"
+
+          mkdir -p "$HOME/.ssh"
+          chmod 700 "$HOME/.ssh"
+
+          printf '%s\n' "$VPS_SSH_KEY" | tr -d '\r' \
+            > "$HOME/.ssh/kamelion_deploy"
+
+          chmod 600 "$HOME/.ssh/kamelion_deploy"
+
+          ssh-keygen -y \
+            -f "$HOME/.ssh/kamelion_deploy" \
+            > /dev/null
+
+          ssh-keyscan -p "$VPS_PORT" -H "$VPS_HOST" \
+            >> "$HOME/.ssh/known_hosts" 2>/dev/null
+
+          test -s "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/known_hosts"
+
+      - name: Deploy to VPS
+        shell: bash
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_PORT: ${{ secrets.VPS_PORT }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          GHCR_READ_TOKEN: ${{ secrets.GHCR_READ_TOKEN }}
+        run: |
+          set -Eeuo pipefail
+
+          : "${VPS_HOST:?Missing VPS_HOST}"
+          : "${VPS_PORT:?Missing VPS_PORT}"
+          : "${VPS_USER:?Missing VPS_USER}"
+          : "${GHCR_READ_TOKEN:?Missing GHCR_READ_TOKEN}"
+
+          SSH=(
+            ssh
+            -i "$HOME/.ssh/kamelion_deploy"
+            -p "$VPS_PORT"
+            -o BatchMode=yes
+            -o StrictHostKeyChecking=yes
+            -o IdentitiesOnly=yes
+            -o KexAlgorithms=curve25519-sha256
+            -o ConnectTimeout=30  
+          )
+
+          # Connection 1: Authenticate Docker on the VPS.
+          printf '%s' "$GHCR_READ_TOKEN" |
+            "${SSH[@]}" "$VPS_USER@$VPS_HOST" \
+              'docker login ghcr.io --username mmdhosain --password-stdin'
+
+          # Connection 2: Pull images and deploy.
+          "${SSH[@]}" "$VPS_USER@$VPS_HOST" 'bash -se' <<'REMOTE'
+          set -Eeuo pipefail
+
+          cd /root/kamelion
+
+          test -f docker-compose.yml || {
+            echo "ERROR: docker-compose.yml not found"
+            exit 1
+          }
+
+          test -f .env || {
+            echo "ERROR: .env not found"
+            exit 1
+          }
+
+          # Ensure logout runs even if deployment fails.
+          trap 'docker logout ghcr.io >/dev/null 2>&1 || true' EXIT
+
+          docker pull ghcr.io/mmdhosain/kamelion-backend:latest
+          docker pull ghcr.io/mmdhosain/kamelion-frontend:latest
+
+          docker tag \
+            ghcr.io/mmdhosain/kamelion-backend:latest \
+            kamelion-backend:latest
+
+          docker tag \
+            ghcr.io/mmdhosain/kamelion-frontend:latest \
+            kamelion-frontend:latest
+
+          docker compose config -q
+
+          docker compose up -d --no-build backend frontend
+
+          docker compose ps
+          REMOTE
