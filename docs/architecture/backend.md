@@ -162,7 +162,7 @@ Theme/video resources are database-backed. Dashboard metrics aggregate visits, b
 |---|---|
 | Core/database | Required `SECRET_KEY`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`; `DB_HOST=localhost`, `DB_PORT=5432`; `DEBUG=False`; `ALLOWED_HOSTS=['*']` |
 | AI | `AI_SERVICE_BASE_URL`, `AI_SERVICE_API_KEY`, bundled-path `AI_SERVICE_CA_BUNDLE`, `AI_SERVICE_TIMEOUT=30`, `AI_SERVICE_RETRY_DELAY=2`, `CLINIC_PHONE_NUMBER` |
-| SMS | `SMS_PROVIDER=console`, `PANELCHI_BASE_URL=https://api.panelchi.com`, `PANELCHI_TIMEOUT=10`, `PANELCHI_SMS_TOKEN`, optional `PANELCHI_SOURCE_NUMBER`, login/approved/rejected pattern settings |
+| SMS | `SMS_PROVIDER=console`, `PANELCHI_BASE_URL=https://api.panelchi.com`, `PANELCHI_TIMEOUT=10`, `PANELCHI_SMS_TOKEN`, optional `PANELCHI_SOURCE_NUMBER`, login/approved/rejected/reminder pattern settings |
 | Media/static | `MEDIA_ROOT=BASE_DIR/media`, `MEDIA_URL=/media/`, `STATIC_URL=/static/` |
 
 The former `FASTAPI_BASE_URL`/`FASTAPI_TIMEOUT` settings are not present; the active client uses `AI_SERVICE_*`. AI system checks warn on missing configuration/CA files and non-HTTPS production URLs. Logging sends Django errors/tracebacks to the console even with DEBUG disabled.
@@ -180,4 +180,40 @@ Django admin registers users/notes, schedules/closures/appointments, reviews, ar
 - The checked-in wildcard host setting and local-only CORS/CSRF lists are documented configuration, not evidence of production setup.
 - AI source comments cite an external `API.md` contract not present in this checkout. Older article design guides are retained with historical/proposal notices.
 
-This documentation revision used source inspection and Django URL resolution. Existing substantive tests cover users registration, articles, and mocked chat contracts/actions/admin APIs. The appointments/common test modules remain generated stubs. See [feature status](../features/feature-status-back-end.md#verification-and-maintenance) for the check scope; implementation status does not claim full regression coverage or live-service validation.
+This documentation revision used source inspection and Django URL resolution. Existing substantive tests cover users registration, articles, and mocked chat contracts/actions/admin APIs. The common test module remains a generated stub; appointment reminder tests cover timing, failure recording, backfill, and concurrent PostgreSQL workers. See [feature status](../features/feature-status-back-end.md#verification-and-maintenance) for the check scope; implementation status does not claim full regression coverage or live-service validation.
+
+## 11. Approved appointment reminders
+
+Reminders belong to the existing `apps.appointments` app, with dedicated modules
+under `apps.appointments.reminders` and a management command under the app's
+`management/commands` directory. No extra Django app is registered. The reminder
+model is exported from `appointments.models` so Django discovers it normally;
+its migrations are `appointments.0006_appointmentreminder` and
+`appointments.0007_seed_existing_reminders`. This adds no fields to `Appointment`
+and changes no existing REST response or decision-SMS flow.
+The reminder `post_save` receiver tracks approved bookings, cancellations, and schedule
+changes in `AppointmentReminder`, with a unique key on appointment/date/time.
+The initial data migration schedules existing future approved bookings without
+sending messages. Late approvals become skipped records.
+
+The Compose `appointment-reminders` service runs
+`python manage.py run_appointment_reminders`, a separate persistent process using
+the same backend image/database. It checks every 15 seconds and begins a batch
+at 10:00 Tehran the calendar day before the appointment. Explicit `ZoneInfo`
+and the `tzdata` dependency make this independent of host/Django timezone.
+The worker requires migrations to have been applied. Missed schedules are not
+caught up later.
+
+For each record the service locks the appointment then the reminder, verifies
+the current status/date/time, and commits a `processing` claim before calling
+the provider. Accepted sends become `sent`; failures become `failed` with a
+saved error. Neither failed nor uncertain in-progress attempts are retried.
+Thus a worker crash may leave an unknown outcome rather than risk duplicate
+SMS. Old pending records are marked `skipped` after the dispatch window.
+
+The new `PANELCHI_PATTERN_APPOINTMENT_REMINDER` setting is separate from existing
+approval/rejection settings. The shared PanelChi client receives the variables
+`full_name`, Jalali `date`, and `HH:MM` `time`. Console mode never sends or records
+a successful delivery. The Django admin exposes reminder records read-only.
+See [the specification](../features/appointment-sms-reminders.md) for template,
+record fields, rollout instructions, and verification.
