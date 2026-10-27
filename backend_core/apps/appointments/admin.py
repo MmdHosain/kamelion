@@ -1,6 +1,7 @@
 from django.contrib import admin
 from .models import DoctorAvailability, AvailabilityException, Appointment
 from .services import approve_appointment
+from .reminders import admin as reminder_admin  # noqa: F401
 
 
 @admin.register(Appointment)

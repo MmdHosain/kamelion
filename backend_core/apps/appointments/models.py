@@ -211,3 +211,7 @@ class Appointment(models.Model):
         slot) - either awaiting admin review or already approved.
         """
         return self.status in (self.PENDING, self.SCHEDULED)
+
+
+# Register the reminder model with this app while keeping its definition modular.
+from .reminders.models import AppointmentReminder  # noqa: E402, F401
