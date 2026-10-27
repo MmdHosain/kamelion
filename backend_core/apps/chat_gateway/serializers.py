@@ -85,3 +85,43 @@ class AdminChatSessionDetailSerializer(AdminChatSessionSerializer):
 
     def get_messages(self, obj):
         return AdminChatMessageSerializer(self._messages(obj), many=True).data
+
+
+class SimulatedPatientSerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=50, required=False, allow_blank=True, allow_null=True)
+    age = serializers.IntegerField(min_value=0, max_value=120, required=False, allow_null=True)
+    sex = serializers.ChoiceField(choices=["female", "male"], required=False, allow_null=True)
+
+
+class AdminTestChatMessageInputSerializer(serializers.Serializer):
+    """
+    POST /api/admin/chat/test/message/
+    For clinic admins to test AI triage responses, inspector metadata, context toggles, and fallback handling.
+    """
+    message = serializers.CharField(
+        trim_whitespace=True,
+        allow_blank=False,
+        min_length=c.MESSAGE_MIN_LENGTH,
+        max_length=c.MESSAGE_MAX_LENGTH,
+    )
+    session_id = serializers.CharField(max_length=100)
+    include_history = serializers.BooleanField(default=True, required=False)
+    include_patient = serializers.BooleanField(default=True, required=False)
+    include_triage = serializers.BooleanField(default=True, required=False)
+    simulated_patient = SimulatedPatientSerializer(required=False, allow_null=True)
+
+
+class AdminResetChatSessionInputSerializer(serializers.Serializer):
+    """
+    POST /api/admin/chat/test/reset/
+    Supports 4 reset modes:
+      * 'soft': client-side reset / new session ID, preserves db records
+      * 'hard': physical deletion of the current session & messages from db
+      * 'triage': resets triage_level & summary to null and deletes emergency actions, keeps messages
+      * 'global_test': wipes all test sessions created by this admin
+    """
+    session_id = serializers.CharField(max_length=100, required=False, allow_blank=True)
+    mode = serializers.ChoiceField(
+        choices=["soft", "hard", "triage", "global_test"],
+        default="hard",
+    )

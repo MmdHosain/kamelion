@@ -60,7 +60,14 @@ def _latest_unanswered_user_message(session):
     return unanswered.order_by("-id").first()
 
 
-def process_patient_message(session: ChatSession, text: str) -> dict:
+def process_patient_message(
+    session: ChatSession,
+    text: str,
+    include_history: bool = True,
+    include_triage: bool = True,
+    include_patient: bool = True,
+    simulated_patient: dict | None = None,
+) -> dict:
     # 1. Store the patient's message.
     message = ChatMessage.objects.create(session=session, role=ChatMessage.USER, content=text)
 
@@ -68,22 +75,33 @@ def process_patient_message(session: ChatSession, text: str) -> dict:
     # request wait until the first has finished.
     with transaction.atomic():
         locked = (
-                    ChatSession.objects
-                    .select_for_update(of=("self",))
-                    .select_related("user")
-                    .get(pk=session.pk)
-                )
+            ChatSession.objects
+            .select_for_update(of=("self",))
+            .select_related("user")
+            .get(pk=session.pk)
+        )
         latest = _latest_unanswered_user_message(locked)
         if latest is None or latest.pk != message.pk:
             raise MessageSuperseded()
 
         # 2-3. Build the request and call the AI Service.
-        payload = build_request(locked, message, locked.user)
+        payload = build_request(
+            locked,
+            message,
+            locked.user,
+            include_history=include_history,
+            include_triage=include_triage,
+            include_patient=include_patient,
+            simulated_patient=simulated_patient,
+        )
         try:
             result = ai_client.call_chat(payload)
             _reject_downgrade(locked.triage_level, result["triage"]["level"])
         except ai_client.AIServiceError:
-            return _fallback(locked, text)
+            fallback_res = _fallback(locked, text)
+            fallback_res["_outbound_payload"] = payload
+            fallback_res["_ai_response"] = None
+            return fallback_res
 
         # 4. Store `reply` as an assistant message, then store `triage`.
         ChatMessage.objects.create(session=locked, role=ChatMessage.ASSISTANT, content=result["reply"])
@@ -102,6 +120,8 @@ def process_patient_message(session: ChatSession, text: str) -> dict:
             "triage_level": new_triage["level"],
             "fallback": False,
             **patient_actions(locked),
+            "_outbound_payload": payload,
+            "_ai_response": result,
         }
 
 

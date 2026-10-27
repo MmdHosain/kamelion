@@ -1,6 +1,6 @@
 # Chat and Triage API Reference
 
-> **Verified against repository source:** 2026-10-17, baseline `8b0eca0`.
+> **Verified against repository source:** 2026-10-17, baseline `8b0eca0` (Updated 2026-10-27 for Enhanced Admin AI Testing Lab, In/Out Inspector, Context Toggles, and Multi-Mode Reset).
 > Implemented in `backend_core/apps/chat_gateway/`. This describes backend behavior;
 > external AI availability and deployment credentials were not verified.
 
@@ -46,6 +46,90 @@
 | `409` | `{"detail":"A newer message in this session is being answered."}` |
 
 The first request creates the session and attaches its owner. Reuse by a different user is forbidden. Legacy ownerless sessions are adopted by the first authenticated caller. The service stores each user message, then locks the session row to serialize AI calls; a superseded request is rejected with `409` after its message was stored.
+
+## Admin AI Testing and Playground Endpoints
+
+### `POST /api/admin/chat/test/message/`
+
+**Access:** JWT, `IsAdminUser`.
+Enables clinic staff to test triage models, inspect diagnostic metadata (`triage_summary`, `latency_ms`, `ai_session_id`, `history_count`), toggle context features (`include_history`, `include_patient`, `include_triage`), and inspect both the outbound payload to the AI service and the raw AI response.
+
+```json
+{
+  "message": "علائم درد شدید و ترشح خونی ناگهانی دارم.",
+  "session_id": "test_admin_1729000000_abc",
+  "include_history": true,
+  "include_patient": true,
+  "include_triage": true,
+  "simulated_patient": {
+    "name": "مریم",
+    "age": 45,
+    "sex": "female"
+  }
+}
+```
+
+**Success:** `200 OK`:
+
+```json
+{
+  "reply": "علائم ذکر شده وضعیت اورژانسی تلقی می‌شود...",
+  "triage_level": "urgent",
+  "triage_summary": "بیمار دارای علائم حاد ترشح خونی و درد شدید است.",
+  "booking_offer": false,
+  "emergency_code": "URG-XYZ123",
+  "fallback": false,
+  "session_id": "test_admin_1729000000_abc",
+  "ai_session_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "history_count": 2,
+  "latency_ms": 240,
+  "outbound_payload": {
+    "session_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    "message": { "content": "...", "created_at": "..." },
+    "history": [],
+    "triage": null,
+    "patient": { "name": "مریم", "age": 45, "sex": "female" }
+  },
+  "ai_response": {
+    "reply": "...",
+    "triage": { "level": "urgent", "summary": "..." }
+  },
+  "applied_toggles": {
+    "include_history": true,
+    "include_patient": true,
+    "include_triage": true,
+    "has_simulated_patient": true
+  }
+}
+```
+
+### `POST /api/admin/chat/test/reset/`
+
+**Access:** JWT, `IsAdminUser`.
+Supports 4 granular reset modes:
+- `soft`: starts a new clean session on the client without deleting database records.
+- `hard`: physically purges the active session, messages, and actions from the database.
+- `triage`: resets `triage_level`, `triage_summary`, and emergency codes to null, preserving all conversation messages.
+- `global_test`: purges all test sessions (`test_%`) and messages created by the admin.
+
+```json
+{
+  "session_id": "test_admin_1729000000_abc",
+  "mode": "hard"
+}
+```
+
+**Success:** `200 OK`:
+
+```json
+{
+  "detail": "حافظه نشست و سوابق پیام‌ها با موفقیت از دیتابیس پاک‌سازی شدند.",
+  "session_id": "test_admin_1729000000_abc",
+  "mode": "hard",
+  "deleted_messages_count": 4,
+  "success": true
+}
+```
 
 ## Admin patient chat records
 

@@ -533,3 +533,66 @@ class AdminEndpointTests(ChatTestCase):
         self.assertEqual(rows[self.user.pk]["triage_level"], "urgent")
         self.assertIsNone(rows[quiet.pk]["triage_level"])
 
+
+
+class AdminAiPlaygroundEndpointTests(ChatTestCase):
+    def setUp(self):
+        super().setUp()
+        self.staff_user = User.objects.create_user(phone_number="09121112233", is_staff=True)
+        self.test_message_url = "/api/admin/chat/test/message/"
+        self.test_reset_url = "/api/admin/chat/test/reset/"
+
+    def as_staff(self):
+        self.client.force_authenticate(self.staff_user)
+
+    def test_non_staff_forbidden_from_admin_test_endpoints(self):
+        res = self.client.post(self.test_message_url, {"message": "test", "session_id": "test_1"}, format="json")
+        self.assertEqual(res.status_code, 403)
+        res_reset = self.client.post(self.test_reset_url, {"session_id": "test_1", "mode": "hard"}, format="json")
+        self.assertEqual(res_reset.status_code, 403)
+
+    def test_staff_can_send_test_message_with_rich_diagnostics(self):
+        self.as_staff()
+        self.post.return_value = ok(reply="Sample medical response.", level="urgent", summary="High urgency acute symptoms.")
+        res = self.client.post(
+            self.test_message_url,
+            {
+                "message": "درد شدید قفسه سینه",
+                "session_id": "test_admin_session_1",
+                "include_history": True,
+                "include_patient": True,
+                "simulated_patient": {"name": "مریم", "age": 45, "sex": "female"},
+            },
+            format="json",
+        )
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertEqual(data["reply"], "Sample medical response.")
+        self.assertEqual(data["triage_level"], "urgent")
+        self.assertEqual(data["triage_summary"], "High urgency acute symptoms.")
+        self.assertIn("latency_ms", data)
+        self.assertIn("outbound_payload", data)
+        self.assertEqual(data["outbound_payload"]["patient"], {"name": "مریم", "age": 45, "sex": "female"})
+
+    def test_reset_modes(self):
+        self.as_staff()
+        self.post.return_value = ok(reply="r", level="low_priority", summary="s")
+        self.client.post(self.test_message_url, {"message": "hi", "session_id": "test_s1"}, format="json")
+        self.assertTrue(ChatSession.objects.filter(session_id="test_s1").exists())
+
+        # 1. Soft reset: keeps db
+        res_soft = self.client.post(self.test_reset_url, {"session_id": "test_s1", "mode": "soft"}, format="json")
+        self.assertEqual(res_soft.status_code, 200)
+        self.assertTrue(ChatSession.objects.filter(session_id="test_s1").exists())
+
+        # 2. Triage reset: clears triage_level but keeps session & messages
+        res_triage = self.client.post(self.test_reset_url, {"session_id": "test_s1", "mode": "triage"}, format="json")
+        self.assertEqual(res_triage.status_code, 200)
+        session = ChatSession.objects.get(session_id="test_s1")
+        self.assertIsNone(session.triage_level)
+        self.assertTrue(session.messages.exists())
+
+        # 3. Hard reset: deletes session & messages
+        res_hard = self.client.post(self.test_reset_url, {"session_id": "test_s1", "mode": "hard"}, format="json")
+        self.assertEqual(res_hard.status_code, 200)
+        self.assertFalse(ChatSession.objects.filter(session_id="test_s1").exists())

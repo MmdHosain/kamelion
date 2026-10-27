@@ -14,6 +14,7 @@ import AdminArticleEditor from './AdminArticleEditor';
 import AdminContentCms from './AdminContentCms';
 import ReservedTimes from './ReservedTimes';
 import ChatProfiles from './ChatProfiles';
+import AdminAiPlayground from './AdminAiPlayground';
 
 const AdminPage = () => {
   return (
@@ -28,6 +29,7 @@ const AdminPage = () => {
         <Route path="articles/:id/edit" element={<AdminArticleEditor />} />
         <Route path="videos" element={<Navigate to="/admin/content?tab=videos" replace />} />
         <Route path="patients" element={<PatientsList />} />
+        <Route path="ai-test" element={<AdminAiPlayground />} />
         <Route path="comments" element={<AdminComments />} />
         <Route path="stats" element={<AdminDashboard />} />
         <Route path="settings" element={<AdminSettings />} />
@@ -39,4 +41,3 @@ const AdminPage = () => {
 };
 
 export default AdminPage;
-

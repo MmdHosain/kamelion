@@ -5,6 +5,7 @@ import {
   MessageSquare,
   Palette,
   Layers,
+  Bot,
 } from 'lucide-react';
 
 export const ADMIN_NAV_ITEMS = [
@@ -24,6 +25,11 @@ export const ADMIN_NAV_ITEMS = [
     path: '/admin/patients',
   },
   {
+    label: 'آزمایشگاه هوش مصنوعی',
+    icon: Bot,
+    path: '/admin/ai-test',
+  },
+  {
     label: 'نظرات مراجعین',
     icon: MessageSquare,
     path: '/admin/comments',
@@ -39,5 +45,3 @@ export const ADMIN_NAV_ITEMS = [
     path: '/admin/settings',
   },
 ];
-
-

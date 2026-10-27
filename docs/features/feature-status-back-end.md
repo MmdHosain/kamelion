@@ -46,6 +46,7 @@ Existing feature IDs are retained because frontend documents refer to them. Newl
 | 21 | Public recurring weekly-hour summary | ✅ Implemented | `GET /api/appointments/schedule/` |
 | 22 | Appointment decision SMS notices | ✅ Implemented | Approval/rejection patterns; rejection includes reason |
 | 23 | Admin patient chat history and latest triage | ✅ Implemented | Patient `/chats/` and `/triage_level/`; triage field on patient list |
+| 23b | Admin AI testing playground & memory reset | ✅ Implemented | POST /api/admin/chat/test/message/, POST /api/admin/chat/test/reset/; inspector diagnostics |
 | 24 | Persistent theme settings | ✅ Implemented | Public theme GET and admin PUT |
 | 25 | Video gallery and admin create/delete | ✅ Implemented | Public list, admin create/delete; no update route |
 | 26 | Admin dashboard analytics | 🟡 Partial | `GET /api/admin/stats`; emergency-code count hardcoded zero |

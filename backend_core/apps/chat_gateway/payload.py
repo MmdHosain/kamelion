@@ -72,14 +72,39 @@ def build_patient(user):
     return patient or None
 
 
-def build_request(session, current_message, user) -> dict:
+def build_request(
+    session,
+    current_message,
+    user,
+    include_history: bool = True,
+    include_triage: bool = True,
+    include_patient: bool = True,
+    simulated_patient: dict | None = None,
+) -> dict:
+    """
+    Constructs the exact payload sent to the external AI Service.
+    Supports granular context toggles and simulated demographics for testing.
+    """
+    if not include_patient:
+        patient_data = None
+    elif simulated_patient and isinstance(simulated_patient, dict):
+        patient_data = {
+            k: v for k, v in simulated_patient.items()
+            if k in ("name", "age", "sex") and v is not None
+        } or None
+    else:
+        patient_data = build_patient(user)
+
+    history_data = build_history(session, current_message) if include_history else []
+    triage_data = build_triage(session) if include_triage else None
+
     return {
         "session_id": str(session.ai_session_id),
         "message": {
             "content": current_message.content,
             "created_at": to_rfc3339(current_message.created_at),
         },
-        "history": build_history(session, current_message),
-        "triage": build_triage(session),
-        "patient": build_patient(user),
+        "history": history_data,
+        "triage": triage_data,
+        "patient": patient_data,
     }
