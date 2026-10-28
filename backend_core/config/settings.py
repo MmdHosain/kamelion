@@ -131,6 +131,9 @@ PANELCHI_PATTERN_LOGIN = config('PANELCHI_PATTERN_LOGIN', default='')
 PANELCHI_PATTERN_APPOINTMENT_APPROVED = config('PANELCHI_PATTERN_APPOINTMENT_APPROVED', default='')
 PANELCHI_PATTERN_APPOINTMENT_REJECTED = config('PANELCHI_PATTERN_APPOINTMENT_REJECTED', default='')
 
+# Separate day-before reminder; approval/rejection patterns remain unchanged.
+PANELCHI_PATTERN_APPOINTMENT_REMINDER = config('PANELCHI_PATTERN_APPOINTMENT_REMINDER', default='')
+
 # ── CORS ──────────────────────────────────────────────
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",

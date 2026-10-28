@@ -299,3 +299,14 @@ Source: `apps/common/{urls,admin_urls,views,stats_views,serializers,models}.py`.
 | POST | `/api/admin/articles/upload-image/` | JWT (admin) | multipart `image` or `file` | Validate + optimize upload → WebP URL |
 | GET/POST | `/api/admin/articles/categories/` | JWT (admin) | `name`, `slug`, `description?` | List / create categories |
 | DELETE | `/api/admin/articles/categories/<id>/` | JWT (admin) | — | Delete a category (`204`) |
+
+## Background appointment reminders (no new REST endpoints)
+
+The reminder worker, implemented inside the existing `appointments` app, sends
+an additional SMS at 10:00 Asia/Tehran the
+calendar day before approved (`scheduled`) appointments. Approvals after the
+cutoff are skipped and failures are stored without retries. Existing approval,
+disapproval, booking, and appointment response contracts remain unchanged.
+Records are available read-only in Django admin, not through a new patient or
+admin REST endpoint. See [the reminder specification](../features/appointment-sms-reminders.md)
+for the separate PanelChi pattern and activation instructions.

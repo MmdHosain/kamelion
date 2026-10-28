@@ -38,6 +38,23 @@ services:
     volumes:
       - media_data:/app/media
 
+  appointment-reminders:
+    build:
+      context: ./backend_core
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    command: ["python", "manage.py", "run_appointment_reminders"]
+    env_file:
+      - .env
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+    depends_on:
+      db:
+        condition: service_healthy
+      backend:
+        condition: service_started
+
   frontend:
     build:
       context: ./front-end

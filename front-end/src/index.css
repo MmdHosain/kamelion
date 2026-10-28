@@ -52,6 +52,14 @@
 
 html {
   scroll-behavior: smooth;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE & Edge */
+}
+
+html::-webkit-scrollbar {
+  display: none;
+  width: 0px;
+  height: 0px;
 }
 
 body {
@@ -64,6 +72,26 @@ body {
   color: var(--text-dark);
   min-height: 100vh;
   overflow-x: hidden;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE & Edge */
+}
+
+body::-webkit-scrollbar {
+  display: none;
+  width: 0px;
+  height: 0px;
+}
+
+/* Global scrollbar hiding across all scrollable containers while preserving scroll functionality */
+* {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE & Edge */
+}
+
+*::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Edge, Opera */
+  width: 0px;
+  height: 0px;
 }
 
 /* ---------- Progress Bar ---------- */
@@ -273,16 +301,15 @@ body {
 }
 
 
-/* Chat Scrollbar */
+/* Chat Scrollbar (Hidden while preserving smooth scroll) */
+.chat-scroll {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
 .chat-scroll::-webkit-scrollbar {
-  width: 6px;
-}
-.chat-scroll::-webkit-scrollbar-thumb {
-  background: rgba(231, 84, 128, 0.3);
-  border-radius: 10px;
-}
-.chat-scroll::-webkit-scrollbar-track {
-  background: transparent;
+  display: none;
+  width: 0px;
+  height: 0px;
 }
 
 /* No Scrollbar Utility */
@@ -312,20 +339,15 @@ body {
   border-radius: 12px;
 }
 
-/* Custom Scrollbar for Modals & Panels */
+/* Custom Scrollbar for Modals & Panels (Hidden while preserving scroll) */
+.custom-scroll {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
 .custom-scroll::-webkit-scrollbar {
-  width: 6px;
-}
-.custom-scroll::-webkit-scrollbar-track {
-  background: rgba(231, 84, 128, 0.05);
-  border-radius: 10px;
-}
-.custom-scroll::-webkit-scrollbar-thumb {
-  background: rgba(231, 84, 128, 0.35);
-  border-radius: 10px;
-}
-.custom-scroll::-webkit-scrollbar-thumb:hover {
-  background: var(--primary);
+  display: none;
+  width: 0px;
+  height: 0px;
 }
 
 /* Modal Animations */

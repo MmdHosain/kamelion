@@ -50,6 +50,7 @@ Existing feature IDs are retained because frontend documents refer to them. Newl
 | 25 | Video gallery and admin create/delete | ✅ Implemented | Public list, admin create/delete; no update route |
 | 26 | Admin dashboard analytics | 🟡 Partial | `GET /api/admin/stats`; emergency-code count hardcoded zero |
 | 27 | Public sitemap, robots.txt and social-link previews | ✅ Implemented | Public SEO endpoints and Nginx social-agent dispatch |
+| 28 | Day-before SMS reminders for approved appointments | ✅ Implemented | `appointments.reminders`, durable attempt records, 10:00 Tehran worker; separate PanelChi pattern required |
 
 ## Authentication and patient information
 
@@ -127,6 +128,22 @@ no live AI/SMS calls). Nginx syntax and 48 HTTP checks through real local Nginx/
 also passed. Production cover images require public media serving.
 See the [implementation contract](../architecture/backend-seo-implementation.md)
 for exact routes, cache behavior, tests and deployment requirements.
+
+## 28. Approved appointment SMS reminders — ✅ Completed
+
+The existing `apps.appointments` app schedules an additional reminder at
+**10:00 Asia/Tehran the day before** an approved (`scheduled`) appointment.
+Approval/rejection SMS remains unchanged. Late approvals are skipped; failures
+are saved without automatic retries. A database record and locking prevent
+duplicate attempts, including concurrent workers and restarts. Records and
+saved errors are viewable in read-only Django admin. Dedicated modules under
+`apps.appointments.reminders` keep the implementation modular without an extra
+Django app; its schema and backfill migrations are part of `appointments`.
+
+The Compose `appointment-reminders` service runs the background worker. Apply
+the migrations and configure a new `PANELCHI_PATTERN_APPOINTMENT_REMINDER` before
+activation. No REST API/frontend contract changes are required. See the
+[reminder specification and activation steps](appointment-sms-reminders.md).
 
 ## Verification and maintenance
 
