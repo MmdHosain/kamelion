@@ -635,11 +635,38 @@ body::-webkit-scrollbar {
   border: 1px solid rgba(231, 84, 128, 0.2) !important;
 }
 
-/* Fix iOS auto-zoom issue for form elements */
-@supports (-webkit-touch-callout: none) {
-  input,
+/* ==========================================================================
+   iOS Safari Auto-Zoom Prevention (Mobile Viewports Only)
+   Enforces a minimum font-size of 16px (1rem) on mobile form controls
+   while preserving desktop styling and larger mobile inputs (e.g., OTP).
+   ========================================================================== */
+@media screen and (max-width: 767px) {
+  /* 1. Base rule: Ensure standard form controls default to at least 16px on mobile */
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="hidden"]):not([type="button"]):not([type="submit"]):not([type="reset"]),
   textarea,
   select {
     font-size: 16px;
+  }
+
+  /* 2. Specificity override: Prevent sub-16px Tailwind utilities from shrinking mobile inputs */
+  input.text-xs,
+  input.text-sm,
+  input.text-\[10px\],
+  input.text-\[11px\],
+  input.text-\[12px\],
+  input.text-\[13px\],
+  input.text-\[14px\],
+  input.text-\[15px\],
+  textarea.text-xs,
+  textarea.text-sm,
+  textarea.text-\[10px\],
+  textarea.text-\[11px\],
+  textarea.text-\[12px\],
+  textarea.text-\[13px\],
+  textarea.text-\[14px\],
+  textarea.text-\[15px\],
+  select.text-xs,
+  select.text-sm {
+    font-size: 16px !important;
   }
 }
