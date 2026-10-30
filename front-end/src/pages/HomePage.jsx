@@ -1,6 +1,6 @@
 // src/pages/HomePage.jsx
 import React from 'react';
-import SEO from '../components/seo/SEO';
+import SEO, { SITE_URL } from '../components/seo/SEO';
 import HeroSection from '../components/sections/HeroSection';
 import QuickNavSlider from '../components/sections/QuickNavSlider';
 import BookingSection from '../components/sections/BookingSection';
@@ -12,11 +12,11 @@ const homeSchema = {
   '@graph': [
     {
       '@type': 'MedicalClinic',
-      '@id': 'https://kamelion.ir/#clinic',
+      '@id': `${SITE_URL}/#clinic`,
       name: 'کلینیک تخصصی پستان دکتر نگار معشوری',
-      url: 'https://kamelion.ir',
-      logo: 'https://kamelion.ir/pink-ribbon.svg',
-      image: 'https://kamelion.ir/pink-ribbon.svg',
+      url: SITE_URL,
+      logo: `${SITE_URL}/pink-ribbon.svg`,
+      image: `${SITE_URL}/pink-ribbon.svg`,
       description:
         'کلینیک تخصصی تشخیص، درمان، انکوپلاستی و جراحی‌های پستان توسط دکتر نگار معشوری.',
       medicalSpecialty: ['SurgicalOncology', 'PlasticSurgery', 'GeneralSurgery'],
@@ -26,12 +26,12 @@ const homeSchema = {
         { '@type': 'MedicalProcedure', name: 'غربالگری و سونوگرافی تخصصی پستان' },
       ],
       physician: {
-        '@id': 'https://kamelion.ir/#physician',
+        '@id': `${SITE_URL}/#physician`,
       },
     },
     {
       '@type': 'Physician',
-      '@id': 'https://kamelion.ir/#physician',
+      '@id': `${SITE_URL}/#physician`,
       name: 'دکتر نگار معشوری',
       jobTitle: 'متخصص جراحی عمومی و فلوشیپ فوق‌تخصصی بیماری‌ها و جراحی پستان',
       medicalSpecialty: [
@@ -39,7 +39,7 @@ const homeSchema = {
         'PlasticSurgery',
         'GeneralSurgery',
       ],
-      url: 'https://kamelion.ir/about',
+      url: `${SITE_URL}/about`,
       alumniOf: {
         '@type': 'CollegeOrUniversity',
         name: 'دانشگاه علوم پزشکی تهران',
@@ -51,12 +51,12 @@ const homeSchema = {
     },
     {
       '@type': 'SoftwareApplication',
-      '@id': 'https://kamelion.ir/#ai-assistant',
+      '@id': `${SITE_URL}/#ai-assistant`,
       name: 'دستیار هوشمند تریاژ و ارزیابی علائم دکتر نگار معشوری',
       applicationCategory: 'HealthApplication',
       operatingSystem: 'Web',
       author: {
-        '@id': 'https://kamelion.ir/#physician',
+        '@id': `${SITE_URL}/#physician`,
       },
       description:
         'دستیار هوشمند تریاژ و آموزش پزشکی بیماران جهت ارزیابی اولیه علائم و نوبت‌دهی، توسعه‌یافته بر اساس راهنماهای بالینی و پروتکل‌های علمی دکتر نگار معشوری.',

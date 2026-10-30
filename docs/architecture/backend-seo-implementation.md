@@ -24,7 +24,7 @@ generic-fallback, cache and Nginx samples.
 ## Configuration
 
 `SITE_DOMAIN` is the public frontend origin (scheme and host, optionally port),
-defaulting to `https://kamelion.ir`. Trailing slashes are stripped. Set it in the
+defaulting to `https://drnegarmashoori.ir`. Trailing slashes are stripped. Set it in the
 root Compose `.env` or the backend process environment for another deployment.
 Sitemaps, robots declarations and canonical URLs use this value, not request Host.
 Relative cover-image storage URLs are resolved against it; absolute storage URLs

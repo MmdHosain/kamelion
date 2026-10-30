@@ -1,7 +1,7 @@
 import React from 'react';
 import { Activity, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import SEO from '../components/seo/SEO';
+import SEO, { SITE_URL } from '../components/seo/SEO';
 
 const therapeuticSchema = {
   '@context': 'https://schema.org',
@@ -9,7 +9,7 @@ const therapeuticSchema = {
   name: 'خدمات درمانی و جراحی‌های انکوپلاستی پستان',
   description:
     'ارائه کلیه خدمات تشخیصی، درمان بیماری‌های خوش‌خیم و بدخیم و جراحی‌های انکوپلاستی با متدهای روز جهان توسط دکتر نگار معشوری.',
-  url: 'https://kamelion.ir/services/therapeutic',
+  url: `${SITE_URL}/services/therapeutic`,
 };
 
 const TherapeuticServicesPage = ({ onOpenAppointment }) => {

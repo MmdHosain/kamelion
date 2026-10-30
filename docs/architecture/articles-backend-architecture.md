@@ -278,7 +278,7 @@ erDiagram
   "seo": {
     "title": "راهنمای خودآزمایی پستان | کلینیک دکتر مهرافروز",
     "description": "آموزش تصویری لمس صحیح بافت سینه در منزل جهت تشخیص به موقع توده‌ها...",
-    "canonical_url": "https://kamelion.ir/articles/breast-self-exam-guide",
+    "canonical_url": "https://drnegarmashoori.ir/articles/breast-self-exam-guide",
     "og_image": "https://cdn.clinic.ir/media/articles/2026/05/exam-guide.webp",
     "indexable": true
   },

@@ -46,7 +46,7 @@
      ```html
      <meta name="robots" content="index, follow" />
      ```
-  4. افزودن `link rel="canonical"` عمومی به دامنه اصلی `https://kamelion.ir`.
+  4. افزودن `link rel="canonical"` عمومی به دامنه اصلی `https://drnegarmashoori.ir`.
 
 ---
 
@@ -67,7 +67,7 @@
 
   const DEFAULT_TITLE = 'کلینیک تخصصی پستان دکتر نگار معشوری';
   const DEFAULT_DESCRIPTION = 'ارائه خدمات تخصصی جراحی پستان، انکوپلاستی، غربالگری و درمان بیماری‌های خوش‌خیم و بدخیم پستان توسط دکتر نگار معشوری.';
-  const SITE_URL = 'https://kamelion.ir';
+  export const SITE_URL = (import.meta.env.VITE_SITE_URL || 'https://drnegarmashoori.ir').replace(/\/+$/, '');
   const DEFAULT_IMAGE = `${SITE_URL}/pink-ribbon.svg`;
 
   const SEO = ({
@@ -133,9 +133,9 @@
     "@context": "https://schema.org",
     "@type": "MedicalClinic",
     "name": "کلینیک تخصصی پستان دکتر نگار معشوری",
-    "url": "https://kamelion.ir",
-    "logo": "https://kamelion.ir/pink-ribbon.svg",
-    "image": "https://kamelion.ir/pink-ribbon.svg",
+    "url": "https://drnegarmashoori.ir",
+    "logo": "https://drnegarmashoori.ir/pink-ribbon.svg",
+    "image": "https://drnegarmashoori.ir/pink-ribbon.svg",
     "telephone": "+98-21-00000000",
     "medicalSpecialty": ["SurgicalOncology", "PlasticSurgery"],
     "availableService": [

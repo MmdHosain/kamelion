@@ -1,12 +1,12 @@
 import React from 'react';
 import { Award, GraduationCap, BookOpen, Stethoscope, CheckCircle2, ShieldCheck, HeartPulse, ArrowLeft, Bot, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import SEO from '../components/seo/SEO';
+import SEO, { SITE_URL } from '../components/seo/SEO';
 
 const physicianSchema = {
   '@context': 'https://schema.org',
   '@type': 'Physician',
-  '@id': 'https://kamelion.ir/#physician',
+  '@id': `${SITE_URL}/#physician`,
   name: 'دکتر نگار معشوری',
   jobTitle: 'متخصص جراحی عمومی و فلوشیپ فوق‌تخصصی بیماری‌ها و جراحی پستان',
   medicalSpecialty: [
@@ -16,7 +16,7 @@ const physicianSchema = {
   ],
   description:
     'فلوشیپ فوق‌تخصصی بیماری‌ها و جراحی پستان، انکوپلاستی و بازسازی پستان، تشخیص و درمان ضایعات بدخیم و خوش‌خیم.',
-  url: 'https://kamelion.ir/about',
+  url: `${SITE_URL}/about`,
   alumniOf: {
     '@type': 'CollegeOrUniversity',
     name: 'دانشگاه علوم پزشکی تهران',
@@ -27,9 +27,9 @@ const physicianSchema = {
   ],
   worksFor: {
     '@type': 'MedicalClinic',
-    '@id': 'https://kamelion.ir/#clinic',
+    '@id': `${SITE_URL}/#clinic`,
     name: 'کلینیک تخصصی پستان دکتر نگار معشوری',
-    url: 'https://kamelion.ir',
+    url: SITE_URL,
   },
 };
 
