@@ -25,7 +25,7 @@ import ArticleMediaEmbed from '../components/articles/ArticleMediaEmbed';
 import ArticleRelatedGrid from '../components/articles/ArticleRelatedGrid';
 import { formatMediaUrl, formatMediaHtml } from '../utils/mediaUtils';
 import { toPersianDigits } from '../utils/jalaliDateUtils';
-import SEO from '../components/seo/SEO';
+import SEO, { SITE_URL } from '../components/seo/SEO';
 
 const sanitizeAndAddIdsToHeadings = (rawHtml) => {
   if (!rawHtml) return { processedHtml: '', headings: [] };
@@ -145,8 +145,8 @@ const ArticleDetailPage = ({ onOpenAppointment, onOpenChat }) => {
     '@type': 'MedicalWebPage',
     name: article.title,
     description: article.excerpt || article.title,
-    image: article.cover_image ? formatMediaUrl(article.cover_image) : 'https://kamelion.ir/pink-ribbon.svg',
-    url: `https://kamelion.ir/resources/${article.slug}`,
+    image: article.cover_image ? formatMediaUrl(article.cover_image) : `${SITE_URL}/pink-ribbon.svg`,
+    url: `${SITE_URL}/resources/${article.slug}`,
     author: {
       '@type': 'Physician',
       name: authorName,
@@ -155,8 +155,8 @@ const ArticleDetailPage = ({ onOpenAppointment, onOpenChat }) => {
     publisher: {
       '@type': 'MedicalClinic',
       name: 'کلینیک تخصصی پستان دکتر نگار معشوری',
-      url: 'https://kamelion.ir',
-      logo: 'https://kamelion.ir/pink-ribbon.svg',
+      url: SITE_URL,
+      logo: `${SITE_URL}/pink-ribbon.svg`,
     },
     datePublished: article.published_at || article.created_at,
     dateModified: article.updated_at || article.published_at || article.created_at,

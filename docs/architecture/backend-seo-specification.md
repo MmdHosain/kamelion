@@ -62,7 +62,7 @@ sequenceDiagram
 | :--- | :--- | :--- |
 | **`settings.py` - برنامه‌ها** | اپلیکیشن `django.contrib.sitemaps` فعال نیست. | افزودن `'django.contrib.sitemaps'` به لیست `DJANGO_APPS`. |
 | **`settings.py` - تمپلیت‌ها** | آرایه `'DIRS': []` در بخش `TEMPLATES` خالی است. | اضافه کردن `BASE_DIR / 'templates'` به `DIRS` تا فایل `robots.txt` خوانده شود. |
-| **دامنه سایت (`SITE_DOMAIN`)** | در `settings.py` وجود ندارد. | تعریف متغیر با مقدار پیش‌فرض `https://kamelion.ir` برای تولید لینک‌های مطلق. |
+| **دامنه سایت (`SITE_DOMAIN`)** | در `settings.py` وجود ندارد. | تعریف متغیر با مقدار پیش‌فرض `https://drnegarmashoori.ir` برای تولید لینک‌های مطلق. |
 | **اپلیکیشن مقالات (`apps.articles`)** | مدل‌های `Article` و `Category` فیلدهای لازم را دارند، اما فایلی به نام `sitemaps.py` وجود ندارد. | ایجاد `backend_core/apps/articles/sitemaps.py` برای تولید نقشه سایت مقالات و صفحات ثابت. |
 | **فایل راهنمای ربات‌ها** | تمپلیت و اندپوینت `robots.txt` در پروژه تعریف نشده است. | ایجاد `backend_core/templates/robots.txt` با دستور مسدودسازی نشست‌های چت‌بات. |
 | **سرویس پیش‌نمایش شبکه‌های اجتماعی** | وجود ندارد. | ایجاد `backend_core/apps/articles/seo_views.py` به همراه کش حافظه‌ای. |
@@ -91,7 +91,7 @@ DJANGO_APPS = [
 ]
 
 # ۲. دامنه اصلی سایت جهت تولید URLهای مطلق در نقشه سایت و اپن‌گراف
-SITE_DOMAIN = config('SITE_DOMAIN', default='https://kamelion.ir').rstrip('/')
+SITE_DOMAIN = config('SITE_DOMAIN', default='https://drnegarmashoori.ir').rstrip('/')
 
 # ۳. اصلاح مسیر جستجوی تمپلیت‌ها جهت شناسایی robots.txt
 TEMPLATES = [
@@ -225,7 +225,7 @@ Allow: /videos
 Allow: /media/
 
 # معرفی نقشه سایت به موتورهای جستجو
-Sitemap: https://kamelion.ir/sitemap.xml
+Sitemap: https://drnegarmashoori.ir/sitemap.xml
 ```
 
 ---
@@ -250,7 +250,7 @@ def bot_preview_view(request):
     سرویس سبک جهت تولید تگ‌های Open Graph و Twitter Card برای خزنده‌های فاقد جاوااسکریپت
     """
     path = request.GET.get('path', '').strip()
-    site_domain = getattr(settings, 'SITE_DOMAIN', 'https://kamelion.ir').rstrip('/')
+    site_domain = getattr(settings, 'SITE_DOMAIN', 'https://drnegarmashoori.ir').rstrip('/')
     
     default_title = "کلینیک تخصصی پستان دکتر نگار معشوری"
     default_desc = "ارائه خدمات تخصصی جراحی پستان، انکوپلاستی، غربالگری و درمان بیماری‌های پستان توسط دکتر نگار معشوری."
@@ -477,7 +477,7 @@ cover_image_alt = models.CharField(
 ```bash
 curl -i http://localhost:8000/robots.txt
 # انتظار: HTTP 200 OK
-# متن حاوی Disallow: /chat-session/ و Sitemap: https://kamelion.ir/sitemap.xml
+# متن حاوی Disallow: /chat-session/ و Sitemap: https://drnegarmashoori.ir/sitemap.xml
 ```
 
 ### ۲. تست ساختار XML نقشه سایت:
