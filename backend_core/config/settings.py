@@ -149,7 +149,7 @@ STATIC_URL = '/static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Public frontend origin for canonical, sitemap and social-preview URLs.
-SITE_DOMAIN = config('SITE_DOMAIN', default='https://kamelion.ir').rstrip('/')
+SITE_DOMAIN = config('SITE_DOMAIN', default='https://drnegarmashoori.ir').rstrip('/')
 
 # ── Media (uploaded files, e.g. article images) ────────
 MEDIA_URL = '/media/'

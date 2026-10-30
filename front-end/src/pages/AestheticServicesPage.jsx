@@ -1,7 +1,7 @@
 import React from 'react';
 import { Sparkles, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import SEO from '../components/seo/SEO';
+import SEO, { SITE_URL } from '../components/seo/SEO';
 
 const aestheticSchema = {
   '@context': 'https://schema.org',
@@ -9,7 +9,7 @@ const aestheticSchema = {
   name: 'خدمات زیبایی و بازسازی پستان',
   description:
     'جراحی‌های ماموپلاستی کاهشی، ماستوپکسی (لیفت پستان)، پروتز پستان و بازسازی کامل پستان پس از درمان تومور توسط دکتر نگار معشوری.',
-  url: 'https://kamelion.ir/services/aesthetic',
+  url: `${SITE_URL}/services/aesthetic`,
 };
 
 const AestheticServicesPage = ({ onOpenAppointment }) => {

@@ -1,11 +1,11 @@
 // src/components/seo/SEO.jsx
 import React, { useEffect } from 'react';
 
-const DEFAULT_TITLE = 'کلینیک تخصصی پستان دکتر نگار معشوری';
-const DEFAULT_DESCRIPTION =
+export const DEFAULT_TITLE = 'کلینیک تخصصی پستان دکتر نگار معشوری';
+export const DEFAULT_DESCRIPTION =
   'ارائه خدمات تخصصی جراحی پستان، انکوپلاستی، غربالگری و درمان بیماری‌های خوش‌خیم و بدخیم پستان توسط دکتر نگار معشوری.';
-const SITE_URL = 'https://kamelion.ir';
-const DEFAULT_IMAGE = `${SITE_URL}/pink-ribbon.svg`;
+export const SITE_URL = (import.meta.env.VITE_SITE_URL || 'https://drnegarmashoori.ir').replace(/\/+$/, '');
+export const DEFAULT_IMAGE = `${SITE_URL}/pink-ribbon.svg`;
 
 /**
  * Reusable SEO component for React 19 Native Document Metadata & Schema.org JSON-LD
