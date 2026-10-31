@@ -204,7 +204,7 @@ export const ChatMessageItem = ({
         )}
       </div>
 
-      <span className="text-[11px] px-2 mt-0.5 font-bold text-textDark/60">
+      <span className="text-[11px] px-2 mt-0.5 font-bold text-white">
         {toPersianDigits(message.time)}
       </span>
     </div>
