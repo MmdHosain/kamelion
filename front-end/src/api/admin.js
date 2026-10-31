@@ -1,6 +1,7 @@
 import apiClient from '../lib/apiClient';
 
 import { cleanNextUrl } from './reservationService';
+import { urgentPatientsService } from './urgentPatientsService';
 
 const extractResults = (data) => {
   if (Array.isArray(data)) return data;
@@ -129,6 +130,9 @@ export const adminApi = {
     return response.data;
   },
 
+  getUrgentPatients: async (params = {}) => {
+    return urgentPatientsService.list(params);
+  },
   addPatientNote: async (patientId, text) => {
     const response = await apiClient.post(`/admin/patients/${patientId}/notes/`, {
       text,
