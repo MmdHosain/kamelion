@@ -42,6 +42,7 @@
 | **FE-16** | تقویم کاری و نوبت‌های آتی پزشک (Doctor Agenda) | 2026-10-03 | **Feature 7b, 10** | `GET /api/admin/appointments/?date_from=&date_to=` | ✅ تکمیل و متصل (تقویم مینی دوگانه شمسی/میلادی، کارت‌های تایم‌لاین روزانه، دسترسی از سایدبار و تب نوبت‌ها) |
 | **FE-17** | پرتال مقالات آموزشی و سامانه نویسندگی ادمین (Articles CMS) | 2026-10-04 | **Feature 18** | `GET /api/articles/`<br>`GET /api/articles/<slug>/`<br>`GET/POST /api/admin/articles/`<br>`PUT/DELETE /api/admin/articles/<id>/`<br>`POST /api/admin/articles/upload-image/` | ✅ پیاده‌سازی کامل و آفلاین-فرست (ادیتور غنی، سایدبار TOC، ذخیره در دیسک، همگام‌سازی خودکار و PRD-FE-022/023) |
 | **FE-18** | بهینه‌سازی موتورهای جستجو و داده‌های ساختاریافته (SEO & Schema) | 2026-10-17 | — | کلاینت‌ساید (React 19 Native Hoisting + JSON-LD) | ✅ پیاده‌سازی کامل (تگ‌های متای پویا، اسکیمای کلینیک، پزشک، سوالات متداول و مقالات، PRD-FE-024) |
+| **FE-19** | کارتابل صف بیماران اورژانسی و تریاژ هوشمند (Urgent Patients Queue) | 2026-10-31 | **Feature 19** | `GET /api/admin/patients/urgent/`<br>`GET /api/admin/patients/<id>/triage_level/`<br>`GET /api/admin/patients/<id>/chats/` | ✅ پیاده‌سازی کامل (تب‌های ناوبری، بج اعلان قرمز در سایدبار، کارت‌های اختصاصی با انقضای ۷ روزه و رفرش ۱ دقیقه‌ای، PRD-FE-025) |
 
 ---
 

@@ -49,6 +49,7 @@ docs/features/frontend/
 | `PRD-FE-022` | پرتال عمومی مقالات و آموزش پزشکی | Public Pages | ✅ پیاده‌سازی کامل | [مشاهده سند](file:///e:/GitHub%20Repo/kamelion/docs/features/frontend/04-public-content/prd-medical-articles-public.md) |
 | `PRD-FE-023` | سامانه مدیریت مقالات و نویسندگی پزشک (CMS) | Admin Operations | ✅ پیاده‌سازی کامل (آنلاین + آفلاین دیسک) | [مشاهده سند](file:///e:/GitHub%20Repo/kamelion/docs/features/frontend/07-admin-operations/prd-admin-articles-cms.md) |
 | `PRD-FE-024` | بهینه‌سازی موتورهای جستجو و داده‌های ساختاریافته (SEO & Schema) | SEO & Metadata | 📋 تدوین تسک‌ها و آماده اجرا | [مشاهده سند](file:///e:/GitHub%20Repo/kamelion/docs/features/frontend/tasks-seo-implementation.md) |
+| `PRD-FE-025` | کارتابل بیماران اورژانسی و تریاژ هوشمند | Admin Operations | ✅ پیاده‌سازی شده | [مشاهده سند](file:///e:/GitHub%20Repo/kamelion/docs/features/frontend/07-admin-operations/prd-admin-urgent-patients.md) |
 
 ---
 
