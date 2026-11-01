@@ -1,4 +1,5 @@
 import uuid
+from datetime import timedelta
 
 from django.conf import settings
 from django.db import models
@@ -95,7 +96,8 @@ class TriageAction(models.Model):
     """
     The backend action that ran when a session entered an actionable triage level
     (API.md §5). At most one row per (session, level), which is what makes every
-    action run at most once (§5.2 rule 2).
+    booking action run at most once. Expired urgent codes may be replaced after
+    another successful urgent assessment; their messages remain in chat history.
     """
     BOOKING_OFFER = "booking_offer"
     EMERGENCY_CODE = "emergency_code"
@@ -109,7 +111,19 @@ class TriageAction(models.Model):
     kind = models.CharField(max_length=30, choices=KIND_CHOICES)
     # Only set for kind=emergency_code.
     emergency_code = models.CharField(max_length=16, null=True, blank=True, unique=True)
+    emergency_code_issued_at = models.DateTimeField(null=True, blank=True, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    @property
+    def emergency_code_expires_at(self):
+        if not self.emergency_code or self.emergency_code_issued_at is None:
+            return None
+        return self.emergency_code_issued_at + timedelta(days=7)
+
+    @property
+    def emergency_code_is_expired(self):
+        expires_at = self.emergency_code_expires_at
+        return expires_at is None or expires_at <= timezone.now()
 
     class Meta:
         ordering = ["created_at", "id"]

@@ -33,6 +33,7 @@
 - Levels: `unknown`, `out_of_scope`, `low_priority`, `high_priority`, `urgent`.
 - `booking_offer` is true for low/high priority. This is an offer to enter the normal booking flow; it does not create an appointment.
 - Urgent sessions receive a backend-generated code such as `URG-AB2CD3`; it is returned as `emergency_code`. The code can remain null if issuance failed. It is not a booked appointment or a confirmed date/time.
+- Codes expire exactly seven days (168 hours) after issuance, including codes issued before this feature. A successful urgent assessment after expiry replaces the code; repeated assessments before expiry do not extend it. The chat response retains its existing fields; expiry metadata is exposed by the urgent-patient endpoint below.
 - `triage_summary` is staff-only and is never included in this response.
 - Handled AI-service failures return **200** with a fixed English/Persian reply, `fallback=true`, and the existing triage/action state. If no successful triage exists, the returned level is `unknown`.
 
@@ -76,6 +77,58 @@ Returns the most recently active session with a non-null triage, containing only
 
 `GET /api/admin/patients/` also includes each patient's latest `triage_level`, using the same selection rule.
 
+### `GET /api/admin/patients/urgent/`
+
+**Added 2026-10-31. Access:** JWT plus `IsAdminUser`. Missing/invalid authentication
+returns `401`; authenticated non-staff users receive `403`. This endpoint does not
+send notifications or create appointments.
+
+Returns one row per non-staff patient whose **latest triaged session** is `urgent`
+and has an unexpired code. Latest follows the existing patient-list/triage endpoint
+rule: order sessions with a non-null triage by `updated_at DESC, id DESC`, then
+select one per patient **before** filtering urgency or code validity. A newer
+nonurgent assessment or expired/missing latest code excludes the patient even if
+an older session has a valid urgent code. An untriaged chat does not replace a
+successful assessment. Ownerless/staff sessions are excluded.
+
+Results are ordered by latest assessment first (`session.updated_at DESC`, then
+session ID descending). Pagination uses `page` and `page_size`, default 10,
+maximum 100. No search or additional filtering is provided.
+
+```json
+{
+  "count": 1,
+  "next": null,
+  "previous": null,
+  "results": [{
+    "id": 42,
+    "full_name": "Patient name",
+    "phone_number": "09120000000",
+    "chat_id": 7,
+    "session_id": "widget-session-1",
+    "triage_level": "urgent",
+    "triage_summary": "Staff-only clinical summary.",
+    "assessed_at": "2026-10-31T10:00:00Z",
+    "emergency_code": "URG-AB2CD3",
+    "emergency_code_issued_at": "2026-10-31T10:00:00Z",
+    "emergency_code_expires_at": "2026-11-07T10:00:00Z",
+    "emergency_code_is_expired": false
+  }]
+}
+```
+
+`id` is the patient ID; `chat_id` is the internal session ID. Missing names return
+`""`; the staff summary may be null for legacy records. Datetimes use DRF's
+timezone-aware ISO representation. Expiry is evaluated against one request
+timestamp: codes expiring **at or before** that timestamp are excluded. The flag
+is consequently always false in this list. The empty response is
+`{"count":0,"next":null,"previous":null,"results":[]}`.
+
+Expiry does not delete records or downgrade triage. Existing chat-history and
+latest-triage responses retain their original field sets and may still expose
+expired codes for historical review; use this new endpoint for the active queue.
+The frontend has not yet been wired to this separate queue or expiry display.
+
 ## AI service boundary and stored actions
 
 The backend sends `POST <AI_SERVICE_BASE_URL>/v1/chat` through `ai_client.py`, with a server-side bearer key and `X-Request-ID`. Its request body contains exactly:
@@ -90,10 +143,24 @@ Valid success bodies contain a nonempty `reply` and `triage` with an allowed lev
 
 The timeout defaults to 30 seconds. The client makes at most two attempts, separated by the configured delay (default 2 seconds), for transport failures and HTTP statuses other than 200/400/401. HTTP 400/401 and invalid success bodies are not retried. Fallback preserves previous triage and is stored as a backend message.
 
-Actions run once per `(session, level)`, enforced by a database unique constraint: low/high record a booking offer; urgent records a unique `URG-` code and a backend message. Action failures are logged and retried on a later successful turn without failing that turn's reply.
+One action row per `(session, level)` is enforced by a database unique constraint:
+low/high record a booking offer once; urgent records a unique `URG-` code and a
+backend message. The urgent row's `emergency_code_issued_at` is stored separately
+from its original creation time; expiry is derived as issuance plus seven days.
+Migration `chat_gateway.0005_emergency_code_issued_at` backfills existing code issue
+dates from their original action `created_at`, so old codes do not receive a fresh
+week on deployment. Booking actions retain null issue dates.
+
+A successful urgent assessment at/after expiry updates that same action row with
+a new code and issue date and appends another backend message. Earlier issuance
+messages remain in history and remain excluded from outbound AI history. Valid
+codes are never extended or replaced by repeat assessments. AI failures and
+rejected downgrades do not renew codes. Renewal and its message are atomic; action
+failures are logged and retried on a later successful urgent turn without failing
+that turn's AI reply. Existing expired codes may remain in fallback responses.
 
 Configuration: `AI_SERVICE_BASE_URL`, `AI_SERVICE_API_KEY`, `AI_SERVICE_CA_BUNDLE`, `AI_SERVICE_TIMEOUT`, `AI_SERVICE_RETRY_DELAY`, and `CLINIC_PHONE_NUMBER`. TLS verification remains enabled; the bundled private CA is the default trust bundle. Django system checks warn about missing service configuration, missing CA files, missing clinic number, and non-HTTPS production URLs. Source comments refer to an external `API.md` contract that is not present in this checkout.
 
 ## Verification sources
 
-`apps/chat_gateway/{urls,admin_urls,views,views_admin,serializers,models,services,payload,ai_client,actions,constants,texts,checks}.py`; `apps/users/views_admin.py`; `config/settings.py`. Existing mocked contract/action/admin tests are in `apps/chat_gateway/tests.py`.
+`apps/chat_gateway/{urls,admin_urls,views,views_admin,urgent_patients,serializers,models,services,payload,ai_client,actions,constants,texts,checks}.py`; `apps/users/views_admin.py`; `config/settings.py`. Mocked contract/action/admin tests are in `apps/chat_gateway/tests.py`; queue, expiry/renewal, and migration coverage is in `test_urgent_patients.py`, `test_emergency_expiry.py`, and `test_expiry_migration.py`.
