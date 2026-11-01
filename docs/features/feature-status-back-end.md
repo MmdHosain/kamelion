@@ -88,13 +88,21 @@ Existing feature IDs are retained because frontend documents refer to them. Newl
 
 **12 — AI chat/triage.** Authenticated chat persists owned sessions, messages, latest triage, and staff summaries. The AI client sends generated UUIDs, current message, bounded user/assistant history, prior triage, and known first name/age/sex. It validates replies, enforces nondecreasing actionable severity, retries handled retryable failures once, and supplies a stored fallback without replacing triage on failure. Session-row locks serialize AI calls and superseded messages receive 409. TLS verification remains enabled using the bundled/configured CA.
 
-Low/high priority record a booking offer; urgent issues a unique `URG-` code. Actions run once per session/level, with retry after action failure on a later successful turn. The offer/code does not create an appointment. The structured patient context omits phone/national ID; patient message text is still forwarded. [Full contract and configuration](../architecture/api-endpoints-chat.md).
+Low/high priority record a booking offer once; urgent issues a unique `URG-` code valid for exactly seven days. Existing codes expire from their original issue date (migration `chat_gateway.0005_emergency_code_issued_at`). The next successful urgent assessment after expiry replaces the code and records a new backend message; valid codes remain stable. One action row is retained per session/level. Failed actions/renewals are atomic and retried on a later successful urgent turn; AI fallbacks and rejected downgrades do not renew codes. The offer/code does not create an appointment. The structured patient context omits phone/national ID; patient message text is still forwarded. [Full contract and configuration](../architecture/api-endpoints-chat.md).
 
 **13 — Common app.** `common` is implemented: it owns site settings, video records, aggregate dashboard views, and shared SMS transport. The earlier empty-app description is obsolete.
 
 **14 — OTP SMS.** PanelChi pattern sending and Iranian number formatting are implemented. Default console mode deliberately sends no real SMS. Real delivery requires the provider switch, token, and approved login pattern. Failed sends delete the new OTP and return 502. Provider acceptance/live handset delivery was not tested in this review.
 
 **23 — Staff chat review.** Admins can retrieve paginated sessions with complete message histories and triage summaries, filter by valid level, or fetch the latest triaged session separately. All fields are null when no triaged chat exists. Patient list summaries expose the same latest triage level. Histories include backend messages; those messages are excluded from outbound AI history.
+
+**23b — Active urgent patients (2026-10-31).** `GET /api/admin/patients/urgent/`
+returns one row per non-staff patient whose latest triaged session is urgent and
+whose code is unexpired. Expired/missing codes and newer nonurgent assessments
+exclude the patient. Admin-only; newest assessment first; pagination defaults to
+10, maximum 100. Includes contact data, summary, session IDs, and code issue/expiry
+dates. The separate frontend queue is not yet connected. Existing patient/chat
+response fields and historical code messages remain available.
 
 **24, 25 — Theme and videos.** Theme choices are pink/lilac/purple, with pink fallback, public read, and admin write. Video entries have title/source/type, a public unpaginated list, and admin create/delete. Video source is a string here; there is no file-upload, host-validation, or video-update endpoint.
 
