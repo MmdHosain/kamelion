@@ -152,7 +152,7 @@ export const ChatMessageItem = ({
             )}
 
             {/* Emergency Code Box */}
-            {(message.isEmergency || message.emergencyCode) && !isUser && (
+            {Boolean(message.emergencyCode) && !isUser && (
               <div className="bg-red-500/15 border border-red-500/30 p-3.5 sm:p-5 rounded-2xl mt-3 sm:mt-4 text-center backdrop-blur-md">
                 <div className="flex items-center justify-center gap-1.5 text-red-600 font-black text-xs sm:text-base mb-1.5 sm:mb-2">
                   <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -187,6 +187,26 @@ export const ChatMessageItem = ({
                     تماس با مطب
                   </a>
                 </div>
+              </div>
+            )}
+
+            {/* Urgent Status Without Referral Code (Fallback / Code Unavailable) */}
+            {message.isEmergency && !message.emergencyCode && !isUser && (
+              <div className="bg-rose-50 border border-rose-300 p-3 sm:p-4 rounded-2xl mt-2.5 text-right flex flex-col gap-2">
+                <div className="flex items-center gap-1.5 text-rose-700 font-black text-xs sm:text-sm">
+                  <AlertTriangle className="w-4 h-4 shrink-0 text-rose-600" />
+                  نیازمند پیگیری و تماس فوری
+                </div>
+                <p className="text-[11px] sm:text-xs text-rose-800 font-medium leading-relaxed">
+                  بر اساس علائم ثبت‌شده، وضعیت شما نیازمند بررسی فوری پزشکی است. لطفاً مستقیماً با مطب تماس حاصل فرمایید.
+                </p>
+                <a
+                  href={`tel:${CLINIC_PHONE}`}
+                  className="w-full bg-rose-600 hover:bg-rose-700 text-white py-2 px-3 rounded-xl transition-all text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm no-underline"
+                >
+                  <PhoneCall className="w-4 h-4" />
+                  تماس فوری با مطب
+                </a>
               </div>
             )}
 

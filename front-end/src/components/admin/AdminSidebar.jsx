@@ -1,11 +1,18 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import { ADMIN_NAV_ITEMS } from './AdminNavConfig';
 import { Shield, LogOut } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
+import { useUrgentPatientsStore } from '../../store/urgentPatientsStore';
+import { toPersianDigits } from '../../utils/jalaliDateUtils';
 
 const AdminSidebar = ({ open, onClose }) => {
   const { logout } = useAuth();
+  const { urgentCount, fetchUrgentCount } = useUrgentPatientsStore();
+
+  useEffect(() => {
+    fetchUrgentCount();
+  }, [fetchUrgentCount]);
 
   return (
     <>
@@ -48,6 +55,11 @@ const AdminSidebar = ({ open, onClose }) => {
             >
               <Icon size={18} />
               <span>{label}</span>
+              {path === '/admin/patients' && urgentCount > 0 && (
+                <span className="mr-auto px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-500 text-white shadow-xs">
+                  {toPersianDigits(urgentCount)}
+                </span>
+              )}
             </NavLink>
           ))}
         </nav>
