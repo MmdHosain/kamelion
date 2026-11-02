@@ -29,7 +29,7 @@ export const ChatMessageItem = ({
 
   const isUser = message.sender === 'user';
   const hasAnimatedRef = useRef(false);
-  const shouldAnimate = Boolean(!isUser && message.isNew && !hasAnimatedRef.current);
+  const shouldAnimate = Boolean(!isUser && message.isNew && !hasAnimatedRef.current && !message.isDismissing);
 
   const handleComplete = useCallback(() => {
     hasAnimatedRef.current = true;
@@ -61,8 +61,12 @@ export const ChatMessageItem = ({
 
   return (
     <div
-      className={`flex flex-col mb-2.5 animate-messageIn ${
+      className={`flex flex-col transition-all duration-350 ease-[cubic-bezier(0.16,1,0.3,1)] ${
         isUser ? 'items-start' : 'items-end'
+      } ${
+        message.isDismissing
+          ? 'chat-auth-exit'
+          : 'mb-2.5 animate-messageIn'
       }`}
     >
       <div
@@ -70,7 +74,7 @@ export const ChatMessageItem = ({
           isUser
             ? 'bg-primary text-white rounded-tr-sm shadow-md font-medium'
             : 'bg-white/95 backdrop-blur-md border border-primary/20 text-textDark rounded-tl-sm shadow-xs font-medium'
-        }`}
+        } ${message.isDismissing ? 'scale-95 opacity-0' : ''}`}
       >
         {/* Bot Identity Header with Avatar matching the Typing Indicator */}
         {!isUser && (

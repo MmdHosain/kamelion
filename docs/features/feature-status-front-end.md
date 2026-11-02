@@ -206,6 +206,9 @@
    - اعمال گارد احراز هویت بیمار (`useAuthStore`) و هدایت به مدال OTP با توجه به الزام بک‌اند.
    - مپ کردن دقیق فیلدهای پاسخ بک‌اند (`booking_offer`، `emergency_code` با فرمت `URG-`، سطوح ۵‌گانه تریاژ و فال‌بک آفلاین).
    - افزودن کامپوننت‌های پنل ادمین: `TriageLevelBadge.jsx` در جدول بیماران و `PatientTriageSection.jsx` در مدال پرونده بیمار جهت مشاهده سوابق مکالمات و خلاصه تریاژ.
+6. **حذف خودکار اعلان ورود و ارسال خودکار پیام بیمار پس از لاگین (Auth Dismiss & Auto-Dispatch Fix):**
+   - رفع ماندگاری پیام ورود در چت: با ایجاد افکت ناظر در `src/hooks/useChatSession.js` به محض ورود موفق کاربر (`isAuthenticated = true`)، پیام ورود با انیمیشن خروج نرم ۳۵۰ میلی‌ثانیه‌ای (`.chat-auth-exit` در `src/index.css` و `src/components/chat/ChatMessageItem.jsx`) محو و کلاپس شده و از استیت کانتینر گفتگو حذف می‌شود.
+   - ارسال خودکار پرسش کاربر: متن پیام تایپ‌شده بیمار قبل از احراز هویت بدون نیاز به تایپ مجدد به طور خودکار به `chatService.sendMessage` ارسال شده و پاسخ بالینی بلادرنگ دریافت می‌گردد.
 
 #### فایل‌های درگیر در فرانت‌اند
 - کامپوننت‌های عمومی: `src/components/chat/FloatingChatWidget.jsx`, `ChatPillButton.jsx`, `ChatMessageItem.jsx`, `ChatQuickPrompts.jsx`

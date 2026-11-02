@@ -475,6 +475,27 @@ body::-webkit-scrollbar {
   animation: messageIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+/* Smooth Collapse & Fade-Out Exit for Chat Auth Prompts */
+.chat-auth-exit {
+  opacity: 0 !important;
+  transform: translateY(-8px) scale(0.96) !important;
+  max-height: 0 !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chat-auth-exit {
+    transition: none !important;
+    transform: none !important;
+  }
+}
+
 @keyframes fadeSlide {
   0% {
     opacity: 0;
