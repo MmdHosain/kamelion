@@ -2,11 +2,11 @@ import React, { useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Home, UserCheck, Activity, Stethoscope, HelpCircle, BookOpen, ChevronLeft, ChevronRight, ArrowLeft } from 'lucide-react';
 
-import imgCard02 from '../../assets/images/cards/card-02.jpg';
-import imgCard03 from '../../assets/images/cards/card-03.jpg';
-import imgCard04 from '../../assets/images/cards/card-04.jpg';
-import imgCard05 from '../../assets/images/cards/card-05.jpg';
-import imgCard06 from '../../assets/images/cards/card-06.jpg';
+import imgCard02 from '../../assets/images/cards/card-02.webp';
+import imgCard03 from '../../assets/images/cards/card-03.webp';
+import imgCard04 from '../../assets/images/cards/card-04.webp';
+import imgCard05 from '../../assets/images/cards/card-05.webp';
+import imgCard06 from '../../assets/images/cards/card-06.webp';
 
 const CARDS_DATA = [
   {

@@ -1,4 +1,5 @@
 import React from 'react';
+import doctorImg from '../../assets/images/doctor.webp';
 
 const AboutSection = () => {
   return (
@@ -6,7 +7,7 @@ const AboutSection = () => {
       <div className="container mx-auto px-4 grid md:grid-cols-2 gap-12 items-center">
         <div>
           <img
-            src="/images/IMG_2923.jpeg"
+            src={doctorImg}
             alt="دکتر نگار معشوری"
             className="rounded-2xl shadow-xl w-full object-cover border-2 border-secondary/20"
           />

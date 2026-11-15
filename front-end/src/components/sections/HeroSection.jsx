@@ -2,7 +2,7 @@ import React from 'react';
 import { Calendar, MessageSquare, CheckCircle2, GraduationCap } from 'lucide-react';
 
 import RibbonLogo from '../ui/RibbonLogo';
-import doctorImg from '../../assets/images/doctor.jpg';
+import doctorImg from '../../assets/images/doctor.webp';
 
 const HeroSection = ({ onOpenAppointment, onOpenChat }) => {
   const handleScrollToBooking = () => {
