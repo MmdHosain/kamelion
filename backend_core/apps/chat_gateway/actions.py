@@ -15,6 +15,7 @@ import logging
 import secrets
 
 from django.db import transaction
+from django.utils import timezone
 
 from . import constants as c
 from .models import ChatMessage, TriageAction
@@ -42,8 +43,13 @@ def _offer_booking(session, level, patient_text):
 
 def _issue_emergency_code(session, level, patient_text):
     code = generate_emergency_code()
-    TriageAction.objects.create(
-        session=session, level=level, kind=TriageAction.EMERGENCY_CODE, emergency_code=code
+    TriageAction.objects.update_or_create(
+        session=session, level=level,
+        defaults={
+            "kind": TriageAction.EMERGENCY_CODE,
+            "emergency_code": code,
+            "emergency_code_issued_at": timezone.now(),
+        },
     )
     # Kept in the conversation record. Backend messages are never sent as history (§4.3).
     ChatMessage.objects.create(
@@ -63,15 +69,20 @@ HANDLERS = {
 
 def run_actions(session, patient_text: str) -> None:
     """
-    Run the action of the session's current level unless it already ran (§5.2 rules 1 and 2).
+    Run a missing action, or renew an expired code after a successful urgent assessment.
 
     Checking "has this level's action run?" instead of "did the level change?" gives the same
-    once-per-level result, and a failed action is retried on the next successful turn. A failure
+    once-per-level result for booking offers. An urgent code is stable for seven days;
+    expired codes are replaced on the next successful urgent turn. A failed action
+    is retried on the next successful turn. A failure
     never breaks the patient's reply (§5.2 rule 6: the backend handles its own failures).
     """
     level = session.triage_level
     handler = HANDLERS.get(level)
-    if handler is None or session.triage_actions.filter(level=level).exists():
+    if handler is None:
+        return
+    existing = session.triage_actions.filter(level=level).first()
+    if existing and (level != c.URGENT or not existing.emergency_code_is_expired):
         return
     try:
         with transaction.atomic():

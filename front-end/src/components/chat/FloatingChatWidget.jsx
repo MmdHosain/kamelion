@@ -431,7 +431,7 @@ export const FloatingChatWidget = ({ isOpen, onToggle, onOpenAppointment }) => {
                   <button
                     type="button"
                     onClick={() => scrollToBottom('smooth')}
-                    className="sticky bottom-2 self-center bg-primary/95 text-white text-[11px] font-bold px-3.5 py-1.5 rounded-full shadow-lg flex items-center gap-1 hover:bg-primary transition-all cursor-pointer z-10 animate-fadeIn"
+                    className="sticky bottom-2 self-center bg-primary text-white text-[11px] font-bold px-3.5 py-1.5 rounded-full shadow-lg flex items-center gap-1 hover:bg-primary transition-all cursor-pointer z-10 animate-fadeIn"
                   >
                     <ChevronDown size={14} />
                     <span>پیام‌های جدید</span>

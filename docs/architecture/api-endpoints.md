@@ -13,7 +13,7 @@ Related documents: [backend architecture](backend.md), [backend feature status](
 - Protected routes use `Authorization: Bearer <access token>`. Access lifetime is 7 days; refresh lifetime is 30 days. Refresh tokens are not rotated. Patient login returns `access`/`refresh`; admin login and refresh return `accessToken`/`refreshToken`.
 - Bodies are JSON unless an upload specifies multipart. Dates are Gregorian `YYYY-MM-DD`; times are normally `HH:MM:SS`. SMS dates are separately formatted in Jalali.
 - Serializer failures normally return `400` with field errors (or `non_field_errors`). Handled business failures use `detail` or `error` as specified below. Protected routes reject absent/invalid/expired access tokens with `401`, and authenticated non-staff callers of admin routes with `403`.
-- Paginated lists return `{count, next, previous, results}`. Appointments and admin chat lists default to 10 items, maximum `page_size=100`; articles default to 10, maximum 50. Other lists below are unpaginated.
+- Paginated lists return `{count, next, previous, results}`. Appointments, admin chat lists, and urgent patients default to 10 items, maximum `page_size=100`; articles default to 10, maximum 50. Other lists below are unpaginated.
 - DRF also supplies `OPTIONS` and `HEAD` where supported. The scheduling `DefaultRouter` supplies format-suffix variants and `GET /api/admin/` (API discovery for slots/exceptions). That discovery view uses DRF's default `IsAuthenticated`, rather than `IsAdminUser`; the linked resources require staff access. `/admin/` is Django's session-authenticated admin UI.
 
 ## Public SEO endpoints — added 2026-10-19
@@ -226,6 +226,7 @@ All routes require **Admin** access and scope patients to `is_staff=False`. Sour
 | Method | Path | Input / purpose | Success |
 |---|---|---|---|
 | GET | `/api/admin/patients/` | Optional `?search=` (name/phone) | `200` unpaginated patient array |
+| GET | `/api/admin/patients/urgent/` | Latest assessment urgent with unexpired code; `page`, `page_size` | `200` paginated active urgent patients with code issue/expiry dates |
 | GET | `/api/admin/patients/<id>/` | Full dossier | `200` dossier |
 | PUT / PATCH | `/api/admin/patients/<id>/` | Optional `full_name`, `national_id` | `200` updated dossier |
 | POST | `/api/admin/patients/<id>/notes/` | Nonblank `text` (or alias `note`) | `201` clinical note |
@@ -238,7 +239,12 @@ Nested appointments use `{id, date, time, status, reason}` (descending date/time
 
 Both update methods are partial. `full_name` allows blank, max 100; `national_id` allows blank/null, max 20, and blank clears it to null. Sex/birth date are returned but are not writable through this endpoint. Missing/staff patient IDs return `404 {"detail":"Patient not found"}`. Empty note text returns `400 {"detail":"Note text is required."}`. `PatientNote.text` declares max 4000 at model level, but the create view writes directly rather than validating with the serializer.
 
-Chat history and latest triage are documented in [chat and triage API](api-endpoints-chat.md).
+Chat history, latest triage, and the [active urgent-patient queue](api-endpoints-chat.md#get-apiadminpatientsurgent)
+are documented in the chat and triage API. Urgent codes expire seven days after
+issuance, including existing codes; a new successful urgent assessment after
+expiry issues a replacement. This queue excludes expired/missing latest codes
+and patients whose latest assessment is nonurgent. It does not change the
+general patient list or create appointments.
 
 ## Reviews — `apps.comments`
 

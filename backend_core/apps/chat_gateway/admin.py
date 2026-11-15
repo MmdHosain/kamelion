@@ -18,7 +18,8 @@ class TriageActionInline(admin.TabularInline):
     model = TriageAction
     extra = 0
     can_delete = False
-    fields = ("created_at", "level", "kind", "emergency_code")
+    fields = ("created_at", "level", "kind", "emergency_code",
+              "emergency_code_issued_at", "emergency_code_expires_at")
     readonly_fields = fields
 
     def has_add_permission(self, request, obj=None):

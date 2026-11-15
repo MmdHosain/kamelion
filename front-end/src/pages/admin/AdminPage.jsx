@@ -5,7 +5,7 @@ import AdminLayout from '../../components/admin/AdminLayout';
 import AdminDashboard from './AdminDashboard';
 import AppointmentsAvailability from './AppointmentsAvailability'; 
 import DoctorAgendaPage from './DoctorAgendaPage';
-import PatientsList from '../../components/admin/patients/PatientsList';
+import PatientsManagementPage from './PatientsManagementPage';
 import AdminSettings from './AdminSettings';
 import AdminComments from './AdminComments';
 import AdminVideos from './AdminVideos';
@@ -27,7 +27,7 @@ const AdminPage = () => {
         <Route path="articles/new" element={<AdminArticleEditor />} />
         <Route path="articles/:id/edit" element={<AdminArticleEditor />} />
         <Route path="videos" element={<Navigate to="/admin/content?tab=videos" replace />} />
-        <Route path="patients" element={<PatientsList />} />
+        <Route path="patients" element={<PatientsManagementPage />} />
         <Route path="comments" element={<AdminComments />} />
         <Route path="stats" element={<AdminDashboard />} />
         <Route path="settings" element={<AdminSettings />} />

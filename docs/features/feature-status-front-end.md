@@ -42,6 +42,7 @@
 | **FE-16** | تقویم کاری و نوبت‌های آتی پزشک (Doctor Agenda) | 2026-10-03 | **Feature 7b, 10** | `GET /api/admin/appointments/?date_from=&date_to=` | ✅ تکمیل و متصل (تقویم مینی دوگانه شمسی/میلادی، کارت‌های تایم‌لاین روزانه، دسترسی از سایدبار و تب نوبت‌ها) |
 | **FE-17** | پرتال مقالات آموزشی و سامانه نویسندگی ادمین (Articles CMS) | 2026-10-04 | **Feature 18** | `GET /api/articles/`<br>`GET /api/articles/<slug>/`<br>`GET/POST /api/admin/articles/`<br>`PUT/DELETE /api/admin/articles/<id>/`<br>`POST /api/admin/articles/upload-image/` | ✅ پیاده‌سازی کامل و آفلاین-فرست (ادیتور غنی، سایدبار TOC، ذخیره در دیسک، همگام‌سازی خودکار و PRD-FE-022/023) |
 | **FE-18** | بهینه‌سازی موتورهای جستجو و داده‌های ساختاریافته (SEO & Schema) | 2026-10-17 | — | کلاینت‌ساید (React 19 Native Hoisting + JSON-LD) | ✅ پیاده‌سازی کامل (تگ‌های متای پویا، اسکیمای کلینیک، پزشک، سوالات متداول و مقالات، PRD-FE-024) |
+| **FE-19** | کارتابل صف بیماران اورژانسی و تریاژ هوشمند (Urgent Patients Queue) | 2026-10-31 | **Feature 19** | `GET /api/admin/patients/urgent/`<br>`GET /api/admin/patients/<id>/triage_level/`<br>`GET /api/admin/patients/<id>/chats/` | ✅ پیاده‌سازی کامل (تب‌های ناوبری، بج اعلان قرمز در سایدبار، کارت‌های اختصاصی با انقضای ۷ روزه و رفرش ۱ دقیقه‌ای، PRD-FE-025) |
 
 ---
 
@@ -206,6 +207,9 @@
    - اعمال گارد احراز هویت بیمار (`useAuthStore`) و هدایت به مدال OTP با توجه به الزام بک‌اند.
    - مپ کردن دقیق فیلدهای پاسخ بک‌اند (`booking_offer`، `emergency_code` با فرمت `URG-`، سطوح ۵‌گانه تریاژ و فال‌بک آفلاین).
    - افزودن کامپوننت‌های پنل ادمین: `TriageLevelBadge.jsx` در جدول بیماران و `PatientTriageSection.jsx` در مدال پرونده بیمار جهت مشاهده سوابق مکالمات و خلاصه تریاژ.
+6. **حذف خودکار اعلان ورود و ارسال خودکار پیام بیمار پس از لاگین (Auth Dismiss & Auto-Dispatch Fix):**
+   - رفع ماندگاری پیام ورود در چت: با ایجاد افکت ناظر در `src/hooks/useChatSession.js` به محض ورود موفق کاربر (`isAuthenticated = true`)، پیام ورود با انیمیشن خروج نرم ۳۵۰ میلی‌ثانیه‌ای (`.chat-auth-exit` در `src/index.css` و `src/components/chat/ChatMessageItem.jsx`) محو و کلاپس شده و از استیت کانتینر گفتگو حذف می‌شود.
+   - ارسال خودکار پرسش کاربر: متن پیام تایپ‌شده بیمار قبل از احراز هویت بدون نیاز به تایپ مجدد به طور خودکار به `chatService.sendMessage` ارسال شده و پاسخ بالینی بلادرنگ دریافت می‌گردد.
 
 #### فایل‌های درگیر در فرانت‌اند
 - کامپوننت‌های عمومی: `src/components/chat/FloatingChatWidget.jsx`, `ChatPillButton.jsx`, `ChatMessageItem.jsx`, `ChatQuickPrompts.jsx`

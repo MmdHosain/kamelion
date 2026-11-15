@@ -110,7 +110,7 @@ All ordinary primary keys use Django's default `BigAutoField`; `ChatSession.ai_s
 | articles: `Article` | Title/Unicode slug/excerpt/HTML, cover image/video URL, nullable category and author FKs with SET_NULL, draft/published status, derived reading time, view count, publication/creation/update times |
 | chat_gateway: `ChatSession` | Unique widget session key, unique AI UUID, nullable owner FK with SET_NULL, latest triage level/summary, timestamps |
 | chat_gateway: `ChatMessage` | Session FK with CASCADE; user/assistant/backend role, backend-message kind, content/time |
-| chat_gateway: `TriageAction` | Session FK with CASCADE, level, booking-offer/emergency-code kind, nullable unique emergency code, creation time |
+| chat_gateway: `TriageAction` | Session FK with CASCADE, level, booking-offer/emergency-code kind, nullable unique emergency code, nullable indexed code issue time, creation time; code expiry derived as issue time + 7 days |
 | common: `SiteSetting` | Unique key/value; theme accessor defaults to pink when no stored row exists |
 | common: `Video` | Title, source string, video/iframe type, creation time |
 
@@ -144,7 +144,16 @@ Bulk weekly schedules and closures are atomic upsert-and-prune operations: match
 
 The backend persists sessions/messages/triage and builds the AI request itself. It sends a generated UUID, current message, up to 100 earlier user/assistant messages, prior triage, and known first name/age/sex. Backend-generated fallback/code messages are excluded from AI history. Phone/national ID are not added to structured patient context; user message text is still forwarded.
 
-Session ownership is enforced; legacy ownerless sessions can be adopted. The service stores the user message, then holds a database session-row lock across the synchronous AI call to serialize work. Superseded requests return 409. Successful replies persist the latest triage and staff-only summary; severity downgrades are rejected. Low/high levels offer normal booking; urgent generates a unique `URG-` code, without booking an appointment. Actions are recorded once per session/level and failed actions may be retried on later successful turns.
+Session ownership is enforced; legacy ownerless sessions can be adopted. The service stores the user message, then holds a database session-row lock across the synchronous AI call to serialize work. Superseded requests return 409. Successful replies persist the latest triage and staff-only summary; severity downgrades are rejected. Low/high levels offer normal booking; urgent generates a unique `URG-` code, without booking an appointment. One action row is kept per session/level. Urgent codes expire exactly seven days after issuance; a later successful urgent assessment replaces an expired code in that row and appends a new issuance message. Valid codes are not extended, and fallback/downgrade failures do not renew them. Failed actions may be retried on later successful turns.
+
+`GET /api/admin/patients/urgent/` is an admin-only paginated queue, with one row
+per non-staff patient whose latest triaged session is urgent and has a valid code.
+It selects the latest session before filtering, excluding expired codes and newer
+nonurgent assessments rather than falling back to older urgent sessions. The
+dedicated `chat_gateway/urgent_patients.py` module returns patient contact data,
+staff summary, session identifiers, and code issue/expiry metadata. Migration
+`0005_emergency_code_issued_at` backfills original issue times from existing action
+creation times. Old messages and existing API response fields are preserved.
 
 The HTTP client validates responses, uses a 30-second default timeout and one retry after 2 seconds for transport/retryable HTTP errors, and returns control to a fixed fallback on handled failures. HTTP 400/401 and malformed success responses are not retried. TLS verification uses the configured private CA or system trust. The API key is server-side. [Chat API details](api-endpoints-chat.md) cover fields, retries, and admin conversation access.
 
